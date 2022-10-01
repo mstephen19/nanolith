@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": false,
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "target": "ESNext",
+        "removeComments": false,
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "pretty": true
+        // "incremental": true
+    }
+    // "include": ["src"],
+    // "exclude": ["**/types"]
+}

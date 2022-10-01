@@ -1,0 +1,23 @@
+{
+  "name": "nanolith",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "play": "tsc && echo \"running playground\" && node ./dist/_playground/index.js"
+  },
+  "keywords": [],
+  "author": "Matt Stephens",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.7.23",
+    "@types/uuid": "^8.3.4"
+  },
+  "dependencies": {
+    "callsites": "^4.0.0",
+    "tiny-typed-emitter": "^2.1.0",
+    "uuid": "^9.0.0"
+  }
+}

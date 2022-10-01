@@ -1,0 +1,15 @@
+.vscode
+.DS_Store
+.gitignore
+
+# Folders
+node_modules
+src
+dist/playground
+
+# Files
+**.tsbuildinfo
+tsconfig.json
+package-lock.json
+README.md
+bun.lockb

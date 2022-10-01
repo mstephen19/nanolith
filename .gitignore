@@ -1,0 +1,10 @@
+.vscode
+.DS_Store
+
+# Folders
+node_modules
+dist
+
+# Files
+**.tsbuildinfo
+bun.lockb
