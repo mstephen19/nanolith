@@ -1,5 +1,5 @@
 import { cpus } from 'os';
-import { Worker } from 'worker_threads';
+import { Worker, SHARE_ENV } from 'worker_threads';
 
 import type { PoolItem } from './pool_item.js';
 
@@ -61,6 +61,7 @@ class Pool {
         const worker = new Worker(file, {
             ...options,
             workerData,
+            env: SHARE_ENV,
         });
 
         if (reffed) worker.ref();

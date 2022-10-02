@@ -21,7 +21,7 @@ export async function workerHandler<Definitions extends TaskDefinitions>(definit
             break;
         }
         case WorkerType.Service: {
-            await serviceWorkerHandler(definitions);
+            serviceWorkerHandler(definitions);
             break;
         }
         default: {

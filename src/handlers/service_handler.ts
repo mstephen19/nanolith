@@ -7,7 +7,7 @@ import type { MainThreadBaseMessageBody, WorkerCallReturnMessageBody, MainThread
 /**
  * Handles only service workers.
  */
-export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
+export function serviceWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
     parentPort!.on('message', async (body: MainThreadBaseMessageBody) => {
         // Exit the worker's process when the terminate message is sent
         if (body?.type === MainThreadMessageType.Terminate) process.exit();

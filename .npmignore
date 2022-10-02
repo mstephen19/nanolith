@@ -5,7 +5,7 @@
 # Folders
 node_modules
 src
-dist/playground
+dist/_playground
 
 # Files
 **.tsbuildinfo
