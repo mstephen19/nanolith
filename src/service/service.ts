@@ -12,12 +12,16 @@ import type {
     WorkerSendMessageBody,
 } from '../types/messages.js';
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.js';
-import type { CallOptions } from '../types/workers.js';
+import type { ServiceCallOptions } from '../types/workers.js';
 
 export class Service<Definitions extends TaskDefinitions> {
     constructor(private worker: Worker) {}
 
-    async call<Name extends CleanKeyOf<Definitions>>({ name, params }: CallOptions<Name, Parameters<Definitions[Name]>>) {
+    async call<Name extends CleanKeyOf<Definitions>>({
+        name,
+        params,
+        transferList,
+    }: ServiceCallOptions<Name, Parameters<Definitions[Name]>>) {
         const key = v4();
 
         const message: MainThreadCallMessageBody = {
@@ -48,7 +52,7 @@ export class Service<Definitions extends TaskDefinitions> {
             this.worker.on('message', callback);
         }) as Promise<CleanReturnType<Definitions[Name]>>;
 
-        this.worker.postMessage(message);
+        this.worker.postMessage(message, transferList);
 
         return promise;
     }

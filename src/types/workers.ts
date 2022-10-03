@@ -1,3 +1,4 @@
+import type { TransferListItem } from 'worker_threads';
 import type { WorkerOptions } from './config.js';
 
 /**
@@ -16,6 +17,10 @@ export const enum WorkerType {
 export type CallOptions<Name extends string = string, Params extends any[] = any[]> = {
     name: Name;
 } & (Params['length'] extends 0 ? { params?: undefined } : { params: Params });
+
+export type ServiceCallOptions<Name extends string = string, Params extends any[] = any[]> = {
+    transferList?: readonly TransferListItem[];
+} & CallOptions<Name, Params>;
 
 /**
  * The base options that are available when spinning up either a task or a service.
