@@ -21,8 +21,11 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
 
     const promise = new Promise((resolve, reject) => {
         item.on('created', (worker) => {
-            worker.on('online', () => resolve(new Service(worker)));
             worker.on('error', reject);
+            worker.on('online', () => {
+                resolve(new Service(worker));
+                worker.off('error', reject);
+            });
         });
     }) as Promise<Service<Definitions>>;
 

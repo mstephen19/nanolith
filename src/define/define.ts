@@ -32,14 +32,16 @@ export async function define<Definitions extends TaskDefinitions>(
     // Determine the file of the worker if it was not provided in the options.
     const file = fileFromOptions ?? fileURLToPath(callsites()[1].getFileName()!);
 
-    return Object.assign(
-        async <Name extends CleanKeyOf<Definitions>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
-            return runTaskWorker(file, identifier, options as TaskWorkerOptions) as Promise<CleanReturnType<Definitions[Name]>>;
-        },
-        {
-            launchService: async <Options extends ServiceWorkerOptions>(options = {} as Options) => {
-                return runServiceWorker<Definitions, Options>(file, identifier, options);
-            },
-        }
+    return Object.freeze(
+        Object.assign(
+            Object.freeze(async <Name extends CleanKeyOf<Definitions>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
+                return runTaskWorker(file, identifier, options as TaskWorkerOptions) as Promise<CleanReturnType<Definitions[Name]>>;
+            }),
+            {
+                launchService: Object.freeze(async <Options extends ServiceWorkerOptions>(options = {} as Options) => {
+                    return runServiceWorker<Definitions, Options>(file, identifier, options);
+                }),
+            }
+        )
     );
 }

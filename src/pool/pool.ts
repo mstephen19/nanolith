@@ -27,9 +27,13 @@ class Pool {
         return !this.active;
     }
 
+    get next() {
+        return this.queue[0];
+    }
+
     /**
      * Modify the concurrency of the pool. Use this wisely.
-     * This number defines how many workers `Pool` will allow to
+     * This value defines how many workers `Pool` will allow to
      * run at the same time. It defaults to one worker per core on
      * the machine running the process.
      */

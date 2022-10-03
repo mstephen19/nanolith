@@ -15,7 +15,11 @@ import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.
 import type { ServiceCallOptions } from '../types/workers.js';
 
 export class Service<Definitions extends TaskDefinitions> {
-    constructor(private worker: Worker) {}
+    #worker: Worker;
+
+    constructor(worker: Worker) {
+        this.#worker = worker;
+    }
 
     async call<Name extends CleanKeyOf<Definitions>>({
         name,
@@ -46,19 +50,19 @@ export class Service<Definitions extends TaskDefinitions> {
                     reject((body as WorkerCallErrorMessageBody).data);
                 }
 
-                this.worker.off('message', callback);
+                this.#worker.off('message', callback);
             };
 
-            this.worker.on('message', callback);
+            this.#worker.on('message', callback);
         }) as Promise<CleanReturnType<Definitions[Name]>>;
 
-        this.worker.postMessage(message, transferList);
+        this.#worker.postMessage(message, transferList);
 
         return promise;
     }
 
     terminate() {
-        this.worker.terminate();
+        this.#worker.terminate();
     }
 
     sendMessage<Data extends any = any>(data: Data, transferList?: readonly TransferListItem[]) {
@@ -67,17 +71,17 @@ export class Service<Definitions extends TaskDefinitions> {
             data,
         };
 
-        this.worker!.postMessage(body, transferList);
+        this.#worker!.postMessage(body, transferList);
     }
 
     onMessage<Data extends any = any>(callback: (body: Data) => Awaitable<any>) {
-        this.worker.on('message', async (body: WorkerBaseMessageBody) => {
+        this.#worker.on('message', async (body: WorkerBaseMessageBody) => {
             if (body.type !== WorkerMessageType.Message) return;
             await callback((body as WorkerSendMessageBody<Data>).data);
         });
     }
 
     offMessage<Data extends any = any>(callback: (body: Data) => Awaitable<any>) {
-        this.worker.off('message', callback);
+        this.#worker.off('message', callback);
     }
 }
