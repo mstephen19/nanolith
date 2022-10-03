@@ -75,6 +75,11 @@ export const enum WorkerMessageType {
      * failed and posting the error back to the main thread.
      */
     CallError,
+    /**
+     * To be used when notifying the main thread that a `Messenger`
+     * object has successfully been sent.
+     */
+    MessengerTransferSuccess,
 }
 
 export type WorkerBaseMessageBody<Type extends WorkerMessageType = WorkerMessageType> = {
@@ -102,3 +107,7 @@ export type WorkerCallErrorMessageBody = {
     key: string;
     data: Error;
 } & WorkerBaseMessageBody<WorkerMessageType.CallError>;
+
+export type WorkerMessengerTransferSuccessBody = {
+    data: string;
+} & WorkerBaseMessageBody<WorkerMessageType.MessengerTransferSuccess>;

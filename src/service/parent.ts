@@ -8,6 +8,7 @@ import type {
     MainThreadBaseMessageBody,
     MainThreadSendMessageBody,
     MainThreadMessengerTransferBody,
+    WorkerMessengerTransferSuccessBody,
 } from '../types/messages.js';
 import { Messenger } from '../messenger/index.js';
 
@@ -35,6 +36,15 @@ function onMessengerReceived(callback: (messenger: Messenger) => Awaitable<any>)
     parentPort?.on('message', async (body: MainThreadBaseMessageBody) => {
         if (body.type !== MainThreadMessageType.MessengerTransfer) return;
         await callback(new Messenger((body as MainThreadMessengerTransferBody).data));
+
+        // Send a confirmation that the messenger data was received and processed
+        // by the callback above.
+        const postBody: WorkerMessengerTransferSuccessBody = {
+            type: WorkerMessageType.MessengerTransferSuccess,
+            data: (body as MainThreadMessengerTransferBody).data.__messengerID,
+        };
+
+        parentPort?.postMessage(postBody);
     });
 }
 

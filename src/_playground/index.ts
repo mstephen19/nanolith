@@ -1,7 +1,7 @@
 import { Messenger } from '../index.js';
 import { api } from './worker.js';
 
-const messenger = new Messenger();
+const messenger = new Messenger('test');
 
 const service = await api.launchService();
 
@@ -11,6 +11,6 @@ await service.call({
     name: 'registerMessengerListener',
 });
 
-service.sendMessenger(messenger);
+await service.sendMessenger(messenger);
 
 messenger.sendMessage('hey from main thread!');

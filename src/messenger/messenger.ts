@@ -1,14 +1,15 @@
 import { v4 } from 'uuid';
 import { isMessengerTransferObject } from './utilities.js';
+import { isMainThread } from 'worker_threads';
 
 import { BroadcastChannel } from 'worker_threads';
 import type { MessengerTransferData, MessengerMessageBody } from '../types/messenger.js';
 import type { Awaitable } from '../types/utilities.js';
 
 export class Messenger {
-    private listener: BroadcastChannel;
-    private sender: BroadcastChannel;
+    private channel: BroadcastChannel;
     private listenerCallbacks: ((data: any) => Awaitable<void>)[] = [];
+    private listenerRegistered = false;
     /**
      * A value specific to an instance of Messenger. Allows for
      * ignoring messages sent by itself.
@@ -28,25 +29,27 @@ export class Messenger {
         }
 
         if (data && typeof data !== 'string') {
-            this.listener = new BroadcastChannel(data.__messengerID);
-            this.sender = new BroadcastChannel(data.__messengerID);
+            this.channel = new BroadcastChannel(data.__messengerID);
             this.key = v4();
             this.identifier = data.__messengerID;
-        } else {
-            // The first port will always be used for listening, while the second will
-            // always be used for sending.
-            this.key = v4();
-            this.identifier = typeof data === 'string' ? data : v4();
-            this.listener = new BroadcastChannel(this.identifier);
-            this.sender = new BroadcastChannel(this.identifier);
+            return;
         }
+        // The first port will always be used for listening, while the second will
+        // always be used for sending.
+        this.key = v4();
+        this.identifier = typeof data === 'string' ? data : v4();
+        this.channel = new BroadcastChannel(this.identifier);
+    }
 
-        this.listener.onmessage = async (event) => {
+    #registerListener() {
+        this.channel.onmessage = async (event) => {
             const { data: body } = event as { data: MessengerMessageBody };
             // If the message was send by this Messenger, just ignore it.
             if (body.sender === this.key) return;
             this.listenerCallbacks.forEach((callback) => callback(body.data));
         };
+
+        this.listenerRegistered = true;
     }
 
     /**
@@ -58,6 +61,7 @@ export class Messenger {
     }
 
     onMessage<Data extends any = any>(callback: (data: Data) => Awaitable<void>) {
+        this.#registerListener();
         this.listenerCallbacks.push(callback);
     }
 
@@ -67,7 +71,7 @@ export class Messenger {
             data,
         };
 
-        this.sender.postMessage(body);
+        this.channel.postMessage(body);
     }
 
     transfer(): MessengerTransferData {
@@ -77,7 +81,6 @@ export class Messenger {
     }
 
     close() {
-        this.listener.close();
-        this.sender.close();
+        this.channel.close();
     }
 }

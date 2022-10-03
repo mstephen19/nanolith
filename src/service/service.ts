@@ -11,6 +11,7 @@ import type {
     MainThreadSendMessageBody,
     WorkerSendMessageBody,
     MainThreadMessengerTransferBody,
+    WorkerMessengerTransferSuccessBody,
 } from '../types/messages.js';
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.js';
 import type { ServiceCallOptions } from '../types/workers.js';
@@ -87,7 +88,9 @@ export class Service<Definitions extends TaskDefinitions> {
         this.#worker.off('message', callback);
     }
 
-    sendMessenger(messenger: Messenger) {
+    sendMessenger(messenger: Messenger, skipConfirmation?: false): Promise<void>;
+    sendMessenger(messenger: Messenger, skipConfirmation?: true): void;
+    sendMessenger(messenger: Messenger, skipConfirmation = false) {
         const transferData = messenger.transfer();
 
         const body: MainThreadMessengerTransferBody = {
@@ -95,6 +98,21 @@ export class Service<Definitions extends TaskDefinitions> {
             data: transferData,
         };
 
+        const promise = new Promise((resolve) => {
+            const callback = (body: WorkerBaseMessageBody) => {
+                if (body.type !== WorkerMessageType.MessengerTransferSuccess) return;
+                if ((body as WorkerMessengerTransferSuccessBody).data !== transferData.__messengerID) return;
+                resolve(undefined);
+
+                this.#worker.off('message', callback);
+            };
+
+            this.#worker.on('message', callback);
+        });
+
         this.#worker.postMessage(body);
+
+        if (skipConfirmation) return;
+        return promise;
     }
 }
