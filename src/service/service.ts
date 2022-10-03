@@ -10,9 +10,11 @@ import type {
     WorkerCallReturnMessageBody,
     MainThreadSendMessageBody,
     WorkerSendMessageBody,
+    MainThreadMessengerTransferBody,
 } from '../types/messages.js';
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.js';
 import type { ServiceCallOptions } from '../types/workers.js';
+import type { Messenger } from '../messenger/messenger.js';
 
 export class Service<Definitions extends TaskDefinitions> {
     #worker: Worker;
@@ -83,5 +85,16 @@ export class Service<Definitions extends TaskDefinitions> {
 
     offMessage<Data extends any = any>(callback: (body: Data) => Awaitable<any>) {
         this.#worker.off('message', callback);
+    }
+
+    sendMessenger(messenger: Messenger) {
+        const transferData = messenger.transfer();
+
+        const body: MainThreadMessengerTransferBody = {
+            type: MainThreadMessageType.MessengerTransfer,
+            data: transferData,
+        };
+
+        this.#worker.postMessage(body);
     }
 }

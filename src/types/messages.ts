@@ -1,3 +1,5 @@
+import { MessengerTransferData } from './messenger.js';
+
 /**
  * Message types that will only be sent from the main thread
  * to workers, and never the other way around.
@@ -17,6 +19,10 @@ export const enum MainThreadMessageType {
      * notifying it to exit its process immediately.
      */
     Terminate,
+    /**
+     * To be used when passing `Messenger` objects to workers.
+     */
+    MessengerTransfer,
 }
 
 export type MainThreadBaseMessageBody<Type extends MainThreadMessageType = MainThreadMessageType> = {
@@ -34,6 +40,10 @@ export type MainThreadCallMessageBody = {
 } & MainThreadBaseMessageBody<MainThreadMessageType.Call>;
 
 export type MainThreadTerminateMessageBody = MainThreadBaseMessageBody<MainThreadMessageType.Terminate>;
+
+export type MainThreadMessengerTransferBody = {
+    data: MessengerTransferData;
+} & MainThreadBaseMessageBody<MainThreadMessageType.MessengerTransfer>;
 
 /**
  * Message types that will only be sent from workers over to
