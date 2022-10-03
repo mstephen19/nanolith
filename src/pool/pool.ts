@@ -1,5 +1,7 @@
 import { cpus } from 'os';
-import { Worker, SHARE_ENV } from 'worker_threads';
+import { Worker, SHARE_ENV, isMainThread } from 'worker_threads';
+import { generateConcurrencyValue } from './utilities.js';
+import { ConcurrencyOption } from '../types/pool.js';
 
 import type { PoolItem } from './pool_item.js';
 
@@ -7,6 +9,7 @@ class Pool {
     private concurrency = cpus().length;
     private active = 0;
     private queue: PoolItem[] = [];
+    readonly option = ConcurrencyOption;
 
     get maxed() {
         return this.active >= this.concurrency;
@@ -30,14 +33,17 @@ class Pool {
      * run at the same time. It defaults to one worker per core on
      * the machine running the process.
      */
-    setConcurrency(num: number) {
-        this.concurrency = num;
+    setConcurrency<Option extends ConcurrencyOption>(option: Option) {
+        this.concurrency = generateConcurrencyValue(option);
     }
 
     /**
      * Queue up configuration for a worker to be created and run.
      */
     enqueue(item: PoolItem) {
+        // Prevent workers from being run on any other thread than the main thread.
+        if (!isMainThread) throw new Error("Can't enqueue items to the pool on any other thread than the main thread!");
+
         if (item.options.priority) this.queue.unshift(item);
         else this.queue.push(item);
 

@@ -36,3 +36,34 @@ export type PoolItemOptions = {
     priority: boolean;
     reffed: boolean;
 } & BasePoolItemConfig;
+
+export enum ConcurrencyOption {
+    /**
+     * One thread per four cores.
+     */
+    Quarter = 'Quarter',
+    /**
+     * One thread per two cores.
+     */
+    Half = 'Half',
+    /**
+     * Default concurrency. One thread per core (`x1`).
+     */
+    Default = 'x1',
+    /**
+     * One thread per core.
+     */
+    x1 = 'x1',
+    /**
+     * Two threads per core.
+     */
+    x2 = 'x2',
+    /**
+     * Four threads per core.
+     */
+    x4 = 'x4',
+    /**
+     * Six threads per core.
+     */
+    x6 = 'x6',
+}

@@ -9,7 +9,6 @@ service.onMessage<string>((msg) => {
 
 await service.call({
     name: 'sendMessageToMain',
-    // todo: read up a bit more on transfer lists
 });
 
 await service.call({
