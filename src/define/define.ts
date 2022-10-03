@@ -34,9 +34,9 @@ export async function define<Definitions extends TaskDefinitions>(
 
     return Object.freeze(
         Object.assign(
-            Object.freeze(async <Name extends CleanKeyOf<Definitions>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
+            async <Name extends CleanKeyOf<Definitions>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
                 return runTaskWorker(file, identifier, options as TaskWorkerOptions) as Promise<CleanReturnType<Definitions[Name]>>;
-            }),
+            },
             {
                 launchService: Object.freeze(async <Options extends ServiceWorkerOptions>(options = {} as Options) => {
                     return runServiceWorker<Definitions, Options>(file, identifier, options);

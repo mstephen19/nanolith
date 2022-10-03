@@ -1,6 +1,6 @@
 import { define, parent } from '../index.js';
 
-export const messenger = await define({
+export const api = await define({
     sendMessageToMain: () => {
         parent.sendMessage('Hey from worker!');
     },
@@ -8,6 +8,11 @@ export const messenger = await define({
         parent.onMessage<string>((msg) => {
             console.log('Received from main:', msg);
             parent.sendMessage('ready to terminate!');
+        });
+    },
+    throwErrorOnMessage: () => {
+        parent.onMessage(() => {
+            throw new Error('oops');
         });
     },
 });
