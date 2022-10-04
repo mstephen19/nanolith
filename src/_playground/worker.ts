@@ -1,9 +1,17 @@
-import { define, messages } from '../index.js';
+import { threadId } from 'worker_threads';
+import { define, messages, parent } from '../index.js';
 
 export const api = await define({
-    test: async () => {
+    registerListener: async () => {
         const messenger = await messages.use('testing123');
 
-        console.log(messenger);
+        messenger.onMessage<string>((data) => {
+            console.log(data, `received on thread: ${threadId}`);
+        });
+    },
+    sendMessage: async () => {
+        const messenger = await messages.use('testing123');
+
+        messenger.sendMessage(`heyo from thread ${threadId}`);
     },
 });
