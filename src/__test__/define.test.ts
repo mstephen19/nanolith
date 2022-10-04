@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { Service } from '../service/index.js';
-import { api, dummy } from './worker.js';
+import { api2, api, dummy } from './worker.js';
 
 describe('define', () => {
     it('Should contain the anticipated properties', () => {
@@ -12,6 +12,10 @@ describe('define', () => {
 
         expect(api).toHaveProperty('launchService');
         expect(typeof api.launchService).toBe('function');
+    });
+
+    it('Should not not clash with other sets of definitions when assigned a unique identifier', async () => {
+        expect(api2({ name: 'hello' })).resolves.toBe('hello');
     });
 
     describe('file', () => {

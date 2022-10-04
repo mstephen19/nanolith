@@ -3,6 +3,7 @@ import { api } from './worker.js';
 
 import type { Service } from '../service/index.js';
 import type { definitions } from './worker.js';
+import { pool } from '../pool/pool.js';
 
 describe('Service', () => {
     let service: Service<typeof definitions>;
@@ -62,6 +63,30 @@ describe('Service', () => {
             });
 
             expect(data).toBe(10);
+        });
+    });
+
+    describe('exceptionHandler', () => {
+        it('Should not shut down the service when an uncaught exception is thrown', async () => {
+            const handler = jest.fn(({ error }) => error.message);
+
+            const service2 = await api.launchService({
+                exceptionHandler: handler,
+            });
+
+            await service2.call({ name: 'registerAngryListenerOnParent' });
+
+            service2.sendMessage('foo');
+
+            // Allow time for the message to be sent to the main thread
+            // and for the handler to be called.
+            await new Promise((resolve) => setTimeout(resolve, 3e3));
+
+            expect(handler).toBeCalled();
+            expect(handler).toBeCalledTimes(1);
+            expect(handler).toReturnWith('angry worker');
+
+            service2.close();
         });
     });
 });

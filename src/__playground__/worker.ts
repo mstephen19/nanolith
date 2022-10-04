@@ -1,17 +1,12 @@
 import { define, parent } from '../index.js';
 
 export const definitions = {
-    add: (x: number, y: number) => {
-        return x + y;
-    },
-    throw: () => {
-        throw new Error('test');
-    },
-    registerListenerOnParent: () => {
+    throwErrorOnMessage: () => {
         parent.onMessage(() => {
-            parent.sendMessage('message received');
+            throw new Error('fuck');
         });
     },
+    test: () => 'hello',
 };
 
 export const api = await define(definitions);
