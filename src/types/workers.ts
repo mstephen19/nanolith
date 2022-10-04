@@ -41,7 +41,7 @@ export type TaskWorkerOptions<Name extends string = string, Params extends any[]
 
 export type ExceptionHandlerContext = {
     error: Error;
-    terminate: () => void;
+    terminate: () => Promise<void>;
 };
 
 /**

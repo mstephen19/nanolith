@@ -3,7 +3,6 @@ import { api } from './worker.js';
 
 import type { Service } from '../service/index.js';
 import type { definitions } from './worker.js';
-import { pool } from '../pool/pool.js';
 
 describe('Service', () => {
     let service: Service<typeof definitions>;
@@ -12,8 +11,8 @@ describe('Service', () => {
         service = await api.launchService();
     });
 
-    afterEach(() => {
-        service.close();
+    afterEach(async () => {
+        await service.close();
     });
 
     it('Should allow for the sending and receiving of messages between the main thread and the worker', async () => {
@@ -64,10 +63,21 @@ describe('Service', () => {
 
             expect(data).toBe(10);
         });
+
+        it('Should throw an error when called on a service that has been closed', async () => {
+            await service.close();
+
+            const promise = service.call({
+                name: 'add',
+                params: [1, 2],
+            });
+
+            expect(promise).rejects.toThrowError();
+        });
     });
 
     describe('exceptionHandler', () => {
-        it('Should not shut down the service when an uncaught exception is thrown', async () => {
+        it('Should run the handler and not shut down the service when an uncaught exception is thrown', async () => {
             const handler = jest.fn(({ error }) => error.message);
 
             const service2 = await api.launchService({
@@ -75,7 +85,6 @@ describe('Service', () => {
             });
 
             await service2.call({ name: 'registerAngryListenerOnParent' });
-
             service2.sendMessage('foo');
 
             // Allow time for the message to be sent to the main thread
@@ -86,7 +95,25 @@ describe('Service', () => {
             expect(handler).toBeCalledTimes(1);
             expect(handler).toReturnWith('angry worker');
 
+            // We should still be able to call the service
+            expect(await service.call({ name: 'add', params: [1, 2] })).toBe(3);
+
             service2.close();
+        });
+
+        it('Should terminate the service when "terminate" is called', async () => {
+            const handler = jest.fn(({ terminate }) => terminate());
+
+            const service2 = await api.launchService({
+                exceptionHandler: handler,
+            });
+
+            await service2.call({ name: 'registerAngryListenerOnParent' });
+            service2.sendMessage('foo');
+
+            await new Promise((resolve) => setTimeout(resolve, 2e3));
+
+            expect(service2.closed).toBe(true);
         });
     });
 });

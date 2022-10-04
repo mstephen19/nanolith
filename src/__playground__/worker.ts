@@ -1,14 +1,10 @@
 import { define, parent } from '../index.js';
 
-export const definitions = {
-    throwErrorOnMessage: () => {
+export const api = await define({
+    throwOnMessage: () => {
         parent.onMessage(() => {
             throw new Error('fuck');
         });
     },
-    test: () => 'hello',
-};
-
-export const api = await define(definitions);
-
-export const dummy = await define({}, { file: 'foo', identifier: 'foo' });
+    add: (x: number, y: number) => x + y,
+});

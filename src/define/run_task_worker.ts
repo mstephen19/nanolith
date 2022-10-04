@@ -24,14 +24,14 @@ export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, i
 
     const promise = new Promise((resolve, reject) => {
         item.on('created', (worker) => {
-            worker.on('error', (err) => reject);
+            worker.on('error', reject);
             worker.on('messageerror', reject);
 
             // Handles the receiving of the task's return value
             // and the receiving of caught errors
-            worker.on('message', (body: WorkerBaseMessageBody) => {
+            worker.on('message', async (body: WorkerBaseMessageBody) => {
                 if (body.type === WorkerMessageType.WorkerException) {
-                    worker.terminate();
+                    await worker.terminate();
                     reject((body as WorkerExceptionMessageBody).data);
                 }
 

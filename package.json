@@ -6,7 +6,7 @@
     "type": "module",
     "scripts": {
         "build": "npm t",
-        "test": "tsc &&  echo \"running tests\" && NODE_OPTIONS=--experimental-vm-modules jest dist/__test__",
+        "test": "tsc &&  echo \"running tests\" && NODE_OPTIONS=--experimental-vm-modules jest",
         "play": "tsc && echo \"running playground\" && node ./dist/__playground__/index.js"
     },
     "repository": {

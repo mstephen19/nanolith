@@ -80,7 +80,6 @@ class Pool {
         item.emit('created', worker);
 
         worker.on('exit', () => {
-            console.log('exiting');
             this.active--;
             this.#next();
         });

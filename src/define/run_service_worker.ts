@@ -25,16 +25,20 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
         item.on('created', (worker) => {
             worker.on('error', reject);
             worker.on('online', () => {
+                const service = new Service(worker);
                 // Register the exception handler
                 if (exceptionHandler && typeof exceptionHandler === 'function') {
                     worker.on('message', async (body: WorkerBaseMessageBody) => {
                         if (body.type !== WorkerMessageType.WorkerException) return;
-                        exceptionHandler({ error: (body as WorkerExceptionMessageBody).data, terminate: worker.terminate });
+                        await exceptionHandler({
+                            error: (body as WorkerExceptionMessageBody).data,
+                            terminate: service.close.bind(service),
+                        });
                     });
                 }
 
                 // Resolve with a Service API instance
-                resolve(new Service(worker));
+                resolve(service);
                 worker.off('error', reject);
             });
         });

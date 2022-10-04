@@ -19,9 +19,19 @@ import type { Messenger } from '../messenger/messenger.js';
 
 export class Service<Definitions extends TaskDefinitions> {
     #worker: Worker;
+    #terminated = false;
 
     constructor(worker: Worker) {
         this.#worker = worker;
+        this.#worker.on('exit', () => (this.#terminated = true));
+    }
+
+    get closed() {
+        return this.#terminated;
+    }
+
+    #assertIsNotTerminated() {
+        if (this.#terminated) throw new Error("Attempting to execute operations within a service who's process has exited!");
     }
 
     async call<Name extends CleanKeyOf<Definitions>>({
@@ -29,6 +39,8 @@ export class Service<Definitions extends TaskDefinitions> {
         params,
         transferList,
     }: ServiceCallOptions<Name, Parameters<Definitions[Name]>>) {
+        this.#assertIsNotTerminated();
+
         const key = v4();
 
         const message: MainThreadCallMessageBody = {
@@ -64,11 +76,14 @@ export class Service<Definitions extends TaskDefinitions> {
         return promise;
     }
 
-    close() {
-        this.#worker.terminate();
+    async close() {
+        this.#terminated = true;
+        return void (await this.#worker.terminate());
     }
 
     sendMessage<Data extends any = any>(data: Data, transferList?: readonly TransferListItem[]) {
+        this.#assertIsNotTerminated();
+
         const body: MainThreadSendMessageBody<Data> = {
             type: MainThreadMessageType.Message,
             data,
@@ -78,6 +93,8 @@ export class Service<Definitions extends TaskDefinitions> {
     }
 
     onMessage<Data extends any = any>(callback: (body: Data) => Awaitable<any>) {
+        this.#assertIsNotTerminated();
+
         this.#worker.on('message', async (body: WorkerBaseMessageBody) => {
             if (body.type !== WorkerMessageType.Message) return;
             await callback((body as WorkerSendMessageBody<Data>).data);
@@ -85,6 +102,8 @@ export class Service<Definitions extends TaskDefinitions> {
     }
 
     offMessage<Data extends any = any>(callback: (body: Data) => Awaitable<any>) {
+        this.#assertIsNotTerminated();
+
         this.#worker.off('message', callback);
     }
 
@@ -93,6 +112,8 @@ export class Service<Definitions extends TaskDefinitions> {
      * automatically notifies the main thread that the object was received and processed.
      */
     sendMessenger(messenger: Messenger) {
+        this.#assertIsNotTerminated();
+
         const transferData = messenger.transfer();
 
         const body: MainThreadMessengerTransferBody = {

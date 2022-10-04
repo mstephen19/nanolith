@@ -1,19 +1,20 @@
+import { pool } from '../index.js';
 import { api } from './worker.js';
-import { cpus } from 'os';
-import { pool, ConcurrencyOption } from '../index.js';
 
 const service = await api.launchService({
-    exceptionHandler: () => {
-        console.log('there was an exception');
+    exceptionHandler: async ({ terminate }) => {
+        await terminate();
     },
 });
 
-await service.call({ name: 'throwErrorOnMessage' });
+await service.call({ name: 'throwOnMessage' });
 
-service.sendMessage('hi');
+console.log('will throw');
+service.sendMessage('foo');
 
-console.log('running');
+await new Promise((resolve) => setTimeout(resolve, 5e3));
 
-const data = await service.call({ name: 'test' });
+console.log(service.closed);
 
-service.close();
+const data = await service.call({ name: 'add', params: [5, 6] });
+console.log(data);
