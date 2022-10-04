@@ -1,4 +1,4 @@
-import { MessengerTransferData } from './messenger.js';
+import type { MessengerTransferData } from './messenger.js';
 
 /**
  * Message types that will only be sent from the main thread
@@ -29,7 +29,7 @@ export type MainThreadBaseMessageBody<Type extends MainThreadMessageType = MainT
     type: Type;
 };
 
-export type MainThreadSendMessageBody<Data extends any> = {
+export type MainThreadSendMessageBody<Data = any> = {
     data: Data;
 } & MainThreadBaseMessageBody<MainThreadMessageType.Message>;
 
@@ -91,7 +91,7 @@ export type WorkerBaseMessageBody<Type extends WorkerMessageType = WorkerMessage
     type: Type;
 };
 
-export type WorkerSendMessageBody<Data extends any> = {
+export type WorkerSendMessageBody<Data = any> = {
     data: Data;
 } & WorkerBaseMessageBody<WorkerMessageType.Message>;
 

@@ -3,7 +3,6 @@ import { cpus } from 'os';
 import { ConcurrencyOption } from '../types/pool.js';
 
 import type { PoolItemOptions, PoolItemConfig } from '../types/pool.js';
-import type { MessengerTransferData } from '../types/messenger.js';
 
 export const cleanPoolConfig = <Options extends PoolItemConfig>({
     file,

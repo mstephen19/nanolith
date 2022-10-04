@@ -81,7 +81,7 @@ export class Service<Definitions extends TaskDefinitions> {
         return void (await this.#worker.terminate());
     }
 
-    sendMessage<Data extends any = any>(data: Data, transferList?: readonly TransferListItem[]) {
+    sendMessage<Data = any>(data: Data, transferList?: readonly TransferListItem[]) {
         this.#assertIsNotTerminated();
 
         const body: MainThreadSendMessageBody<Data> = {
@@ -92,7 +92,7 @@ export class Service<Definitions extends TaskDefinitions> {
         this.#worker!.postMessage(body, transferList);
     }
 
-    onMessage<Data extends any = any>(callback: (body: Data) => Awaitable<any>) {
+    onMessage<Data = any>(callback: (body: Data) => Awaitable<any>) {
         this.#assertIsNotTerminated();
 
         this.#worker.on('message', async (body: WorkerBaseMessageBody) => {
@@ -101,7 +101,7 @@ export class Service<Definitions extends TaskDefinitions> {
         });
     }
 
-    offMessage<Data extends any = any>(callback: (body: Data) => Awaitable<any>) {
+    offMessage<Data = any>(callback: (body: Data) => Awaitable<any>) {
         this.#assertIsNotTerminated();
 
         this.#worker.off('message', callback);

@@ -1,6 +1,5 @@
 import { v4 } from 'uuid';
 import { isMessengerTransferObject } from './utilities.js';
-import { isMainThread } from 'worker_threads';
 
 import { BroadcastChannel } from 'worker_threads';
 import type { MessengerTransferData, MessengerMessageBody } from '../types/messenger.js';
@@ -62,12 +61,12 @@ export class Messenger {
         return this.identifier;
     }
 
-    onMessage<Data extends any = any>(callback: (data: Data) => Awaitable<void>) {
+    onMessage<Data = any>(callback: (data: Data) => Awaitable<void>) {
         if (!this.listenerRegistered) this.#registerListener();
         this.listenerCallbacks.push(callback);
     }
 
-    sendMessage<Data extends any>(data: Data) {
+    sendMessage<Data = any>(data: Data) {
         const body: MessengerMessageBody = {
             sender: this.key,
             data,

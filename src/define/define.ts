@@ -1,9 +1,7 @@
 import { isMainThread, workerData } from 'worker_threads';
 import { workerHandler } from '../handlers/index.js';
-import callsites from 'callsites';
 import { runTaskWorker } from './run_task_worker.js';
 import { runServiceWorker } from './run_service_worker.js';
-import { fileURLToPath } from 'url';
 import { getCurrentFile } from './utilities.js';
 
 import type { DefineOptions, TaskDefinitions } from '../types/definitions.js';

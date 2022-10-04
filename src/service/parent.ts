@@ -12,7 +12,7 @@ import type {
 import type { Messenger } from '../messenger/index.js';
 import type { BaseWorkerData } from '../types/worker_data.js';
 
-function sendMessage<Data extends any = any>(data: Data, transferList?: readonly TransferListItem[]) {
+function sendMessage<Data = any>(data: Data, transferList?: readonly TransferListItem[]) {
     const body: WorkerSendMessageBody<Data> = {
         type: WorkerMessageType.Message,
         data,
@@ -21,14 +21,14 @@ function sendMessage<Data extends any = any>(data: Data, transferList?: readonly
     parentPort?.postMessage(body, transferList);
 }
 
-function onMessage<Data extends any = any>(callback: (body: Data) => Awaitable<void>) {
+function onMessage<Data = any>(callback: (body: Data) => Awaitable<void>) {
     parentPort?.on('message', async (body: MainThreadBaseMessageBody) => {
         if (body.type !== MainThreadMessageType.Message) return;
         await callback((body as MainThreadSendMessageBody<Data>).data);
     });
 }
 
-function offMessage<Data extends any = any>(callback: (body: Data) => Awaitable<void>) {
+function offMessage<Data = any>(callback: (body: Data) => Awaitable<void>) {
     parentPort?.off('message', callback);
 }
 

@@ -1,5 +1,3 @@
-import { cpus } from 'os';
-import { ConcurrencyOption } from '../index.js';
 import { pool } from '../pool/index.js';
 import { api } from './worker.js';
 

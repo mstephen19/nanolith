@@ -1,8 +1,9 @@
+/* eslint-disable indent */
 import { workerData } from 'worker_threads';
 import { parent } from '../service/index.js';
 
+import type { Messenger } from './messenger.js';
 import type { BaseWorkerData } from '../types/worker_data.js';
-import { Messenger } from './messenger.js';
 
 async function use(name: string) {
     const { messengers } = workerData as BaseWorkerData;
@@ -13,11 +14,14 @@ async function use(name: string) {
                   reject(new Error(`Timed out after waiting 10 seconds to receive a messenger named ${name}`));
               }, 10e3);
 
-              parent.onMessengerReceived((messenger) => {
+              const callback = (messenger: Messenger) => {
                   if (messenger.ID !== name) return;
                   resolve(messenger);
                   clearTimeout(timeout);
-              });
+                  parent.offMessage(callback);
+              };
+
+              parent.onMessengerReceived(callback);
           })) as Messenger)
         : messengers[name];
 
