@@ -49,7 +49,7 @@ describe('define', () => {
             expect(promise).toBeInstanceOf(Promise);
             expect(promise).resolves.toBeInstanceOf(Service);
 
-            (await promise).close();
+            await (await promise).close();
         });
     });
 });

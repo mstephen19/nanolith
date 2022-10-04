@@ -1,4 +1,4 @@
-import { define, parent } from '../index.js';
+import { define, parent, messages } from '../index.js';
 
 export const definitions = {
     add: (x: number, y: number) => {
@@ -31,3 +31,27 @@ export const api2 = await define(
 );
 
 export const dummy = await define({}, { file: 'foo', identifier: 'foo' });
+
+export const messengerTester = await define(
+    {
+        registerListener: async () => {
+            const messenger = await messages.use('testing');
+
+            messenger.onMessage(() => {
+                messenger.sendMessage('hi from worker');
+            });
+        },
+        registerListener2: async () => {
+            const messenger = await messages.use('testing');
+
+            messenger.onMessage(() => {
+                parent.sendMessage('received a message');
+            });
+        },
+        sendMessage: async () => {
+            const messenger = await messages.use('testing');
+            messenger.sendMessage('foo');
+        },
+    },
+    { identifier: 'messengerTester' }
+);

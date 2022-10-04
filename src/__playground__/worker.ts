@@ -1,10 +1,8 @@
-import { define, parent } from '../index.js';
+import { define } from '../index.js';
 
 export const api = await define({
-    throwOnMessage: () => {
-        parent.onMessage(() => {
-            throw new Error('fuck');
-        });
+    add: async (x: number, y: number) => {
+        await new Promise((r) => setTimeout(r, 1e3));
+        return x + y;
     },
-    add: (x: number, y: number) => x + y,
 });

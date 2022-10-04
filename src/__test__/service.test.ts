@@ -98,7 +98,7 @@ describe('Service', () => {
             // We should still be able to call the service
             expect(await service.call({ name: 'add', params: [1, 2] })).toBe(3);
 
-            service2.close();
+            await service2.close();
         });
 
         it('Should terminate the service when "terminate" is called', async () => {

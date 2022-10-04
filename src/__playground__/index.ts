@@ -1,19 +1,10 @@
+import { pool } from '../index.js';
 import { api } from './worker.js';
 
-const service = await api.launchService({
-    exceptionHandler: async ({ terminate }) => {
-        await terminate();
-    },
-});
+setInterval(() => {
+    console.log(pool.queueLength);
+}, 2e3);
 
-await service.call({ name: 'throwOnMessage' });
+const map = [...Array(1000).keys()].map(() => api({ name: 'add', params: [1, 2] }));
 
-console.log('will throw');
-service.sendMessage('foo');
-
-await new Promise((resolve) => setTimeout(resolve, 5e3));
-
-console.log(service.closed);
-
-const data = await service.call({ name: 'add', params: [5, 6] });
-console.log(data);
+await Promise.all(map);

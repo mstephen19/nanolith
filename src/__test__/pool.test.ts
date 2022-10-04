@@ -12,8 +12,8 @@ describe('Pool', () => {
             const service2 = await api.launchService();
             expect(pool.activeCount).toBe(2);
 
-            service.close();
-            service2.close();
+            await service.close();
+            await service2.close();
         });
     });
 
