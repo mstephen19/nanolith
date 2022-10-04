@@ -12,9 +12,9 @@ import type { Awaitable } from '../types/utilities.js';
  * as between the main thread and workers. Supported seamlessly by the rest of Nanolith.
  */
 export class Messenger {
-    private channel: BroadcastChannel;
-    private listenerCallbacks: ((data: any) => Awaitable<void>)[] = [];
-    private listenerRegistered = false;
+    #channel: BroadcastChannel;
+    #listenerCallbacks: ((data: any) => Awaitable<void>)[] = [];
+    #listenerRegistered = false;
     /**
      * A value specific to an instance of Messenger. Allows for
      * ignoring messages sent by itself.
@@ -57,8 +57,8 @@ export class Messenger {
         }
 
         if (data && typeof data !== 'string') {
-            this.channel = new BroadcastChannel(data.__messengerID);
-            this.channel.unref();
+            this.#channel = new BroadcastChannel(data.__messengerID);
+            this.#channel.unref();
             this.key = v4();
             this.identifier = data.__messengerID;
             return;
@@ -67,19 +67,19 @@ export class Messenger {
         // always be used for sending.
         this.key = v4();
         this.identifier = typeof data === 'string' ? data : v4();
-        this.channel = new BroadcastChannel(this.identifier);
-        this.channel.unref();
+        this.#channel = new BroadcastChannel(this.identifier);
+        this.#channel.unref();
     }
 
     #registerListener() {
-        this.channel.onmessage = async (event) => {
+        this.#channel.onmessage = async (event) => {
             const { data: body } = event as { data: MessengerMessageBody };
             // If the message was send by this Messenger, just ignore it.
             if (body.sender === this.key) return;
-            this.listenerCallbacks.forEach((callback) => callback(body.data));
+            this.#listenerCallbacks.forEach((callback) => callback(body.data));
         };
 
-        this.listenerRegistered = true;
+        this.#listenerRegistered = true;
     }
 
     /**
@@ -104,8 +104,8 @@ export class Messenger {
      * messenger.onMessage<string>((data) => console.log(data, 'received!'));
      */
     onMessage<Data = any>(callback: (data: Data) => Awaitable<void>) {
-        if (!this.listenerRegistered) this.#registerListener();
-        this.listenerCallbacks.push(callback);
+        if (!this.#listenerRegistered) this.#registerListener();
+        this.#listenerCallbacks.push(callback);
     }
 
     /**
@@ -122,7 +122,7 @@ export class Messenger {
             data,
         };
 
-        this.channel.postMessage(body);
+        this.#channel.postMessage(body);
     }
 
     /**
@@ -140,6 +140,6 @@ export class Messenger {
      * Closes the underlying {@link BroadcastChannel} that is being used.
      */
     close() {
-        this.channel.close();
+        this.#channel.close();
     }
 }
