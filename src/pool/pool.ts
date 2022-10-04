@@ -8,44 +8,47 @@ import { PoolItem } from './pool_item.js';
  * This is the bad boy that manages all Nanolith workers 💪
  */
 class Pool {
-    private concurrency = cpus().length;
-    private active = 0;
-    private queue: PoolItem[] = [];
+    #concurrency = cpus().length;
+    #active = 0;
+    #queue: PoolItem[] = [];
+    /**
+     * Easy access to the {@link ConcurrencyOption} `enum` right on `pool`.
+     */
     readonly option = ConcurrencyOption;
 
     /**
      * Whether or not the pool has reached its max concurrency.
      */
     get maxed() {
-        return this.active >= this.concurrency;
+        return this.#active >= this.#concurrency;
     }
 
     /**
      * The current number of item in the pool's queue.
      */
     get queueLength() {
-        return this.queue.length;
+        return this.#queue.length;
     }
 
     /**
      * The current number of workers that are running under the pool.
      */
     get activeCount() {
-        return this.active;
+        return this.#active;
     }
 
     /**
      * A `boolean` defining whether or not the pool is currently doing nothing.
      */
     get idle() {
-        return !this.active;
+        return !this.#active;
     }
 
     /**
      * Returns the internal `PoolItemOptions` for the next worker in the queue to be run.
      */
     get next() {
-        return this.queue[0].options;
+        return this.#queue[0].options;
     }
 
     /**
@@ -57,7 +60,7 @@ class Pool {
      * the machine running the process.
      */
     setConcurrency<Option extends ConcurrencyOption>(option: Option) {
-        this.concurrency = generateConcurrencyValue(option);
+        this.#concurrency = generateConcurrencyValue(option);
     }
 
     /**
@@ -73,8 +76,8 @@ class Pool {
         // Prevent workers from being run on any other thread than the main thread.
         if (!isMainThread) throw new Error("Can't enqueue items to the pool on any other thread than the main thread!");
 
-        if (item.options.priority) this.queue.unshift(item);
-        else this.queue.push(item);
+        if (item.options.priority) this.#queue.unshift(item);
+        else this.#queue.push(item);
 
         if (!this.maxed) this.#next();
     }
@@ -87,9 +90,9 @@ class Pool {
         // has a length of zero, do nothing.
         if (this.maxed || !this.queueLength) return;
 
-        this.active++;
+        this.#active++;
 
-        const item = this.queue.shift()!;
+        const item = this.#queue.shift()!;
 
         const { file, workerData, options, reffed } = item.options;
 
@@ -105,7 +108,7 @@ class Pool {
         item.emit('created', worker);
 
         worker.on('exit', () => {
-            this.active--;
+            this.#active--;
             this.#next();
         });
     }
