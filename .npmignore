@@ -1,6 +1,4 @@
-.vscode
 .DS_Store
-.gitignore
 
 # Folders
 node_modules
@@ -8,6 +6,8 @@ src
 dist/__playground__
 dist/__test__
 __test__coverage__
+.github
+.vscode
 
 # Files
 **.tsbuildinfo
@@ -16,3 +16,4 @@ package-lock.json
 bun.lockb
 jest.config.js
 .eslintrc.json
+.gitignore

@@ -1,9 +1,9 @@
-.vscode
 .DS_Store
 
 # Folders
 node_modules
 dist
+.vscode
 
 # Files
 **.tsbuildinfo
