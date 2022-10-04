@@ -2,16 +2,16 @@ import { threadId } from 'worker_threads';
 import { define, messages, parent } from '../index.js';
 
 export const api = await define({
-    registerListener: async () => {
+    doShit: async () => {
         const messenger = await messages.use('testing123');
 
-        messenger.onMessage<string>((data) => {
-            console.log(data, `received on thread: ${threadId}`);
+        console.log(messenger);
+
+        messenger.onMessage(() => {
+            console.log('received');
+            throw new Error('shite');
         });
-    },
-    sendMessage: async () => {
-        const messenger = await messages.use('testing123');
 
-        messenger.sendMessage(`heyo from thread ${threadId}`);
+        await new Promise((resolve) => setTimeout(resolve, 2e4));
     },
 });

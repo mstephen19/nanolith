@@ -1,9 +1,8 @@
 import { workerData, parentPort } from 'worker_threads';
 import { WorkerMessageType } from '../types/messages.js';
-import { Messenger } from '../messenger/index.js';
 
 import type { TaskDefinitions } from '../types/definitions.js';
-import type { WorkerTaskReturnMessageBody, WorkerTaskErrorMessageBody } from '../types/messages.js';
+import type { WorkerTaskReturnMessageBody, WorkerTaskErrorMessageBody, WorkerExceptionMessageBody } from '../types/messages.js';
 import type { TaskWorkerData } from '../types/worker_data.js';
 import { applyMessengerTransferObjects } from './utilities.js';
 
@@ -11,6 +10,15 @@ import { applyMessengerTransferObjects } from './utilities.js';
  * Handles only task workers.
  */
 export async function taskWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
+    process.on('uncaughtException', (err) => {
+        const body: WorkerExceptionMessageBody = {
+            type: WorkerMessageType.WorkerException,
+            data: err,
+        };
+
+        parentPort!.postMessage(body);
+    });
+
     try {
         const { name, params, messengerTransfers } = workerData as TaskWorkerData;
 

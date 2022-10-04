@@ -1,6 +1,7 @@
 import type { TransferListItem } from 'worker_threads';
 import type { Messenger } from '../messenger/messenger.js';
 import type { WorkerOptions } from './config.js';
+import type { Awaitable } from './utilities.js';
 
 /**
  * The types of workers supported by the library.
@@ -38,7 +39,14 @@ export type BaseWorkerOptions = {
  */
 export type TaskWorkerOptions<Name extends string = string, Params extends any[] = any[]> = CallOptions<Name, Params> & BaseWorkerOptions;
 
+export type ExceptionHandlerContext = {
+    error: Error;
+    terminate: () => void;
+};
+
 /**
  * The options for spinning up a service worker that can run multiple tasks.
  */
-export type ServiceWorkerOptions = BaseWorkerOptions;
+export type ServiceWorkerOptions = BaseWorkerOptions & {
+    exceptionHandler?: ({ error, terminate }: ExceptionHandlerContext) => Awaitable<void>;
+};

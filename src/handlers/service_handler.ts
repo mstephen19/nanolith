@@ -11,6 +11,7 @@ import type {
     WorkerCallErrorMessageBody,
     MainThreadMessengerTransferBody,
     WorkerMessengerTransferSuccessBody,
+    WorkerExceptionMessageBody,
 } from '../types/messages.js';
 import type { ServiceWorkerData } from '../types/worker_data.js';
 
@@ -18,6 +19,15 @@ import type { ServiceWorkerData } from '../types/worker_data.js';
  * Handles only service workers.
  */
 export function serviceWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
+    process.on('uncaughtException', (err) => {
+        const body: WorkerExceptionMessageBody = {
+            type: WorkerMessageType.WorkerException,
+            data: err,
+        };
+
+        parentPort!.postMessage(body);
+    });
+
     const { messengerTransfers } = workerData as ServiceWorkerData;
     // Turn the MessengerTransferData objects back into Messenger instances
     // and make them available on the "messengers" property on workerData

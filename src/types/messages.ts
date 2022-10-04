@@ -80,6 +80,11 @@ export const enum WorkerMessageType {
      * object has successfully been sent.
      */
     MessengerTransferSuccess,
+    /**
+     * To be used when a service worker throws an exception and the main
+     * thread must be notified about it.
+     */
+    WorkerException,
 }
 
 export type WorkerBaseMessageBody<Type extends WorkerMessageType = WorkerMessageType> = {
@@ -111,3 +116,7 @@ export type WorkerCallErrorMessageBody = {
 export type WorkerMessengerTransferSuccessBody = {
     data: string;
 } & WorkerBaseMessageBody<WorkerMessageType.MessengerTransferSuccess>;
+
+export type WorkerExceptionMessageBody = {
+    data: Error;
+} & WorkerBaseMessageBody<WorkerMessageType.WorkerException>;
