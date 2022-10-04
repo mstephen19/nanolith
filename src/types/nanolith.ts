@@ -30,7 +30,7 @@ export type Nanolith<Definitions extends TaskDefinitions> = {
      * Spins up a single long-running worker where the task functions defined in the `define` function can be called.
      *
      * @param options A {@link ServiceWorkerOptions} object
-     * @returns A promise of a {@link Service} instance
+     * @returns A promise of a {@link Service} instance. The promise resolves once the worker is online.
      *
      * @example
      * const service = await api.launchService({
