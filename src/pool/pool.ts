@@ -2,38 +2,57 @@ import { cpus } from 'os';
 import { Worker, SHARE_ENV, isMainThread } from 'worker_threads';
 import { generateConcurrencyValue } from './utilities.js';
 import { ConcurrencyOption } from '../types/pool.js';
+import { PoolItem } from './pool_item.js';
 
-import type { PoolItem } from './pool_item.js';
-
+/**
+ * This is the bad boy that manages all Nanolith workers 💪
+ */
 class Pool {
     private concurrency = cpus().length;
     private active = 0;
     private queue: PoolItem[] = [];
     readonly option = ConcurrencyOption;
 
+    /**
+     * Whether or not the pool has reached its max concurrency.
+     */
     get maxed() {
         return this.active >= this.concurrency;
     }
 
+    /**
+     * The current number of item in the pool's queue.
+     */
     get queueLength() {
         return this.queue.length;
     }
 
+    /**
+     * The current number of workers that are running under the pool.
+     */
     get activeCount() {
         return this.active;
     }
 
+    /**
+     * A `boolean` defining whether or not the pool is currently doing nothing.
+     */
     get idle() {
         return !this.active;
     }
 
+    /**
+     * Returns the internal `PoolItemOptions` for the next worker in the queue to be run.
+     */
     get next() {
-        return this.queue[0];
+        return this.queue[0].options;
     }
 
     /**
+     * @param option A {@link ConcurrencyOption}
+     *
      * Modify the concurrency of the pool. Use this wisely.
-     * This value defines how many workers `Pool` will allow to
+     * The {@link ConcurrencyOption} value defines how many workers `Pool` will allow to
      * run at the same time. It defaults to one worker per core on
      * the machine running the process.
      */
@@ -42,9 +61,15 @@ class Pool {
     }
 
     /**
-     * Queue up configuration for a worker to be created and run.
+     * 💥 **HEY!** 💥
+     *
+     * Don't use this unless you really know what you're doing.
+     * This method is used internally to queue tasks and services up to the pool
+     * to be created and run.
      */
     enqueue(item: PoolItem) {
+        if (!(item instanceof PoolItem)) throw new Error('The provided item cannot be enqueued.');
+
         // Prevent workers from being run on any other thread than the main thread.
         if (!isMainThread) throw new Error("Can't enqueue items to the pool on any other thread than the main thread!");
 

@@ -12,6 +12,14 @@ export type TaskFunction = (...args: any[]) => Awaitable<any>;
 export type TaskDefinitions = Record<string, TaskFunction>;
 
 export type DefineOptions = {
+    /**
+     * If `define`'s default file location detection is not working correctly,
+     * the true file location for the set of definitions can be provided here.
+     */
     file?: string;
+    /**
+     * A unique identifier that can be used when creating multiple sets of definitions
+     * in the same file to avoid nasty clashing.
+     */
     identifier?: string;
 };

@@ -1,6 +1,6 @@
 {
     "name": "nanolith",
-    "version": "0.0.1",
+    "version": "0.0.1-beta1",
     "description": "Nanoservices in no time.",
     "main": "dist/index.js",
     "type": "module",

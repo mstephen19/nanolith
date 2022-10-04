@@ -1,10 +1,16 @@
 import { v4 } from 'uuid';
 import { isMessengerTransferObject } from './utilities.js';
-
 import { BroadcastChannel } from 'worker_threads';
+
 import type { MessengerTransferData, MessengerMessageBody } from '../types/messenger.js';
 import type { Awaitable } from '../types/utilities.js';
 
+/**
+ * Communicate like a boss 🗣️
+ *
+ * Use {@link Messenger} to send messages between tasks and services (workers), as well
+ * as between the main thread and workers. Supported seamlessly by the rest of Nanolith.
+ */
 export class Messenger {
     private channel: BroadcastChannel;
     private listenerCallbacks: ((data: any) => Awaitable<void>)[] = [];
@@ -20,8 +26,31 @@ export class Messenger {
      */
     private identifier: string;
 
+    /**
+     *
+     * @param identifier An optional (but recommended) name for the `Messenger` that can be used
+     * to reference it later on.
+     *
+     * @example
+     * const messenger = new Messenger();
+     * const messenger2 = new Messenger('my-messenger');
+     */
     constructor(identifier?: string);
+    /**
+     *
+     * @param transferData A {@link MessageTransferData} object containing an identifier reference to
+     * another messenger.
+     *
+     * @example
+     * const messenger = new Messenger('my-messenger');
+     * const messenger2 = new Messenger(messenger.transfer());
+     *
+     */
     constructor(transferData: MessengerTransferData);
+    /**
+     *
+     * @param data An `identifier` (string) or a {@link MessageTransferData} object.
+     */
     constructor(data?: MessengerTransferData | string) {
         if (data && typeof data !== 'string' && !isMessengerTransferObject(data as Exclude<typeof data, string>)) {
             throw new Error('Must either provide a string to create a new Messenger, or a MessengerTransferData object.');
@@ -55,17 +84,38 @@ export class Messenger {
 
     /**
      * The unique identifier that is shared across all messenger instances using
-     * the two ports originally created when instantiating the first `Messenger`.
+     * the two ports originally created when instantiating the first {@link Messenger}.
+     *
+     * @example
+     * const messenger = new Messenger('my-messenger');
+     *
+     * console.log(messenger.ID); // -> 'my-messenger'
      */
     get ID() {
         return this.identifier;
     }
 
+    /**
+     * Listen for messages coming to the `Messenger`.
+     *
+     * @param callback A function to run each time a message is received.
+     *
+     * @example
+     * messenger.onMessage<string>((data) => console.log(data, 'received!'));
+     */
     onMessage<Data = any>(callback: (data: Data) => Awaitable<void>) {
         if (!this.listenerRegistered) this.#registerListener();
         this.listenerCallbacks.push(callback);
     }
 
+    /**
+     *
+     * @param data The data to send to the other `Messenger`s.
+     *
+     * @example
+     * messenger.sendMessage('foo');
+     * messenger.sendMessage({ hello: 'world' });
+     */
     sendMessage<Data = any>(data: Data) {
         const body: MessengerMessageBody = {
             sender: this.key,
@@ -75,12 +125,20 @@ export class Messenger {
         this.channel.postMessage(body);
     }
 
+    /**
+     * Turns the {@link Messenger} instance into an object that can be send to and from workers.
+     *
+     * @returns A {@link MessageTransferData} object
+     */
     transfer(): MessengerTransferData {
         return Object.freeze({
             __messengerID: this.identifier,
         });
     }
 
+    /**
+     * Closes the underlying {@link BroadcastChannel} that is being used.
+     */
     close() {
         this.channel.close();
     }

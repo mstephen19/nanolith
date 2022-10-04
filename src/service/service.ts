@@ -17,6 +17,9 @@ import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.
 import type { ServiceCallOptions } from '../types/workers.js';
 import type { Messenger } from '../messenger/messenger.js';
 
+/**
+ * Allows for the interaction between the main thread and long-running service workers 🏃
+ */
 export class Service<Definitions extends TaskDefinitions> {
     #worker: Worker;
     #terminated = false;
@@ -26,6 +29,10 @@ export class Service<Definitions extends TaskDefinitions> {
         this.#worker.on('exit', () => (this.#terminated = true));
     }
 
+    /**
+     * Whether or not the underlying {@link Worker} has exited its process.
+     * This will be `true` after calling `await service.close()`
+     */
     get closed() {
         return this.#terminated;
     }
@@ -34,6 +41,26 @@ export class Service<Definitions extends TaskDefinitions> {
         if (this.#terminated) throw new Error("Attempting to execute operations within a service who's process has exited!");
     }
 
+    /**
+     * Call a task to be run within the service worker
+     *
+     * @param options A {@link ServiceCallOptions} object
+     * @returns A promise of the task function's return value
+     *
+     * @example
+     * const service = await api.launchService({
+     *     exceptionHandler: ({ error }) => {
+     *         console.log(error.message);
+     *     },
+     * });
+     *
+     * const data = await service.call({
+     *     name: 'myTaskFunction',
+     *     params: ['foo', 'bar', 123],
+     * });
+     *
+     * console.log(data);
+     */
     async call<Name extends CleanKeyOf<Definitions>>({
         name,
         params,
@@ -76,11 +103,24 @@ export class Service<Definitions extends TaskDefinitions> {
         return promise;
     }
 
+    /**
+     * Terminates the worker, ending its process and marking the {@link Service} instance as `closed`.
+     */
     async close() {
         this.#terminated = true;
         return void (await this.#worker.terminate());
     }
 
+    /**
+     *
+     * @param data The data to send to the service.
+     * @param transferList An optional array of {@link TransferListItem}s. See the
+     * [Node.js documentation](https://nodejs.org/api/worker_threads.html#workerpostmessagevalue-transferlist) for more information.
+     *
+     * @example
+     * service.sendMessage('foo');
+     * service.sendMessage({ hello: 'world' });
+     */
     sendMessage<Data = any>(data: Data, transferList?: readonly TransferListItem[]) {
         this.#assertIsNotTerminated();
 
@@ -92,6 +132,14 @@ export class Service<Definitions extends TaskDefinitions> {
         this.#worker!.postMessage(body, transferList);
     }
 
+    /**
+     * Listen for messages coming from the service.
+     *
+     * @param callback A function to run each time a message is received from the service.
+     *
+     * @example
+     * service.onMessage<string>((data) => console.log(data, 'received!'));
+     */
     onMessage<Data = any>(callback: (body: Data) => Awaitable<any>) {
         this.#assertIsNotTerminated();
 
@@ -101,6 +149,19 @@ export class Service<Definitions extends TaskDefinitions> {
         });
     }
 
+    /**
+     * Remove a function from the list of callbacks to be run when a message is received from the service.
+     *
+     * @param callback The function to remove.
+     *
+     * @example
+     * const callback = (data: string) => console.log(data, 'received!');
+     *
+     * service.onMessage(callback);
+     *
+     * // ...later...
+     * service.offMessage(callback);
+     */
     offMessage<Data = any>(callback: (body: Data) => Awaitable<any>) {
         this.#assertIsNotTerminated();
 
@@ -108,8 +169,17 @@ export class Service<Definitions extends TaskDefinitions> {
     }
 
     /**
-     * Send a `Messenger` object to a service worker. The promise resolves after the worker
-     * automatically notifies the main thread that the object was received and processed.
+     * Dynamically sends a {@link Messenger} object to a service worker.
+     * Allows for the usage of `Messenger`s created after a service is launched.
+     *
+     * @param messenger A {@link Messenger} object
+     * @returns A promise which resolves after the worker automatically notifies
+     * the main thread that the object was received and processed.
+     *
+     * @example
+     * const messenger = new Messenger('my-messenger');
+     *
+     * await service.sendMessenger(messenger);
      */
     sendMessenger(messenger: Messenger) {
         this.#assertIsNotTerminated();

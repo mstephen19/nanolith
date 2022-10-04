@@ -11,7 +11,27 @@ import type { CleanKeyOf, CleanReturnType } from '../types/utilities.js';
 import type { BaseWorkerData } from '../types/worker_data.js';
 
 /**
- * It all starts here.
+ * It all starts here 😎
+ *
+ * @param definitions A set of named function definitions. The functions you provide can be either synchronous or asynchronous.
+ * @param options An optional set of {@link DefineOptions}. The `file` can be specified (if necessary),
+ * as well as a unique `identifier` for the set of definitions.
+ *
+ *
+ *
+ * @example
+ * import { define } from 'nanolith';
+ *
+ * export const math = await define({
+ *     add: (x: number, y: number) => x + y,
+ *     subtract: (x: number, y: number) => x - y,
+ *     waitThenAdd: async (x: number, y: number) => {
+ *         await new Promise((resolve) => setTimeout(resolve, 5000));
+ *         return x + y;
+ *     }.
+ * }, {
+ *     identifier: 'mathService'
+ * });
  */
 export async function define<Definitions extends TaskDefinitions>(
     definitions: Definitions,
