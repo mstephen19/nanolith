@@ -30,6 +30,7 @@ export class Messenger {
 
         if (data && typeof data !== 'string') {
             this.channel = new BroadcastChannel(data.__messengerID);
+            this.channel.unref();
             this.key = v4();
             this.identifier = data.__messengerID;
             return;
@@ -39,6 +40,7 @@ export class Messenger {
         this.key = v4();
         this.identifier = typeof data === 'string' ? data : v4();
         this.channel = new BroadcastChannel(this.identifier);
+        this.channel.unref();
     }
 
     #registerListener() {
@@ -61,7 +63,7 @@ export class Messenger {
     }
 
     onMessage<Data extends any = any>(callback: (data: Data) => Awaitable<void>) {
-        this.#registerListener();
+        if (!this.listenerRegistered) this.#registerListener();
         this.listenerCallbacks.push(callback);
     }
 

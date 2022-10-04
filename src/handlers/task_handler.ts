@@ -1,16 +1,22 @@
 import { workerData, parentPort } from 'worker_threads';
 import { WorkerMessageType } from '../types/messages.js';
+import { Messenger } from '../messenger/index.js';
 
 import type { TaskDefinitions } from '../types/definitions.js';
 import type { WorkerTaskReturnMessageBody, WorkerTaskErrorMessageBody } from '../types/messages.js';
 import type { TaskWorkerData } from '../types/worker_data.js';
+import { applyMessengerTransferObjects } from './utilities.js';
 
 /**
  * Handles only task workers.
  */
 export async function taskWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
     try {
-        const { name, params } = workerData as TaskWorkerData;
+        const { name, params, messengerTransfers } = workerData as TaskWorkerData;
+
+        // Turn the MessengerTransferData objects back into Messenger instances
+        // and make them available on the "messengers" property on workerData
+        if (messengerTransfers.length) applyMessengerTransferObjects(messengerTransfers);
 
         if (!definitions?.[name] || typeof definitions[name] !== 'function') {
             throw new Error(`A task with the name ${name} doesn't exist!`);

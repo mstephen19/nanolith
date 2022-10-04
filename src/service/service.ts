@@ -64,7 +64,7 @@ export class Service<Definitions extends TaskDefinitions> {
         return promise;
     }
 
-    terminate() {
+    close() {
         this.#worker.terminate();
     }
 
@@ -88,9 +88,11 @@ export class Service<Definitions extends TaskDefinitions> {
         this.#worker.off('message', callback);
     }
 
-    sendMessenger(messenger: Messenger, skipConfirmation?: false): Promise<void>;
-    sendMessenger(messenger: Messenger, skipConfirmation?: true): void;
-    sendMessenger(messenger: Messenger, skipConfirmation = false) {
+    /**
+     * Send a `Messenger` object to a service worker. The promise resolves after the worker
+     * automatically notifies the main thread that the object was received and processed.
+     */
+    sendMessenger(messenger: Messenger) {
         const transferData = messenger.transfer();
 
         const body: MainThreadMessengerTransferBody = {
@@ -108,11 +110,10 @@ export class Service<Definitions extends TaskDefinitions> {
             };
 
             this.#worker.on('message', callback);
-        });
+        }) as Promise<void>;
 
         this.#worker.postMessage(body);
 
-        if (skipConfirmation) return;
         return promise;
     }
 }

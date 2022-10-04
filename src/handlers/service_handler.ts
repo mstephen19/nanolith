@@ -1,13 +1,28 @@
-import { parentPort } from 'worker_threads';
-import { MainThreadMessageType, WorkerCallErrorMessageBody, WorkerMessageType } from '../types/messages.js';
+import { parentPort, workerData } from 'worker_threads';
+import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
+import { applyMessengerTransferObjects } from './utilities.js';
+import { Messenger } from '../messenger/index.js';
 
 import type { TaskDefinitions } from '../types/definitions.js';
-import type { MainThreadBaseMessageBody, WorkerCallReturnMessageBody, MainThreadCallMessageBody } from '../types/messages.js';
+import type {
+    MainThreadBaseMessageBody,
+    WorkerCallReturnMessageBody,
+    MainThreadCallMessageBody,
+    WorkerCallErrorMessageBody,
+    MainThreadMessengerTransferBody,
+    WorkerMessengerTransferSuccessBody,
+} from '../types/messages.js';
+import type { ServiceWorkerData } from '../types/worker_data.js';
 
 /**
  * Handles only service workers.
  */
 export function serviceWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
+    const { messengerTransfers } = workerData as ServiceWorkerData;
+    // Turn the MessengerTransferData objects back into Messenger instances
+    // and make them available on the "messengers" property on workerData
+    if (messengerTransfers.length) applyMessengerTransferObjects(messengerTransfers);
+
     parentPort!.on('message', async (body: MainThreadBaseMessageBody) => {
         // Exit the worker's process when the terminate message is sent
         if (body?.type === MainThreadMessageType.Terminate) process.exit();
@@ -40,6 +55,21 @@ export function serviceWorkerHandler<Definitions extends TaskDefinitions>(defini
 
                 parentPort!.postMessage(response);
             }
+        }
+
+        if (body.type === MainThreadMessageType.MessengerTransfer) {
+            const { data } = body as MainThreadMessengerTransferBody;
+
+            (workerData as ServiceWorkerData).messengers[data.__messengerID] = new Messenger(data);
+
+            // Send a confirmation that the messenger data was received and processed
+            // by the callback above.
+            const postBody: WorkerMessengerTransferSuccessBody = {
+                type: WorkerMessageType.MessengerTransferSuccess,
+                data: (body as MainThreadMessengerTransferBody).data.__messengerID,
+            };
+
+            parentPort?.postMessage(postBody);
         }
     });
 }

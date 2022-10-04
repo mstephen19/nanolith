@@ -1,4 +1,5 @@
 import type { TransferListItem } from 'worker_threads';
+import type { Messenger } from '../messenger/messenger.js';
 import type { WorkerOptions } from './config.js';
 
 /**
@@ -29,6 +30,7 @@ export type BaseWorkerOptions = {
     options?: WorkerOptions;
     priority?: boolean;
     reffed?: boolean;
+    messengers?: Messenger[];
 };
 
 /**

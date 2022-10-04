@@ -1,17 +1,9 @@
-import { BroadcastChannel } from 'worker_threads';
-import { define, parent } from '../index.js';
+import { define, messages } from '../index.js';
 
 export const api = await define({
-    registerMessengerListener: () => {
-        parent.onMessengerReceived((messenger) => {
-            // messenger.sendMessage('hey from worker!');
-            console.log('messenger received');
-            messenger.onMessage<string>((data) => console.log(data, 'in worker'));
-            // console.log(messenger);
-        });
+    test: async () => {
+        const messenger = await messages.use('testing123');
 
-        // new BroadcastChannel('test').onmessage = (event) => {
-        //     console.log(event);
-        // };
+        console.log(messenger);
     },
 });

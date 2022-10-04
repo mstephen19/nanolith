@@ -1,4 +1,5 @@
-import { WorkerOptions } from './config.js';
+import type { WorkerOptions } from './config.js';
+import type { MessengerTransferData } from './messenger.js';
 import type { BaseWorkerOptions, WorkerType } from './workers.js';
 
 export type BasePoolItemConfig = {
@@ -31,6 +32,8 @@ export type PoolItemOptions = {
         type: WorkerType;
         name?: string;
         params?: any[];
+        messengerTransfers: MessengerTransferData[];
+        messengers: Record<string, never>;
     };
     options: WorkerOptions;
     priority: boolean;

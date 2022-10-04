@@ -1,3 +1,5 @@
+import type { Messenger } from '../messenger/index.js';
+import type { MessengerTransferData } from './messenger.js';
 import type { WorkerType } from './workers.js';
 
 /**
@@ -6,6 +8,8 @@ import type { WorkerType } from './workers.js';
 export type BaseWorkerData<Type extends WorkerType = WorkerType> = {
     type: Type;
     identifier: string;
+    messengerTransfers: MessengerTransferData[];
+    messengers: Record<string, Messenger>;
 };
 
 /**

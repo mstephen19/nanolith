@@ -1,4 +1,4 @@
-import { parentPort } from 'worker_threads';
+import { parentPort, workerData } from 'worker_threads';
 import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
 
 import type { TransferListItem } from 'worker_threads';
@@ -8,9 +8,9 @@ import type {
     MainThreadBaseMessageBody,
     MainThreadSendMessageBody,
     MainThreadMessengerTransferBody,
-    WorkerMessengerTransferSuccessBody,
 } from '../types/messages.js';
-import { Messenger } from '../messenger/index.js';
+import type { Messenger } from '../messenger/index.js';
+import type { BaseWorkerData } from '../types/worker_data.js';
 
 function sendMessage<Data extends any = any>(data: Data, transferList?: readonly TransferListItem[]) {
     const body: WorkerSendMessageBody<Data> = {
@@ -33,18 +33,11 @@ function offMessage<Data extends any = any>(callback: (body: Data) => Awaitable<
 }
 
 function onMessengerReceived(callback: (messenger: Messenger) => Awaitable<any>) {
+    const { messengers } = workerData as BaseWorkerData;
+
     parentPort?.on('message', async (body: MainThreadBaseMessageBody) => {
         if (body.type !== MainThreadMessageType.MessengerTransfer) return;
-        await callback(new Messenger((body as MainThreadMessengerTransferBody).data));
-
-        // Send a confirmation that the messenger data was received and processed
-        // by the callback above.
-        const postBody: WorkerMessengerTransferSuccessBody = {
-            type: WorkerMessageType.MessengerTransferSuccess,
-            data: (body as MainThreadMessengerTransferBody).data.__messengerID,
-        };
-
-        parentPort?.postMessage(postBody);
+        await callback(messengers[(body as MainThreadMessengerTransferBody).data.__messengerID]);
     });
 }
 
