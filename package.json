@@ -1,10 +1,11 @@
 {
     "name": "nanolith",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "description": "Nanoservices in no time.",
     "main": "dist/index.js",
     "type": "module",
     "scripts": {
+        "build": "npm t",
         "test": "tsc &&  echo \"running tests\" && NODE_OPTIONS=--experimental-vm-modules jest dist/__test__",
         "play": "tsc && echo \"running playground\" && node ./dist/__playground__/index.js"
     },
