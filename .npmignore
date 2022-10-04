@@ -13,7 +13,6 @@ __test__coverage__
 **.tsbuildinfo
 tsconfig.json
 package-lock.json
-README.md
 bun.lockb
 jest.config.js
 .eslintrc.json

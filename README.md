@@ -2,15 +2,40 @@
 
 Nanoservices in no time.
 
-> This project is currently a work in progress. The content below will change.
+<img src="https://i.imgur.com/78hdJKo.png" alt="Nanolith logo" width="400">
 
-## Another multithreading library? Why the heck?
+> **Note:** This project is still in beta. Because of this, the README documentation is not yet extensive.
+
+## About
 
 [Threadz](https://github.com/mstephen19/threadz) gets the job done, but after getting various feedback on its APIs, I realized that it is overly complex. You have the `Threadz` API for running one-off tasks within short-term workers, the `Interact` API for running one-off tasks, but sending messages to them, the `BackgroundThreadzWorker` API for running workers that are long-running services, the `Communicate` API for communicating between workers, etc. Each of these APIs has their own methods that need to be learned by reading the documentation. Additionally, the configuration of workers was placed poorly, and did not allow for flexibility. Overall, Threadz has turned into a hot coupled mess.
 
-So how's **Nanolith** any different? Other than being more performant and more reliable, Nanolith has just two APIs. The **Nanolith** API can be used to call one-off workers, and directly on the API the `launchService()` function can be called to launch a long-running worker that has access to your function definitions that will only finish once it's been told to `terminate()`. When you launch a service, you are immediately able to communicate back and forth between the worker and the main thread.
+So how's **Nanolith** any different? Other than being more performant and more reliable, Nanolith has just two APIs. The **Nanolith** API can be used to call one-off workers, and directly on the API the `launchService()` function can be called to launch a long-running worker that has access to your function definitions that will only finish once it's been told to `terminate()`. When you launch a service, you are immediately able to communicate back and forth between the worker and the main thread with no other APIs needed.
 
-Enough talk though, let's look at some examples.
+Enough talk though, let's look at how this thing works.
+
+## Table of Contents
+
+- [Define a set of tasks](#define-a-set-of-tasks)
+- [Run a task](#run-a-task)
+- [Launch a service](#launch-a-service)
+- [Communicate between threads](#communicate-between-threads)
+
+## Define a set of tasks
+
+<!-- todo: Go over the define function -->
+
+## Run a task
+
+<!-- todo: Go over using the task interface -->
+
+## Launch a service
+
+<!-- todo: Go over using launchService and the Service API -->
+
+## Communicate between threads
+
+<!-- todo: Go over the two ways of communicating: between main thread and worker on Service, or with Messenger -->
 
 ## Examples
 
