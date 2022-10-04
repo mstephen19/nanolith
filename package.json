@@ -5,8 +5,8 @@
     "main": "dist/index.js",
     "type": "module",
     "scripts": {
-        "test": "tsc &&  echo \"running tests\" && jest dist/__test__",
-        "play": "tsc && echo \"running playground\" && node ./dist/_playground/index.js"
+        "test": "tsc &&  echo \"running tests\" && NODE_OPTIONS=--experimental-vm-modules jest dist/__test__",
+        "play": "tsc && echo \"running playground\" && node ./dist/__playground__/index.js"
     },
     "repository": {
         "type": "git",

@@ -16,4 +16,5 @@ export type Nanolith<Definitions extends TaskDefinitions> = {
         CleanReturnType<Definitions[Name]>
     >;
     launchService: <Options extends ServiceWorkerOptions>(options?: Options) => Promise<Service<Definitions>>;
+    file: string;
 };

@@ -4,6 +4,7 @@ import callsites from 'callsites';
 import { runTaskWorker } from './run_task_worker.js';
 import { runServiceWorker } from './run_service_worker.js';
 import { fileURLToPath } from 'url';
+import { getCurrentFile } from './utilities.js';
 
 import type { DefineOptions, TaskDefinitions } from '../types/definitions.js';
 import type { Nanolith } from '../types/nanolith.js';
@@ -30,7 +31,7 @@ export async function define<Definitions extends TaskDefinitions>(
     }
 
     // Determine the file of the worker if it was not provided in the options.
-    const file = fileFromOptions ?? fileURLToPath(callsites()[1].getFileName()!);
+    const file = fileFromOptions ?? getCurrentFile();
 
     return Object.freeze(
         Object.assign(
@@ -41,6 +42,7 @@ export async function define<Definitions extends TaskDefinitions>(
                 launchService: Object.freeze(async <Options extends ServiceWorkerOptions>(options = {} as Options) => {
                     return runServiceWorker<Definitions, Options>(file, identifier, options);
                 }),
+                file,
             }
         )
     );

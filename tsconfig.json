@@ -10,7 +10,8 @@
         "removeComments": false,
         "rootDir": "./src",
         "outDir": "./dist",
-        "pretty": true
+        "pretty": true,
+        "allowSyntheticDefaultImports": true
         // "incremental": true
     }
     // "include": ["src"],
