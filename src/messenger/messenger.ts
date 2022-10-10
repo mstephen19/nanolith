@@ -109,6 +109,27 @@ export class Messenger {
     }
 
     /**
+     * Remove a function from the list of callbacks to be run when a message is received on the `Messenger`.
+     *
+     * @param callback The function to remove.
+     *
+     * @example
+     * const callback = (data: string) => console.log(data, 'received!');
+     *
+     * messenger.onMessage(callback);
+     *
+     * // ...later...
+     * messenger.offMessage(callback);
+     */
+    offMessage<Data = any>(callback: (body: Data) => Awaitable<void>) {
+        const index = this.#listenerCallbacks.indexOf(callback);
+        // If it's -1, the item wasn't found
+        if (index <= -1) return;
+
+        this.#listenerCallbacks.splice(index, 1);
+    }
+
+    /**
      *
      * @param data The data to send to the other `Messenger`s.
      *
