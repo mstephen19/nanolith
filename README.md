@@ -1,8 +1,10 @@
 # Nanolith
 
+![npm](https://img.shields.io/npm/v/nanolith?color=blue&style=for-the-badge) ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/nanolith?style=for-the-badge) ![npm](https://img.shields.io/npm/dw/nanolith?color=violet&style=for-the-badge) ![npm bundle size](https://img.shields.io/bundlephobia/min/nanolith?color=lightgreen&style=for-the-badge)
+
 Nanoservices in no time.
 
-<img src="https://i.imgur.com/78hdJKo.png" alt="Nanolith logo" width="400">
+<img src="https://user-images.githubusercontent.com/87805115/194834608-fe9975a4-449c-4aee-8bd5-3f44ed73662b.png" alt="Nanolith logo" width="400">
 
 > **Note:** This project is still in beta. Because of this, the README documentation is not yet extensive.
 
