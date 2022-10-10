@@ -91,11 +91,28 @@ export class Messenger {
      *
      * @example
      * const messenger = new Messenger('my-messenger');
-     *
      * console.log(messenger.ID); // -> 'my-messenger'
+     *
+     * const messenger2 = new Messenger(messenger.transfer());
+     * console.log(messenger.ID === messenger2.ID) // -> true
      */
     get ID() {
         return this.#identifier;
+    }
+
+    /**
+     * Each `Messenger` instance is assigned a unique key that allows it to internally ignore
+     * messages on the {@link BroadcastChannel} which were sent by itself.
+     *
+     * @example
+     * const messenger = new Messenger('my-messenger');
+     * const messenger2 = new Messenger(messenger.transfer());
+     *
+     * console.log(messenger.ID === messenger2.ID) // -> true
+     * console.log(messenger.uniqueKey === messenger2.uniqueKey) // -> false
+     */
+    get uniqueKey() {
+        return this.#key;
     }
 
     /**
