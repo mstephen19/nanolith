@@ -19,12 +19,12 @@ export class Messenger {
      * A value specific to an instance of Messenger. Allows for
      * ignoring messages sent by itself.
      */
-    private key: string;
+    #key: string;
     /**
      * A value specific to all Messenger instances using the ports
      * in the ports array.
      */
-    private identifier: string;
+    #identifier: string;
 
     /**
      *
@@ -59,23 +59,26 @@ export class Messenger {
         if (data && typeof data !== 'string') {
             this.#channel = new BroadcastChannel(data.__messengerID);
             this.#channel.unref();
-            this.key = v4();
-            this.identifier = data.__messengerID;
+            this.#key = v4();
+            this.#identifier = data.__messengerID;
             return;
         }
         // The first port will always be used for listening, while the second will
         // always be used for sending.
-        this.key = v4();
-        this.identifier = typeof data === 'string' ? data : v4();
-        this.#channel = new BroadcastChannel(this.identifier);
+        this.#key = v4();
+        this.#identifier = typeof data === 'string' ? data : v4();
+        this.#channel = new BroadcastChannel(this.#identifier);
         this.#channel.unref();
     }
 
+    /**
+     * A function that will not be run until `onMessage` is called for the first time.
+     */
     #registerListener() {
         this.#channel.onmessage = async (event) => {
             const { data: body } = event as { data: MessengerMessageBody };
             // If the message was send by this Messenger, just ignore it.
-            if (body.sender === this.key) return;
+            if (body.sender === this.#key) return;
             this.#listenerCallbacks.forEach((callback) => callback(body.data));
         };
 
@@ -92,7 +95,7 @@ export class Messenger {
      * console.log(messenger.ID); // -> 'my-messenger'
      */
     get ID() {
-        return this.identifier;
+        return this.#identifier;
     }
 
     /**
@@ -139,7 +142,7 @@ export class Messenger {
      */
     sendMessage<Data = any>(data: Data) {
         const body: MessengerMessageBody = {
-            sender: this.key,
+            sender: this.#key,
             data,
         };
 
@@ -153,7 +156,7 @@ export class Messenger {
      */
     transfer(): MessengerTransferData {
         return Object.freeze({
-            __messengerID: this.identifier,
+            __messengerID: this.#identifier,
         });
     }
 
