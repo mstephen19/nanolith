@@ -8,6 +8,7 @@ dist/__test__
 __test__coverage__
 .github
 .vscode
+assets
 
 # Files
 **.tsbuildinfo

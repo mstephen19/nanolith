@@ -69,4 +69,12 @@ export enum ConcurrencyOption {
      * Six threads per core.
      */
     x6 = 'x6',
+    /**
+     * Eight threads per core.
+     */
+    x8 = 'x8',
+    /**
+     * Ten threads per core.
+     */
+    x10 = 'x10',
 }

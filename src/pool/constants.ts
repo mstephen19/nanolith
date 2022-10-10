@@ -8,4 +8,6 @@ export const concurrencyOptionMultipliers: Record<ConcurrencyOption, number> = {
     [ConcurrencyOption.x2]: 2,
     [ConcurrencyOption.x4]: 4,
     [ConcurrencyOption.x6]: 6,
+    [ConcurrencyOption.x8]: 8,
+    [ConcurrencyOption.x10]: 10,
 };

@@ -69,12 +69,15 @@ class Pool {
      * Don't use this unless you really know what you're doing.
      * This method is used internally to queue tasks and services up to the pool
      * to be created and run.
+     *
+     * This function will throw an error when trying to spawn up workers from within
+     * any thread that is not the main one.
      */
     enqueue(item: PoolItem) {
-        if (!(item instanceof PoolItem)) throw new Error('The provided item cannot be enqueued.');
-
         // Prevent workers from being run on any other thread than the main thread.
         if (!isMainThread) throw new Error("Can't enqueue items to the pool on any other thread than the main thread!");
+
+        if (!(item instanceof PoolItem)) throw new Error('The provided item cannot be enqueued.');
 
         if (item.options.priority) this.#queue.unshift(item);
         else this.#queue.push(item);
@@ -83,7 +86,7 @@ class Pool {
     }
 
     /**
-     * Creates the next worker, if possible.
+     * Creates and runs the next worker, if possible.
      */
     #next() {
         // If the concurrency is currency reached, or the queue
@@ -114,4 +117,7 @@ class Pool {
     }
 }
 
+/**
+ * The single global instance of {@link Pool} that manages all Nanolith workers 💪
+ */
 export const pool = new Pool();
