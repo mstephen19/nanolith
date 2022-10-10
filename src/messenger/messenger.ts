@@ -1,4 +1,4 @@
-import { v4 } from 'uuid';
+import v4 from 'lite-uuid-v4';
 import { isMessengerTransferObject } from './utilities.js';
 import { BroadcastChannel } from 'worker_threads';
 
