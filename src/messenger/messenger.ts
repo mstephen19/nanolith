@@ -57,16 +57,18 @@ export class Messenger {
         }
 
         if (data && typeof data !== 'string') {
-            this.#channel = new BroadcastChannel(data.__messengerID);
-            this.#channel.unref();
             this.#key = v4();
             this.#identifier = data.__messengerID;
+
+            this.#channel = new BroadcastChannel(data.__messengerID);
+            this.#channel.unref();
             return;
         }
         // The first port will always be used for listening, while the second will
         // always be used for sending.
         this.#key = v4();
         this.#identifier = typeof data === 'string' ? data : v4();
+
         this.#channel = new BroadcastChannel(this.#identifier);
         this.#channel.unref();
     }
@@ -178,7 +180,7 @@ export class Messenger {
     }
 
     /**
-     * Closes the underlying {@link BroadcastChannel} that is being used.
+     * Closes the underlying {@link BroadcastChannel} connection that is being used.
      */
     close() {
         this.#channel.close();

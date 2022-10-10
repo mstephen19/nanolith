@@ -9,6 +9,7 @@ __test__coverage__
 .github
 .vscode
 assets
+scripts
 
 # Files
 **.tsbuildinfo

@@ -13,7 +13,7 @@
         "pretty": true,
         "allowSyntheticDefaultImports": true
         // "incremental": true
-    }
-    // "include": ["src"],
-    // "exclude": ["**/types"]
+    },
+    "include": ["./src"],
+    "exclude": ["./scripts"]
 }
