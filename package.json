@@ -8,7 +8,7 @@
         "lint": "npx eslint \"src/**\"",
         "minify": "ts-node-esm -T scripts/minify.ts",
         "build": "npm run lint && tsc && npm run minify && echo \"build succeeded\"",
-        "test": "npm run build &&  echo \"running tests\" && NODE_OPTIONS=--experimental-vm-modules jest",
+        "test": "npm run build && echo \"running tests\" && NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
         "play": "npm run build && echo \"running playground\" && node ./dist/__playground__/index.js"
     },
     "repository": {
