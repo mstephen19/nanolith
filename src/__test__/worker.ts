@@ -1,3 +1,4 @@
+import { threadId } from 'worker_threads';
 import { define, parent, messages } from '../index.js';
 
 export const definitions = {
@@ -55,3 +56,15 @@ export const messengerTester = await define(
     },
     { identifier: 'messengerTester' }
 );
+
+export const clusterTesterDefinitions = {
+    async add(x: number, y: number) {
+        await new Promise((r) => setTimeout(r, 3e3));
+        return x + y;
+    },
+    getThreadId: () => {
+        return threadId;
+    },
+};
+
+export const clusterTester = await define(clusterTesterDefinitions, { identifier: 'clusterTester' });
