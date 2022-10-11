@@ -1,7 +1,7 @@
 import { isMainThread, workerData } from 'worker_threads';
 import { workerHandler } from '../handlers/index.js';
-import { runTaskWorker } from './run_task_worker.js';
-import { runServiceWorker } from './run_service_worker.js';
+import { runTaskWorker } from '../runners/index.js';
+import { runServiceWorker } from '../runners/index.js';
 import { getCurrentFile } from './utilities.js';
 
 import type { DefineOptions, TaskDefinitions } from '../types/definitions.js';
@@ -44,6 +44,8 @@ export async function define<Definitions extends TaskDefinitions>(
         const { identifier: workerIdentifier } = workerData as BaseWorkerData;
         if (workerIdentifier !== identifier) return undefined as any as Nanolith<Definitions>;
 
+        // Otherwise, this is the set of definitions that is meant to be used, and the worker
+        // can be handled accordingly.
         await workerHandler(definitions);
         return undefined as any as Nanolith<Definitions>;
     }

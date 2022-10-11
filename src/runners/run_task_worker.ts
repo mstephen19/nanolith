@@ -9,8 +9,11 @@ import type {
     WorkerTaskErrorMessageBody,
     WorkerExceptionMessageBody,
 } from '../types/messages.js';
+import { getCurrentFile } from '../define/utilities.js';
 
 export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, identifier: string, { name, params, ...rest }: Options) => {
+    if (getCurrentFile(3) === file) throw new Error('Cannot call tasks from the same file from which they were defined!');
+
     const item = new PoolItem({
         file,
         workerData: {

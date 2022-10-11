@@ -45,7 +45,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     }
 
     /**
-     * Launch a new service on the {@link Nanolith} API instance, and automatically manage it
+     * Launch a new service on the provided {@link Nanolith} API, and automatically manage it
      * with the `ServiceCluster`.
      *
      * @param options A {@link ServiceWorkerOptions} object
@@ -54,16 +54,31 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * @example
      * const cluster = new ServiceCluster(api);
      *
-     * await cluster.addService({ priority: true });
-     * await cluster.addService({ priority: true });
+     * await cluster.launchService({ priority: true });
+     * await cluster.launchService({ priority: true });
      */
-    async addService<Options extends ServiceWorkerOptions>(options = {} as Options) {
+    async launchService<Options extends ServiceWorkerOptions>(options = {} as Options) {
         // Don't allow more services to be added if it exceeds the pool's max concurrency
         if (Object.values(this.#serviceMap).length >= pool.maxConcurrency) return;
 
-        const identifier = v4();
         const service = await this.#nanolith.launchService(options);
 
+        this.#registerNewService(service);
+
+        return service;
+    }
+
+    /**
+     * Add an already running service to to the cluster.
+     *
+     * @param service An already running {@link Service}
+     */
+    addService(service: Service<Definitions>) {
+        this.#registerNewService(service);
+    }
+
+    #registerNewService(service: Service<Definitions>) {
+        const identifier = v4();
         this.#serviceMap[identifier] = { service, active: 0, identifier };
 
         // When the service is terminated, remove it from the service map.
@@ -71,15 +86,15 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
             delete this.#serviceMap[identifier];
         });
 
+        // Increment the service's active count when it makes a call.
         service.on('calling', () => {
             this.#serviceMap[identifier].active++;
         });
 
+        // Decrement the service's active count when it finishes making a call.
         service.on('called', () => {
             this.#serviceMap[identifier].active--;
         });
-
-        return service;
     }
 
     /**
@@ -101,7 +116,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     }
 
     /**
-     * Runs the `close()` method on all `Service` instances on the cluster.
+     * Runs the `.close()` method on all `Service` instances on the cluster.
      */
     closeAll() {
         const promises = Object.values(this.#serviceMap).map(({ service }) => service.close());
