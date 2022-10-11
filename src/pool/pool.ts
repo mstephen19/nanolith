@@ -17,6 +17,14 @@ class Pool {
     readonly option = ConcurrencyOption;
 
     /**
+     * The maximum concurrency of the {@link Pool}, which defaults to one thread per core
+     * on the machine being used. Can be changed with the `pool.setConcurrency` function
+     */
+    get maxConcurrency() {
+        return this.#concurrency;
+    }
+
+    /**
      * Whether or not the pool has reached its max concurrency.
      */
     get maxed() {
@@ -60,6 +68,8 @@ class Pool {
      * the machine running the process.
      */
     setConcurrency<Option extends ConcurrencyOption>(option: Option) {
+        if (!Object.values(ConcurrencyOption).includes(option)) throw new Error(`${option} is not a valid and safe ConcurrencyOption!`);
+
         this.#concurrency = generateConcurrencyValue(option);
     }
 

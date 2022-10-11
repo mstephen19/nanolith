@@ -16,17 +16,40 @@ import type {
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.js';
 import type { ServiceCallOptions } from '../types/workers.js';
 import type { Messenger } from '../messenger/messenger.js';
+import { TypedEmitter } from 'tiny-typed-emitter';
+
+type ServiceEvents = {
+    /**
+     * An event that is emitted when the service worker has exited its process.
+     */
+    terminated: () => void;
+    /**
+     * An event that is emitted when the service worker makes a call.
+     */
+    calling: (key: string) => void;
+    /**
+     * An event that is emitted when the service worker finishes making a call and
+     * has waited for the return value of the task.
+     */
+    called: (key: string) => void;
+};
 
 /**
  * Allows for the interaction between the main thread and long-running service workers 🏃
  */
-export class Service<Definitions extends TaskDefinitions> {
+export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<ServiceEvents> {
     #worker: Worker;
     #terminated = false;
 
     constructor(worker: Worker) {
+        super();
+
         this.#worker = worker;
-        this.#worker.on('exit', () => (this.#terminated = true));
+        this.#worker.on('exit', () => {
+            this.#terminated = true;
+            // Emit an event notifying that the service has been terminated.
+            this.emit('terminated');
+        });
     }
 
     /**
@@ -70,6 +93,9 @@ export class Service<Definitions extends TaskDefinitions> {
 
         const key = v4();
 
+        // Emit an event notifying that the service is making a call
+        this.emit('calling', key);
+
         const message: MainThreadCallMessageBody = {
             type: MainThreadMessageType.Call,
             name,
@@ -84,15 +110,20 @@ export class Service<Definitions extends TaskDefinitions> {
                 // If the message is for a call with a different key, also ignore the message.
                 if (body.key !== key) return;
 
+                // Resolve with the function's return value.
                 if (body.type === WorkerMessageType.CallReturn) {
                     resolve((body as WorkerCallReturnMessageBody).data);
                 }
 
+                // Or, if the call failed, reject with the caught error.
                 if (body.type === WorkerMessageType.CallError) {
                     reject((body as WorkerCallErrorMessageBody).data);
                 }
 
                 this.#worker.off('message', callback);
+                // Emit an event notifying that the service has completed making
+                // a call
+                this.emit('called', key);
             };
 
             this.#worker.on('message', callback);
