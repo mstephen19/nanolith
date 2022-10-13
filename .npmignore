@@ -10,6 +10,7 @@ __test__coverage__
 .vscode
 assets
 scripts
+.circleci
 
 # Files
 **.tsbuildinfo

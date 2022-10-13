@@ -1,5 +1,7 @@
 # Nanolith
 
+[![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith)
+
 ![npm](https://img.shields.io/npm/v/nanolith?color=blue&style=for-the-badge) ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/nanolith?style=for-the-badge) ![npm](https://img.shields.io/npm/dw/nanolith?color=violet&style=for-the-badge) ![npm bundle size](https://img.shields.io/bundlephobia/min/nanolith?color=lightgreen&style=for-the-badge) ![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=red&style=for-the-badge)
 
 <center>
