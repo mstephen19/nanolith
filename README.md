@@ -19,6 +19,7 @@ Nanoservices in no time.
 * [Launching a service](#launching-a-service)
   * [Configuring a service](#configuring-a-service)
   * [Using a service](#using-a-service)
+  * [Using a service initializer task function](#using-a-service-initializer-task-function)
 * [Managing concurrency](#managing-concurrency)
   * [Using `pool`](#using-pool)
 * [Creating a service cluster](#creating-a-service-cluster)
@@ -218,6 +219,12 @@ Similar to running a task, various options are available when configuring a serv
 | `reffed` | boolean | `true` | When `true`, [`worker.ref()`](https://nodejs.org/api/worker_threads.html#workerref) will be called. When `false`, [`worker.unref()`](https://nodejs.org/api/worker_threads.html#workerunref) will be called. |
 | `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing *most* of the options available on the `Worker` constructor. |
 | `messengers` | Messenger[] | `[]` | An array of `Messenger` objects to expose to the service worker. |
+
+### Using a service initializer task function
+
+There may be times when you want to have a task function be automatically called right when the service goes online. This is called a **service initializer** function, and it can be used to register listeners on the `parent` or on a `Messenger` instance, or to do any other internal configuration of the service before any tasks can be called on it.
+
+To create a service initializer function, simply name one of your task definitions `__initializeService` and define your initialization logic there. The function will be run immediately after the service goes online, and the `launchService()` function will only resolve after the initialization function has completed its work.
 
 ### Using a service
 

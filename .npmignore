@@ -19,3 +19,4 @@ bun.lockb
 jest.config.js
 .eslintrc.json
 .gitignore
+CHANGELOG.md

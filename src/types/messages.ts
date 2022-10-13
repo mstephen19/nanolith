@@ -85,6 +85,11 @@ export const enum WorkerMessageType {
      * thread must be notified about it.
      */
     WorkerException,
+    /**
+     * To be used to notify the main thread that a service worker has
+     * completed initialization and that it's ready to go.
+     */
+    Initialized,
 }
 
 export type WorkerBaseMessageBody<Type extends WorkerMessageType = WorkerMessageType> = {
@@ -120,3 +125,5 @@ export type WorkerMessengerTransferSuccessBody = {
 export type WorkerExceptionMessageBody = {
     data: Error;
 } & WorkerBaseMessageBody<WorkerMessageType.WorkerException>;
+
+export type WorkerInitializedMessageBody = WorkerBaseMessageBody<WorkerMessageType.Initialized>;

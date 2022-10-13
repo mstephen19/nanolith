@@ -68,3 +68,14 @@ export const clusterTesterDefinitions = {
 };
 
 export const clusterTester = await define(clusterTesterDefinitions, { identifier: 'clusterTester' });
+
+export const testServiceInitializer = await define(
+    {
+        __initializeService: () => {
+            parent.onMessage(() => {
+                parent.sendMessage('test test');
+            });
+        },
+    },
+    { identifier: 'foo-bar-baz-buzz' }
+);
