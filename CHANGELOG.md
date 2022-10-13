@@ -9,3 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - Support for an automatically called `__initializeService` function when launching a service.
+- New internal `Initialized` worker message type.
+
+### Changed
+
+- `runServiceWorker`'s listener on `worker` from the `"online"` event to the new custom `Initialized` message type.
