@@ -18,7 +18,7 @@ import type { ServiceWorkerData } from '../types/worker_data.js';
 /**
  * Handles only service workers.
  */
-export function serviceWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
+export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
     process.on('uncaughtException', (err) => {
         const body: WorkerExceptionMessageBody = {
             type: WorkerMessageType.WorkerException,
@@ -27,6 +27,10 @@ export function serviceWorkerHandler<Definitions extends TaskDefinitions>(defini
 
         parentPort!.postMessage(body);
     });
+
+    if ('__initializeService' in definitions && typeof definitions['__initializeService'] === 'function') {
+        await definitions['__initializeService']();
+    }
 
     const { messengerTransfers } = workerData as ServiceWorkerData;
     // Turn the MessengerTransferData objects back into Messenger instances
