@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { api } from './worker.js';
+import { api, testServiceInitializer } from './worker.js';
 
 import type { Service } from '../service/index.js';
 import type { definitions } from './worker.js';
@@ -81,6 +81,7 @@ describe('Service', () => {
             const handler = jest.fn(({ error }) => error.message);
 
             const service2 = await api.launchService({
+                // @ts-ignore
                 exceptionHandler: handler,
             });
 
@@ -105,6 +106,7 @@ describe('Service', () => {
             const handler = jest.fn(({ terminate }) => terminate());
 
             const service2 = await api.launchService({
+                // @ts-ignore
                 exceptionHandler: handler,
             });
 
@@ -114,6 +116,24 @@ describe('Service', () => {
             await new Promise((resolve) => setTimeout(resolve, 2e3));
 
             expect(service2.closed).toBe(true);
+        });
+    });
+
+    describe('__initializeService', () => {
+        it('Should run immediately when the service is launched without being called manually', async () => {
+            const handler = jest.fn((data: string) => data);
+
+            const service = await testServiceInitializer.launchService();
+
+            service.onMessage(handler);
+            service.sendMessage('foo');
+
+            await new Promise((resolve) => setTimeout(resolve, 2e3));
+
+            await service.close();
+
+            expect(handler).toHaveBeenCalledTimes(1);
+            expect(handler).toHaveBeenCalledWith('test test');
         });
     });
 });
