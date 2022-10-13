@@ -222,7 +222,9 @@ Similar to running a task, various options are available when configuring a serv
 
 ### Using a service initializer task function
 
-There may be times when you want to have a task function be automatically called right when the service goes online. This is called a **service initializer** function, and it can be used to register listeners on the `parent` or on a `Messenger` instance, or to do any other configuration.
+There may be times when you want to have a task function be automatically called right when the service goes online. This is called a **service initializer** function, and it can be used to register listeners on the `parent` or on a `Messenger` instance, or to do any other internal configuration of the service before any tasks can be called on it.
+
+To create a service initializer function, simply name one of your task definitions `__initializeService` and define your initialization logic there. The function will be run immediately after the service goes online, and the `launchService()` function will only resolve after the initialization function has completed its work.
 
 ### Using a service
 
