@@ -12,6 +12,7 @@ import type {
     MainThreadMessengerTransferBody,
     WorkerMessengerTransferSuccessBody,
     WorkerExceptionMessageBody,
+    WorkerInitializedMessageBody,
 } from '../types/messages.js';
 import type { ServiceWorkerData } from '../types/worker_data.js';
 
@@ -31,6 +32,11 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
     if ('__initializeService' in definitions && typeof definitions['__initializeService'] === 'function') {
         await definitions['__initializeService']();
     }
+
+    // Notify the main thread that the worker has initialized.
+    parentPort?.postMessage({
+        type: WorkerMessageType.Initialized,
+    } as WorkerInitializedMessageBody);
 
     const { messengerTransfers } = workerData as ServiceWorkerData;
     // Turn the MessengerTransferData objects back into Messenger instances
