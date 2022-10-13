@@ -8,7 +8,7 @@
     <img src="https://user-images.githubusercontent.com/87805115/194834608-fe9975a4-449c-4aee-8bd5-3f44ed73662b.png" alt="Nanolith logo" width="450">
 </center>
 
-Nanoservices in no time.
+Nanoservices in no time!
 
 ## Table of Contents
 
