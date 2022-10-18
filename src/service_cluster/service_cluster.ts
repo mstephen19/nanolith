@@ -122,4 +122,13 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
         const promises = Object.values(this.#serviceMap).map(({ service }) => service.close());
         return Promise.all(promises);
     }
+
+    /**
+     * Runs the `.close()` method on all `Service` instances on the cluster which are currently not running
+     * any tasks.
+     */
+    closeAllIdle() {
+        const promises = Object.values(this.#serviceMap).map(({ service, active }) => (active <= 0 ? service.close() : null));
+        return Promise.all(promises);
+    }
 }
