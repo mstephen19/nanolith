@@ -13,11 +13,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - "Using a service initializer task function" section in README.
 - `closeAllIdle()` method to `ServiceCluster` + docs.
 - `threadID` getter to `Service` + docs.
+- `currentServices` getter to `ServiceCluster` + docs.
 
 ### Changed
 
 - `runServiceWorker`'s listener on `worker` from the `"online"` event to the new custom `Initialized` message type.
 - "Nanoservices in no time." in README to "Nanoservices in no time with seamless TypeScript support."
+- Some `.on` listeners to `.once` instead.
+- The `.use()` method on `ServiceCluster` to also support service identifier input.
 
 ### Fixed
 

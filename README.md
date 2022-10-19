@@ -334,6 +334,7 @@ Each `ServiceCluster` instance has access to a few methods and properties.
 |-|-|-|
 | `activeServices` | Property | The number of currently running services on the cluster. |
 | `activeServiceCalls` | Property | The number of currently active task calls on all services on the cluster. |
+| `currentServices` | Property | An array of objects for each active service on the cluster. Each object contains the `service`, its current `active` count, and its unique `identifier`. |
 | `launchService()` | Method | Launch a new service on the provided **Nanolith API**, and automatically manage it with the `ServiceCluster`. |
 | `addService()` | Method | Add an already running service to to the cluster. |
 | `use()` | Method | Returns the `Service` instance on the cluster that is currently the least active. If no services are active on the cluster, an error will be thrown. |
