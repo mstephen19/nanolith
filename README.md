@@ -46,11 +46,11 @@ The newest stable version of Nanolith is `0.1.1`.
 
 ### Features
 
-* Support for an automatically called `__initializeService` hook when launching a service.
-* Support for new `__beforeTask` and `__afterTask` hooks when calling a task.
-* `closeAllIdle()` method and `currentServices` property on `ServiceCluster`.
-* Support for an `identifier` parameter in the `.use()` method on `ServiceCluster`.
-* `threadID` and raw `worker` properties now available on `Service` instances.
+* Support for an automatically called `__initializeService` [hook](#hooks) when launching a service.
+* Support for new `__beforeTask` and `__afterTask` [hooks](#hooks) when calling a task.
+* `closeAllIdle()` method and `currentServices` property on [`ServiceCluster`](#using-servicecluster).
+* Support for an `identifier` parameter in the `.use()` method on [`ServiceCluster`](#using-servicecluster).
+* `threadID` and raw `worker` properties now available on [`Service`](#using-a-service) instances.
 * New `waitForMessage()` function under `parent`.
 
 ### Fixes
