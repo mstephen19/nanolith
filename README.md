@@ -236,6 +236,7 @@ The main method on launched services that you'll be using is `.call()`; however,
 |-|-|-|
 | `threadID` | Property | The thread ID of the underlying worker for the `Service` instance. |
 | `closed` | Property | Whether or not the underlying worker has exited its process. This will be `true` after calling `await service.close()`|
+| `worker` | Property | Returns the raw underlying `Worker` instance being used by the service.. |
 | `call()` | Method | Call a task to be run within the service worker. |
 | `close()` | Method | Terminates the worker, ending its process and marking the `Service` instance as `closed`. |
 | `sendMessage()` | Method | Send a message to the service worker. |
@@ -334,6 +335,7 @@ Each `ServiceCluster` instance has access to a few methods and properties.
 |-|-|-|
 | `activeServices` | Property | The number of currently running services on the cluster. |
 | `activeServiceCalls` | Property | The number of currently active task calls on all services on the cluster. |
+| `currentServices` | Property | An array of objects for each active service on the cluster. Each object contains the `service`, its current `active` count, and its unique `identifier`. |
 | `launchService()` | Method | Launch a new service on the provided **Nanolith API**, and automatically manage it with the `ServiceCluster`. |
 | `addService()` | Method | Add an already running service to to the cluster. |
 | `use()` | Method | Returns the `Service` instance on the cluster that is currently the least active. If no services are active on the cluster, an error will be thrown. |

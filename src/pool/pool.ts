@@ -122,7 +122,7 @@ class Pool {
 
         item.emit('created', worker);
 
-        worker.on('exit', () => {
+        worker.once('exit', () => {
             this.#active--;
             this.#next();
         });

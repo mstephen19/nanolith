@@ -38,6 +38,14 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     }
 
     /**
+     * An array of objects for each active service on the cluster. Each object contains the `service`,
+     * its current `active` count, and its unique `identifier`.
+     */
+    get currentServices() {
+        return Object.freeze(Object.values(this.#serviceMap));
+    }
+
+    /**
      * The number of currently active task calls on all services on the cluster.
      */
     get activeServiceCalls() {
@@ -72,6 +80,12 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * Add an already running service to to the cluster.
      *
      * @param service An already running {@link Service}
+     *
+     * @example
+     * const service = await api.launchService();
+     * // ... later
+     * const cluster = new ServiceCluster(api);
+     * cluster.addService(service);
      */
     addService(service: Service<Definitions>) {
         this.#registerNewService(service);
@@ -99,12 +113,34 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
 
     /**
      *
+     * @param identifier A unique identifier for a specific service on the cluster. Retrievable via
+     * `cluster.currentServices`
+     *
+     * @returns The {@link Service} instance on the cluster that has the specified identifier. If
+     * a service with the identifier is not found, the default behavior will be used.
+     */
+    use(identifier: string): Service<Definitions>;
+    /**
+     *
      * @returns The {@link Service} instance on the cluster that is currently the least active.
      * If no services are active, an error will be thrown.
      */
-    use() {
-        const values = Object.values(this.#serviceMap);
+    use(): Service<Definitions>;
+    /**
+     *
+     * @returns The {@link Service} instance on the cluster that is currently the least active.
+     * If no services are active, an error will be thrown. If the `identifier` parameter is provided,
+     * the service with the specified identifier will be used if it exists on the cluster (otherwise
+     * the default behavior will be used).
+     */
+    use(identifier?: string) {
+        // Handle the case of if the identifier is provided
+        if (typeof identifier === 'string' && identifier in this.#serviceMap) {
+            return this.#serviceMap[identifier];
+        }
 
+        // Default behavior - find the least active service.
+        const values = Object.values(this.#serviceMap);
         if (!values.length) throw new Error('No running services found on this ServiceCluster!');
 
         if (values.length === 1) return values[0].service;

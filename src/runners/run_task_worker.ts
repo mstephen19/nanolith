@@ -26,7 +26,7 @@ export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, i
     });
 
     const promise = new Promise((resolve, reject) => {
-        item.on('created', (worker) => {
+        item.once('created', (worker) => {
             worker.on('error', reject);
             worker.on('messageerror', reject);
 

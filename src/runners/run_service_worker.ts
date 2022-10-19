@@ -25,7 +25,7 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
     });
 
     const promise = new Promise((resolve, reject) => {
-        item.on('created', (worker) => {
+        item.once('created', (worker) => {
             worker.on('error', reject);
 
             const handleInitialization = (body: WorkerBaseMessageBody) => {
