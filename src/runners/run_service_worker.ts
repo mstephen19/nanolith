@@ -27,12 +27,12 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
     const promise = new Promise((resolve, reject) => {
         item.on('created', (worker) => {
             worker.on('error', reject);
-            // worker.on('online', () => {
-            worker.on('message', (body: WorkerBaseMessageBody) => {
+
+            const handleInitialization = (body: WorkerBaseMessageBody) => {
                 if (body.type !== WorkerMessageType.Initialized) return;
 
                 const service = new Service(worker);
-                // Register the exception handler
+                // Register the listener for the exception handler
                 if (exceptionHandler && typeof exceptionHandler === 'function') {
                     worker.on('message', async (body: WorkerBaseMessageBody) => {
                         if (body.type !== WorkerMessageType.WorkerException) return;
@@ -45,9 +45,13 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
 
                 // Resolve with a Service API instance
                 resolve(service);
+
+                // Clean up listeners
                 worker.off('error', reject);
-            });
-            // });
+                worker.off('message', handleInitialization);
+            };
+
+            worker.on('message', handleInitialization);
         });
     }) as Promise<Service<Definitions>>;
 

@@ -118,6 +118,8 @@ class Pool {
         if (reffed) worker.ref();
         else worker.unref();
 
+        worker.setMaxListeners(100);
+
         item.emit('created', worker);
 
         worker.on('exit', () => {

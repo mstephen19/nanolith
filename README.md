@@ -234,6 +234,7 @@ The main method on launched services that you'll be using is `.call()`; however,
 
 | Name | Type | Description |
 |-|-|-|
+| `threadID` | Property | The thread ID of the underlying worker for the `Service` instance. |
 | `closed` | Property | Whether or not the underlying worker has exited its process. This will be `true` after calling `await service.close()`|
 | `call()` | Method | Call a task to be run within the service worker. |
 | `close()` | Method | Terminates the worker, ending its process and marking the `Service` instance as `closed`. |

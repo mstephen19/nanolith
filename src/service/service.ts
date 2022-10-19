@@ -60,6 +60,13 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         return this.#terminated;
     }
 
+    /**
+     * The thread ID of the underlying worker for the `Service` instance.
+     */
+    get threadID() {
+        return this.#worker.threadId;
+    }
+
     #assertIsNotTerminated() {
         if (this.#terminated) throw new Error("Attempting to execute operations within a service who's process has exited!");
     }
@@ -120,6 +127,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
                     reject((body as WorkerCallErrorMessageBody).data);
                 }
 
+                // Clean up listener
                 this.#worker.off('message', callback);
                 // Emit an event notifying that the service has completed making
                 // a call
