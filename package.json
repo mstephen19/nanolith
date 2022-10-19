@@ -26,7 +26,10 @@
         "thread pool",
         "child process",
         "workers",
-        "worker"
+        "worker",
+        "worker threads",
+        "piscina",
+        "pool"
     ],
     "author": "Matt Stephens",
     "license": "MIT",

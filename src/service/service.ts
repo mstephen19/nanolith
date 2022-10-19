@@ -67,6 +67,13 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         return this.#worker.threadId;
     }
 
+    /**
+     * Returns the raw underlying {@link Worker} instance being used by the service.
+     */
+    get worker() {
+        return this.#worker;
+    }
+
     #assertIsNotTerminated() {
         if (this.#terminated) throw new Error("Attempting to execute operations within a service who's process has exited!");
     }
