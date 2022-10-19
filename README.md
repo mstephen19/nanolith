@@ -337,6 +337,7 @@ Each `ServiceCluster` instance has access to a few methods and properties.
 | `addService()` | Method | Add an already running service to to the cluster. |
 | `use()` | Method | Returns the `Service` instance on the cluster that is currently the least active. If no services are active on the cluster, an error will be thrown. |
 | `closeAll()` | Method | Runs the `close()` method on all `Service` instances on the cluster. |
+| `closeAllIdle()` | Method | Runs the `close()` method on all `Service` instances on the cluster which are currently not running any tasks. |
 
 ## Communicating between threads
 

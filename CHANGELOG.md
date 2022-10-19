@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Support for an automatically called `__initializeService` function when launching a service.
 - New internal `Initialized` worker message type.
 - "Using a service initializer task function" section in README.
+- `closeAllIdle()` method to `ServiceCluster`.
+- Docs for `closeAllIdle()` to README/
 
 ### Changed
 

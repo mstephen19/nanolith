@@ -1,5 +1,4 @@
 import { ServiceCluster } from '../index.js';
-import { Nanolith } from '../types/nanolith.js';
 import { clusterTester, clusterTesterDefinitions } from './worker.js';
 
 describe('ServiceCluster', () => {
@@ -52,6 +51,19 @@ describe('ServiceCluster', () => {
             const [id1, id2] = await Promise.all([p1, p2]);
 
             expect(id1).not.toEqual(id2);
+        });
+    });
+
+    describe('closeAllIdle', () => {
+        it('Should close any idle services', async () => {
+            await cluster.launchService();
+            await cluster.launchService();
+
+            cluster.use().call({ name: 'add', params: [1, 2] });
+
+            await cluster.closeAllIdle();
+
+            expect(cluster.activeServices).toBe(1);
         });
     });
 });
