@@ -1,5 +1,4 @@
-import type { Except } from 'type-fest';
-import type { Awaitable } from './utilities.js';
+import type { Awaitable, Except } from './utilities.js';
 
 /**
  * A function that can be used in the `define` function when defining
