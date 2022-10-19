@@ -7,4 +7,5 @@ export const api = await define({
     },
     __beforeTask: () => console.log('starting'),
     __afterTask: () => console.log('finished'),
+    __initializeService: () => console.log('starting service'),
 });
