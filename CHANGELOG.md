@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Extra keywords to `package.json`.
 - `worker` getter to `Service` + docs.
 - `waitForMessage` function to `parent`.
+- "What's new?" section to README.
 
 ### Changed
 

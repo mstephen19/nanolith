@@ -13,6 +13,7 @@ Nanoservices in no time with seamless TypeScript support.
 ## Table of Contents
 
 * [About](#about)
+* [What's new?](#whats-new)
 * [Defining a set of tasks](#defining-a-set-of-tasks)
   * [Creating multiple sets of definitions in the same file with `identifier`s](#creating-multiple-sets-of-definitions-in-the-same-file-with-identifiers)
   * [Dealing with "Cannot find module" with the `file` option](#dealing-with-cannot-find-module-with-the-file-option)
@@ -36,6 +37,22 @@ Nanoservices in no time with seamless TypeScript support.
 So how's **Nanolith** any different? Other than being more performant, more reliable, and having even more seamless TypeScript support, Nanolith has just two APIs. The **Nanolith API** can be used to call one-off workers, and directly on that API, the `launchService()` function can be called to launch a long-running worker that has access to your function definitions that will only finish once it's been told to `terminate()`. When you launch a service, you are immediately able to communicate back and forth between the worker and the main thread with no other APIs needed.
 
 Enough talk though, let's look at how this thing works.
+
+## What's new?
+
+The newest stable version of Nanolith is `0.1.1`.
+
+### Features
+
+* Support for an automatically called `__initializeService` function when launching a service.
+* `closeAllIdle()` method and `currentServices` property on `ServiceCluster`.
+* Support for an `identifier` parameter in the `.use()` method on `ServiceCluster`.
+* `threadID` and raw `worker` properties now available on `Service` instances.
+* New `waitForMessage()` function under `parent`.
+
+### Fixes
+
+* **Possible EventEmitter memory leak detected** error (thrown from `Worker` instances when calling many tasks on a service) fixed by cleaning up _all_ listeners and increasing the limit with `setMaxListeners`.
 
 ## Defining a set of tasks
 
@@ -167,7 +184,7 @@ When running a task, there are more configurations available other than the `nam
 | `params` | array | `[]` | The parameters to pass to the task function. |
 | `priority` | boolean | `false` | Whether or not to push the worker to the front of the `pool`'s queue and treat it as a priority task. |
 | `reffed` | boolean | `true` | When `true`, [`worker.ref()`](https://nodejs.org/api/worker_threads.html#workerref) will be called. When `false`, [`worker.unref()`](https://nodejs.org/api/worker_threads.html#workerunref) will be called. |
-| `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing *most* of the options available on the `Worker` constructor. |
+| `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the `Worker` constructor. |
 | `messengers` | Messenger[] | `[]` | An array of `Messenger` objects to expose to the task's worker. |
 
 ## Launching a service
@@ -219,7 +236,7 @@ Similar to running a task, various options are available when configuring a serv
 | `exceptionHandler` | Function | - | An optional but recommended option that allows for the catching of uncaught exceptions within the service. |
 | `priority` | boolean | `false` | Whether or not to push the worker to the front of the `pool`'s queue and treat it as a priority task. |
 | `reffed` | boolean | `true` | When `true`, [`worker.ref()`](https://nodejs.org/api/worker_threads.html#workerref) will be called. When `false`, [`worker.unref()`](https://nodejs.org/api/worker_threads.html#workerunref) will be called. |
-| `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing *most* of the options available on the `Worker` constructor. |
+| `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the `Worker` constructor. |
 | `messengers` | Messenger[] | `[]` | An array of `Messenger` objects to expose to the service worker. |
 
 ### Using a service initializer task function
