@@ -11,10 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Support for an automatically called `__initializeService` function when launching a service.
 - New internal `Initialized` worker message type.
 - "Using a service initializer task function" section in README.
-- `closeAllIdle()` method to `ServiceCluster`.
-- Docs for `closeAllIdle()` to README/
+- `closeAllIdle()` method to `ServiceCluster` + docs.
+- `threadID` getter to `Service` + docs.
 
 ### Changed
 
 - `runServiceWorker`'s listener on `worker` from the `"online"` event to the new custom `Initialized` message type.
 - "Nanoservices in no time." in README to "Nanoservices in no time with seamless TypeScript support."
+
+### Fixed
+
+- Max listeners reached error by cleaning up listeners and increasing the limit to 100.
