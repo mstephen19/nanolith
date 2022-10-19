@@ -2,7 +2,7 @@ import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
 import v4 from 'lite-uuid-v4';
 
 import type { Worker, TransferListItem } from 'worker_threads';
-import type { TaskDefinitions } from '../types/definitions.js';
+import type { TaskDefinitions, Tasks } from '../types/definitions.js';
 import type {
     MainThreadCallMessageBody,
     WorkerBaseMessageBody,
@@ -98,7 +98,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      *
      * console.log(data);
      */
-    async call<Name extends CleanKeyOf<Definitions>>({
+    async call<Name extends CleanKeyOf<Tasks<Definitions>>>({
         name,
         params,
         transferList,

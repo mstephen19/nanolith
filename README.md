@@ -16,13 +16,15 @@ Nanoservices in no time with seamless TypeScript support.
 * [What's new?](#whats-new)
 * [Defining a set of tasks](#defining-a-set-of-tasks)
   * [Creating multiple sets of definitions in the same file with `identifier`s](#creating-multiple-sets-of-definitions-in-the-same-file-with-identifiers)
+  * [Hooks](#hooks)
   * [Dealing with "Cannot find module" with the `file` option](#dealing-with-cannot-find-module-with-the-file-option)
 * [Running a task](#running-a-task)
   * [Configuring a task](#configuring-a-task)
+  * [Using the before and after task hooks](#using-the-before-and-after-task-hooks)
 * [Launching a service](#launching-a-service)
   * [Configuring a service](#configuring-a-service)
   * [Using a service](#using-a-service)
-  * [Using a service initializer task function](#using-a-service-initializer-task-function)
+  * [Using the service initializer hook](#using-the-service-initializer-hook)
 * [Managing concurrency](#managing-concurrency)
   * [Using `pool`](#using-pool)
 * [Creating a service cluster](#creating-a-service-cluster)
@@ -44,10 +46,11 @@ The newest stable version of Nanolith is `0.1.1`.
 
 ### Features
 
-* Support for an automatically called `__initializeService` function when launching a service.
-* `closeAllIdle()` method and `currentServices` property on `ServiceCluster`.
-* Support for an `identifier` parameter in the `.use()` method on `ServiceCluster`.
-* `threadID` and raw `worker` properties now available on `Service` instances.
+* Support for an automatically called `__initializeService` [hook](#hooks) when launching a service.
+* Support for new `__beforeTask` and `__afterTask` [hooks](#hooks) when calling a task.
+* `closeAllIdle()` method and `currentServices` property on [`ServiceCluster`](#using-servicecluster).
+* Support for an `identifier` parameter in the `.use()` method on [`ServiceCluster`](#using-servicecluster).
+* `threadID` and raw `worker` properties now available on [`Service`](#using-a-service) instances.
 * New `waitForMessage()` function under `parent`.
 
 ### Fixes
@@ -113,6 +116,16 @@ export const logger = await define({
 ```
 
 Issues will occur when multiple sets of definitions are present in the same file, but unique identifiers aren't assigned.
+
+### Hooks
+
+You may run into situations where you want to run a certain function before/after each task is called, or before a service is launched. There are three hooks which are available for use when creating a set of definitions that allow for these cases to be handled. These hooks have specific names, and are functions that take no parameters and return nothing.
+
+| Name | Functionality |
+|-|-|
+| `__initializeService` | A function which will be automatically called once when a service for the set of definitions is launched. If asynchronous, it will be awaited. Note that the `launchService()` function's promise resolves only after this function has completed. |
+| `__beforeTask` | A function which will be automatically called before each task function is run. Not supported with services. |
+| `__afterTask` | A function which will be automatically called after each task function is run. Not supported with services. |
 
 ### Dealing with "Cannot find module" with the `file` option
 
@@ -187,6 +200,10 @@ When running a task, there are more configurations available other than the `nam
 | `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the `Worker` constructor. |
 | `messengers` | Messenger[] | `[]` | An array of `Messenger` objects to expose to the task's worker. |
 
+### Using the before and after task hooks
+
+When calling tasks, you might want to run the same piece of logic before or after each task (or both). Luckily, rather than copying and pasting the same logic into each task function in your set of definitions, you can use the `__beforeTask` and `afterTask` [hooks](#hooks) on your set of definitions.
+
 ## Launching a service
 
 Services differ from tasks, as they are not one-off workers. They are long-running workers that will continue running until they are `close()`d. A service has access to all of the task functions in the set of definitions it is using.
@@ -239,9 +256,9 @@ Similar to running a task, various options are available when configuring a serv
 | `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the `Worker` constructor. |
 | `messengers` | Messenger[] | `[]` | An array of `Messenger` objects to expose to the service worker. |
 
-### Using a service initializer task function
+### Using the service initializer hook
 
-There may be times when you want to have a task function be automatically called right when the service goes online. This is called a **service initializer** function, and it can be used to register listeners on the `parent` or on a `Messenger` instance, or to do any other internal configuration of the service before any tasks can be called on it.
+There may be times when you want to have a task function be automatically called right when the service goes online. This is called a **service initializer** [hook](#hooks), and it can be used to register listeners on the `parent` or on a `Messenger` instance, or to do any other internal configuration of the service before any tasks can be called on it.
 
 To create a service initializer function, simply name one of your task definitions `__initializeService` and define your initialization logic there. The function will be run immediately after the service goes online, and the `launchService()` function will only resolve after the initialization function has completed its work.
 

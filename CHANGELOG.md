@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Support for an automatically called `__initializeService` function when launching a service.
+- Support for an automatically called `__initializeService` hook when launching a service + docs.
 - New internal `Initialized` worker message type.
 - "Using a service initializer task function" section in README.
 - `closeAllIdle()` method to `ServiceCluster` + docs.
@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `worker` getter to `Service` + docs.
 - `waitForMessage` function to `parent`.
 - "What's new?" section to README.
+- Support for new `__beforeTask` and `__afterTask` hooks when calling a task + docs.
 
 ### Changed
 
@@ -25,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - "Nanoservices in no time." in README to "Nanoservices in no time with seamless TypeScript support."
 - Some `.on` listeners to `.once` instead.
 - The `.use()` method on `ServiceCluster` to also support service identifier input.
+- `TaskDefinitions` type to include special typing for `__initializeService` function
 
 ### Fixed
 
