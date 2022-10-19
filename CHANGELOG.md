@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `currentServices` getter to `ServiceCluster` + docs.
 - Extra keywords to `package.json`.
 - `worker` getter to `Service` + docs.
+- `waitForMessage` function to `parent`.
 
 ### Changed
 

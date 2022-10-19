@@ -35,6 +35,39 @@ function sendMessage<Data = any>(data: Data, transferList?: readonly TransferLis
 }
 
 /**
+ * Wait for specific messages coming from the main thread.
+ *
+ * @param callback A function returning a boolean that will be run each time a message is received the main thread.
+ * Once the condition is met and the function returns `true`, the promise will resolve with the data received.
+ *
+ * @returns A promise of the received data.
+ *
+ * @example
+ * const data = await parent.waitForMessage<{ foo: string }>(({ foo }) => foo === 'bar');
+ *
+ * console.log(data);
+ */
+async function waitForMessage<Data = any>(callback: (body: Data) => Awaitable<boolean>) {
+    assertIsNotMainThread('parent.waitForMessage');
+
+    return new Promise((resolve) => {
+        const handler = async (body: MainThreadBaseMessageBody) => {
+            if (body.type !== MainThreadMessageType.Message) return;
+            const { data } = body as MainThreadSendMessageBody<Data>;
+
+            if (await callback(data)) {
+                resolve(data);
+
+                // Clean up listener
+                parentPort?.off('message', handler);
+            }
+        };
+
+        parentPort?.on('message', handler);
+    }) as Promise<Data>;
+}
+
+/**
  * Listen for messages coming from the main thread.
  *
  * @param callback A function to run each time a message is received from the main thread.
@@ -105,4 +138,5 @@ export const parent = Object.freeze({
     onMessage,
     offMessage,
     onMessengerReceived,
+    waitForMessage,
 });
