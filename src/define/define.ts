@@ -4,7 +4,7 @@ import { runTaskWorker } from '../runners/index.js';
 import { runServiceWorker } from '../runners/index.js';
 import { getCurrentFile } from './utilities.js';
 
-import type { DefineOptions, TaskDefinitions } from '../types/definitions.js';
+import type { DefineOptions, TaskDefinitions, Tasks } from '../types/definitions.js';
 import type { Nanolith } from '../types/nanolith.js';
 import type { ServiceWorkerOptions, TaskWorkerOptions } from '../types/workers.js';
 import type { CleanKeyOf, CleanReturnType } from '../types/utilities.js';
@@ -55,7 +55,7 @@ export async function define<Definitions extends TaskDefinitions>(
 
     return Object.freeze(
         Object.assign(
-            async <Name extends CleanKeyOf<Definitions>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
+            async <Name extends CleanKeyOf<Tasks<Definitions>>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
                 return runTaskWorker(file, identifier, options as TaskWorkerOptions) as Promise<CleanReturnType<Definitions[Name]>>;
             },
             {

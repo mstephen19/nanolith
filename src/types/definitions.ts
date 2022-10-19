@@ -1,3 +1,4 @@
+import type { Except } from 'type-fest';
 import type { Awaitable } from './utilities.js';
 
 /**
@@ -6,10 +7,41 @@ import type { Awaitable } from './utilities.js';
  */
 export type TaskFunction = (...args: any[]) => Awaitable<any>;
 
+export type Hook = () => Awaitable<void>;
+
 /**
  * A collection of task functions.
  */
-export type TaskDefinitions = Record<string, TaskFunction>;
+export type TaskDefinitions = Record<string, TaskFunction> & {
+    /**
+     * A function which will be automatically called once when a service for
+     * the set of definitions is launched. If asynchronous, it will be
+     * awaited.
+     *
+     * Note that the `launchService()` function's promise resolves only after
+     * this function has completed.
+     *
+     * Not supported with regular task calls. Use `__beforeTask` instead.
+     */
+    __initializeService?: Hook;
+    /**
+     * A function which will be automatically called before each task function is run.
+     *
+     * Not supported with services.
+     */
+    __beforeTask?: Hook;
+    /**
+     * A function which will be automatically called after each task function is run.
+     *
+     * Not supported with services.
+     */
+    __afterTask?: Hook;
+};
+
+/**
+ * A collection of task functions, excluding the `__initializeService` function if present.
+ */
+export type Tasks<Definitions extends TaskDefinitions> = Except<Definitions, '__initializeService' | '__beforeTask' | '__afterTask'>;
 
 export type DefineOptions = {
     /**

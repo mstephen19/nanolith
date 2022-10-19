@@ -30,6 +30,12 @@ export async function taskWorkerHandler<Definitions extends TaskDefinitions>(def
             throw new Error(`A task with the name ${name} doesn't exist!`);
         }
 
+        // Run the before hook if present
+        if ('__beforeTask' in definitions && typeof definitions['__beforeTask'] === 'function') {
+            await definitions['__beforeTask']();
+        }
+
+        // Run the task function
         const data = await definitions[name](...params);
 
         const body: WorkerTaskReturnMessageBody = {
@@ -37,7 +43,13 @@ export async function taskWorkerHandler<Definitions extends TaskDefinitions>(def
             data,
         };
 
+        // Send the return value back to the main thread
         parentPort!.postMessage(body);
+
+        // Run the after hook if present
+        if ('__afterTask' in definitions && typeof definitions['__afterTask'] === 'function') {
+            await definitions['__afterTask']();
+        }
     } catch (error) {
         const body: WorkerTaskErrorMessageBody = {
             type: WorkerMessageType.TaskError,

@@ -1,4 +1,4 @@
-import type { TaskDefinitions } from './definitions.js';
+import type { TaskDefinitions, Tasks } from './definitions.js';
 import type { CleanKeyOf, CleanReturnType } from './utilities.js';
 import type { TaskWorkerOptions, ServiceWorkerOptions } from './workers.js';
 import type { Service } from '../service/index.js';
@@ -23,7 +23,7 @@ export type Nanolith<Definitions extends TaskDefinitions> = {
      *
      * console.log(data);
      */
-    <Name extends CleanKeyOf<Definitions>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>): Promise<
+    <Name extends CleanKeyOf<Tasks<Definitions>>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>): Promise<
         CleanReturnType<Definitions[Name]>
     >;
     /**
