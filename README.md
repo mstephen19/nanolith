@@ -123,9 +123,9 @@ You may run into situations where you want to run a certain function before/afte
 
 | Name | Functionality |
 |-|-|
-| `__initializeService` | A function which will be automatically called once when a service for the set of definitions is launched. If asynchronous, it will be awaited. Note that the `launchService()` function's promise resolves only after this function has completed. |
-| `__beforeTask` | A function which will be automatically called before each task function is run. Not supported with services. |
-| `__afterTask` | A function which will be automatically called after each task function is run. Not supported with services. |
+| `__initializeService()` | A function which will be automatically called once when a service for the set of definitions is launched. If asynchronous, it will be awaited. Note that the `launchService()` function's promise resolves only after this function has completed. |
+| `__beforeTask()` | A function which will be automatically called before each task function is run. Not supported with services. |
+| `__afterTask()` | A function which will be automatically called after each task function is run. Not supported with services. |
 
 ### Dealing with "Cannot find module" with the `file` option
 
