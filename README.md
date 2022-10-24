@@ -30,6 +30,8 @@ Nanoservices in no time with seamless TypeScript support.
 * [Creating a service cluster](#creating-a-service-cluster)
   * [Using `ServiceCluster`](#using-servicecluster)
 * [Communicating between threads](#communicating-between-threads)
+  * [Sending messages from the main thread to a service](#sending-messages-from-the-main-thread-to-a-service)
+  * [Sending & receiving messages between tasks/services and the main thread](#sending--receiving-messages-between-tasksservices-and-the-main-thread)
 * [Fun example](#fun-example)
 
 ## About
@@ -378,9 +380,70 @@ Each `ServiceCluster` instance has access to a few methods and properties.
 
 ## Communicating between threads
 
-<!-- todo: Go over the two ways of communicating: between main thread and worker on Service, or with Messenger -->
+In **Nanolith** there are two ways to communicate with workers.
 
-These docs are still under construction! This section will soon be fleshed out. If you're eager to learn how to communicate amongst threads in Nanolith, check out the JSDoc examples for the exported values `parent`, `messages`, `Messenger`, and `Service`.
+### Sending messages from the main thread to a service
+
+On the [`Service`](#using-a-service) object, there are many methods present which allow for sending and receiving messages to the service worker. These methods are `service.sendMessage()`, `service.onMessage()`, and `service.offMessage()`.
+
+```TypeScript
+import { api } from './definitions.js';
+
+const service = await api.launchService();
+
+// Send a message to the service worker
+service.sendMessage('hi');
+
+// Handle messages received from the service worker
+service.onMessage<string>(function callback(data) {
+    console.log(`received message from worker: ${data}`);
+    // Once the message has been received, remove the listener
+    service.offMessage(callback);
+});
+```
+
+That covers it on the main thread.
+
+Within workers, the global `parent` object can be used to send and receive messages to a `Service` instance back on the main thread. `parent` has the same exact methods, along with the additional `parent.waitForMessage()`.
+
+```TypeScript
+import { define, parent } from 'nanolith';
+
+export const api = await define({
+    __initializeService() {
+        // Handle messages received from the main thread
+        parent.onMessage<number>(function callback(data) {
+            console.log(data - 351);
+            // Once the message has been received, remove the listener
+            parent.offMessage(callback);
+        });
+    },
+    async sendSomething() {
+        // Wait for a message to be received from the main thread. Once
+        // the condition returns with "true", the promise resolves with
+        // the received data.
+        await parent.waitForMessage<number>((data) => data === 1337);
+        // Send a message to the main thread
+        parent.sendMessage(420);
+    },
+});
+```
+
+> When using services, it is recommended to register listeners on `parent` within the [`__initializeService()` hook](#using-the-service-initializer-hook) to avoid the need to manually call a custom task which registers listeners.
+
+### Sending & receiving messages between tasks/services and the main thread
+
+More complex use cases may demand that communication can happen not only between the main thread and services, but between all threads.
+
+> If your use case does not demand the need to communicate to multiple workers at once, or to communicate between workers, you do not need to use the `Messenger` API.
+
+<!-- Go over methods on "Messenger" -->
+
+The `Messenger` class fills the gap for this use case.
+
+<!-- Go over functions on "messages" -->
+
+<!-- These docs are still under construction! This section will soon be fleshed out. If you're eager to learn how to communicate amongst threads in Nanolith, check out the JSDoc examples for the exported values `parent`, `messages`, `Messenger`, and `Service`. -->
 
 ## Fun example
 

@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `waitForMessage` function to `parent`.
 - "What's new?" section to README.
 - Support for new `__beforeTask` and `__afterTask` hooks when calling a task + docs.
+- `messages.seek()` method.
 
 ### Changed
 
