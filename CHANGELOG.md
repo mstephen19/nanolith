@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.1.1] - 2022-24-10
+
 ### Added
 
 - Support for an automatically called `__initializeService` hook when launching a service + docs.
