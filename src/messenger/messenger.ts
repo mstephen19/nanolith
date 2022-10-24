@@ -1,4 +1,4 @@
-import v4 from 'lite-uuid-v4';
+import { randomUUID as v4 } from 'crypto';
 import { isMessengerTransferObject } from './utilities.js';
 import { BroadcastChannel } from 'worker_threads';
 

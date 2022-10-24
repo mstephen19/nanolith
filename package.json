@@ -46,7 +46,6 @@
     },
     "dependencies": {
         "callsites": "^4.0.0",
-        "lite-uuid-v4": "^1.0.0",
         "tiny-typed-emitter": "^2.1.0"
     }
 }
