@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Some `.on` listeners to `.once` instead.
 - The `.use()` method on `ServiceCluster` to also support service identifier input.
 - `TaskDefinitions` type to include special typing for `__initializeService` function
+- `Hook`s to now have the `threadId` passed into them as the argument.
 
 ### Fixed
 

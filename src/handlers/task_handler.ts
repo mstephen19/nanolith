@@ -1,4 +1,4 @@
-import { workerData, parentPort } from 'worker_threads';
+import { workerData, parentPort, threadId } from 'worker_threads';
 import { WorkerMessageType } from '../types/messages.js';
 
 import type { TaskDefinitions } from '../types/definitions.js';
@@ -31,9 +31,7 @@ export async function taskWorkerHandler<Definitions extends TaskDefinitions>(def
         }
 
         // Run the before hook if present
-        if ('__beforeTask' in definitions && typeof definitions['__beforeTask'] === 'function') {
-            await definitions['__beforeTask']();
-        }
+        await definitions['__beforeTask']?.(threadId);
 
         // Run the task function
         const data = await definitions[name](...params);
@@ -47,9 +45,7 @@ export async function taskWorkerHandler<Definitions extends TaskDefinitions>(def
         parentPort!.postMessage(body);
 
         // Run the after hook if present
-        if ('__afterTask' in definitions && typeof definitions['__afterTask'] === 'function') {
-            await definitions['__afterTask']();
-        }
+        await definitions['__afterTask']?.(threadId);
     } catch (error) {
         const body: WorkerTaskErrorMessageBody = {
             type: WorkerMessageType.TaskError,

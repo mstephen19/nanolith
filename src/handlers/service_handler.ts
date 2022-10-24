@@ -1,4 +1,4 @@
-import { parentPort, workerData } from 'worker_threads';
+import { parentPort, workerData, threadId } from 'worker_threads';
 import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
 import { applyMessengerTransferObjects } from './utilities.js';
 import { Messenger } from '../messenger/index.js';
@@ -29,9 +29,8 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
         parentPort!.postMessage(body);
     });
 
-    if ('__initializeService' in definitions && typeof definitions['__initializeService'] === 'function') {
-        await definitions['__initializeService']();
-    }
+    // If provided an initialization hook, run it.
+    await definitions['__initializeService']?.(threadId);
 
     // Notify the main thread that the worker has initialized.
     parentPort?.postMessage({
