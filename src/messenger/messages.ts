@@ -45,6 +45,25 @@ async function use(name: string) {
 }
 
 /**
+ * Grab hold of an object containing all `Messenger`s available within the current worker.
+ *
+ * **Tip:** Useful when debugging issues involving `Messenger`s.
+ *
+ * @returns An object containing `Messenger`s organized based on their names.
+ *
+ * @example
+ * const messengers = messages.seek();
+ * console.log(messengers); // -> { foo: Messenger, bar: Messenger }
+ * console.log(messengers.foo.uniqueKey);
+ */
+function seek() {
+    assertIsNotMainThread('messages.seek');
+
+    const { messengers } = workerData as BaseWorkerData;
+    return messengers;
+}
+
+/**
  *
  * An object containing functions to be used within workers when interacting with {@link Messenger}s.
  *
@@ -53,4 +72,4 @@ async function use(name: string) {
  *
  * messenger.onMessage<string>((data) => console.log(data, 'received!'));
  */
-export const messages = Object.freeze({ use });
+export const messages = Object.freeze({ use, seek });
