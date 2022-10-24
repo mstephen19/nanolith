@@ -6,7 +6,7 @@ import type { Awaitable, Except } from './utilities.js';
  */
 export type TaskFunction = (...args: any[]) => Awaitable<any>;
 
-export type Hook = (threadId: number) => Awaitable<void>;
+export type Hook = (threadID: number) => Awaitable<void>;
 
 /**
  * A collection of task functions.

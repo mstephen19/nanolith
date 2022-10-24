@@ -119,7 +119,7 @@ Issues will occur when multiple sets of definitions are present in the same file
 
 ### Hooks
 
-You may run into situations where you want to run a certain function before/after each task is called, or before a service is launched. There are three hooks which are available for use when creating a set of definitions that allow for these cases to be handled. These hooks have specific names, and are functions that take no parameters and return nothing.
+You may run into situations where you want to run a certain function before/after each task is called, or before a service is launched. There are three hooks which are available for use when creating a set of definitions that allow for these cases to be handled. These hooks have specific names, and are functions that take one parameter (the worker's `threadID`) and return nothing.
 
 | Name | Functionality |
 |-|-|
