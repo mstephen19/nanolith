@@ -55,7 +55,8 @@ The newest stable version of Nanolith is `0.1.1`.
 * `closeAllIdle()` method and `currentServices` property on [`ServiceCluster`](#using-servicecluster).
 * Support for an `identifier` parameter in the `.use()` method on [`ServiceCluster`](#using-servicecluster).
 * `threadID` and raw `worker` properties now available on [`Service`](#using-a-service) instances.
-* New `waitForMessage()` function under `parent`.
+* New [`waitForMessage()`](#sending-messages-from-the-main-thread-to-a-service) function under `parent`.
+* New [`seek()`](#sending--receiving-messages-between-tasksservices-and-the-main-thread) function under `messages`.
 
 ### Fixes
 
