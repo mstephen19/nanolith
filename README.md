@@ -32,6 +32,8 @@ Nanoservices in no time with seamless TypeScript support.
 * [Communicating between threads](#communicating-between-threads)
   * [Sending messages from the main thread to a service](#sending-messages-from-the-main-thread-to-a-service)
   * [Sending & receiving messages between tasks/services and the main thread](#sending--receiving-messages-between-tasksservices-and-the-main-thread)
+  * [Using `Messenger`](#using-messenger)
+  * [Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
 * [Fun example](#fun-example)
 
 ## About
@@ -200,7 +202,7 @@ When running a task, there are more configurations available other than the `nam
 | `priority` | boolean | `false` | Whether or not to push the worker to the front of the `pool`'s queue and treat it as a priority task. |
 | `reffed` | boolean | `true` | When `true`, [`worker.ref()`](https://nodejs.org/api/worker_threads.html#workerref) will be called. When `false`, [`worker.unref()`](https://nodejs.org/api/worker_threads.html#workerunref) will be called. |
 | `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the `Worker` constructor. |
-| `messengers` | Messenger[] | `[]` | An array of `Messenger` objects to expose to the task's worker. |
+| `messengers` | Messenger[] | `[]` | An array of [`Messenger`](#using-messenger) objects to expose to the task's worker. |
 
 ### Using the before and after task hooks
 
@@ -256,7 +258,7 @@ Similar to running a task, various options are available when configuring a serv
 | `priority` | boolean | `false` | Whether or not to push the worker to the front of the `pool`'s queue and treat it as a priority task. |
 | `reffed` | boolean | `true` | When `true`, [`worker.ref()`](https://nodejs.org/api/worker_threads.html#workerref) will be called. When `false`, [`worker.unref()`](https://nodejs.org/api/worker_threads.html#workerunref) will be called. |
 | `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the `Worker` constructor. |
-| `messengers` | Messenger[] | `[]` | An array of `Messenger` objects to expose to the service worker. |
+| `messengers` | Messenger[] | `[]` | An array of [`Messenger`](#using-messenger) objects to expose to the service worker. |
 
 ### Using the service initializer hook
 
@@ -278,7 +280,7 @@ The main method on launched services that you'll be using is `.call()`; however,
 | `sendMessage()` | Method | Send a message to the service worker. |
 | `onMessage()` | Method | Receive messages from the service worker. |
 | `offMessage()` | Method | Remove a callback function added with `onMessage()`. |
-| `sendMessenger()` | Method | Dynamically send a `Messenger` object to the service worker. |
+| [`sendMessenger()`](#dynamically-sending-messengers-to-services) | Method | Dynamically send a [`Messenger`](#using-messenger) object to the service worker. |
 
 ## Managing concurrency
 
@@ -387,7 +389,8 @@ In **Nanolith** there are two ways to communicate with workers.
 On the [`Service`](#using-a-service) object, there are many methods present which allow for sending and receiving messages to the service worker. These methods are `service.sendMessage()`, `service.onMessage()`, and `service.offMessage()`.
 
 ```TypeScript
-import { api } from './definitions.js';
+// index.ts
+import { api } from './worker.js';
 
 const service = await api.launchService();
 
@@ -400,13 +403,16 @@ service.onMessage<string>(function callback(data) {
     // Once the message has been received, remove the listener
     service.offMessage(callback);
 });
+
+await service.close();
 ```
 
 That covers it on the main thread.
 
-Within workers, the global `parent` object can be used to send and receive messages to a `Service` instance back on the main thread. `parent` has the same exact methods, along with the additional `parent.waitForMessage()`.
+Within workers, the global `parent` object can be used to send and receive messages to a `Service` instance back on the main thread. `parent` has the same exact functionalities, along with the additional `parent.waitForMessage()`.
 
 ```TypeScript
+// worker.ts
 import { define, parent } from 'nanolith';
 
 export const api = await define({
@@ -435,24 +441,110 @@ export const api = await define({
 
 More complex use cases may demand that communication can happen not only between the main thread and services, but between all threads.
 
-> If your use case does not demand the need to communicate to multiple workers at once, or to communicate between workers, you do not need to use the `Messenger` API.
+> If your use case does not demand the need to communicate to multiple workers from the same thread, or to communicate between/amongst workers, you do not need to use the `Messenger` API.
 
-<!-- Go over methods on "Messenger" -->
+The `Messenger` class fills the gap for this use case by utilizing an underlying [`BroadcastChannel`](https://nodejs.org/api/worker_threads.html#new-broadcastchannelname). A messenger can be created by calling the `Messenger` constructor and providing a unique but reproducible name.
 
-The `Messenger` class fills the gap for this use case.
+```TypeScript
+// index.ts
+import { Messenger } from 'nanolith';
 
-<!-- Go over functions on "messages" -->
+const messenger = new Messenger('foo-bar');
+```
 
-<!-- These docs are still under construction! This section will soon be fleshed out. If you're eager to learn how to communicate amongst threads in Nanolith, check out the JSDoc examples for the exported values `parent`, `messages`, `Messenger`, and `Service`. -->
+After the messenger has been created, it can be passed into a task worker or service worker within their initialization options.
+
+```TypeScript
+// index.ts
+import { Messenger } from 'nanolith';
+import { api } from './worker.js';
+
+const messenger = new Messenger('foo-bar');
+
+// Attaching a messenger to a service worker
+const service = await api.launchService({
+    messengers: [messenger],
+});
+
+// Attaching a messenger to a task worker
+await api({
+    name: 'foo',
+    messengers: [messenger],
+});
+
+await service.close();
+```
+
+> You can attach as many messengers as you want to workers; however, ensure that they all have different names to avoid issues!
+
+Similar to [`parent`](#sending--receiving-messages-between-tasksservices-and-the-main-thread), there is a specialized global object for using messengers within workers called `messages`. It has only two functions, `messages.view()` and `messages.use()`.
+
+```TypeScript
+// worker.ts
+import { define, messages } from 'nanolith';
+
+export const api = await define({
+    async sendSomething() {
+        // We now have access to the Messenger object we
+        // created and attached to the worker through this
+        // variable. It can be used to send and receive
+        // messages on the underlying BroadcastChannel.
+        const messenger = await messages.use('foo-bar');
+
+        // View all messengers currently attached to the
+        // worker
+        console.log(messages.seek());
+    },
+});
+```
+
+### Using `Messenger`
+
+Each `Messenger` instance has access to a various methods and properties.
+
+| Name | Type | Description |
+|-|-|-|
+| `ID` | Property | The unique identifier that is shared across all messenger instances using the two ports originally created when instantiating the first `Messenger`. |
+| `uniqueKey` | Property | Each `Messenger` instance is assigned a unique key that allows it to internally ignore messages on the `BroadcastChannel` which were sent by itself. |
+| `onMessage()` | Method | Listen for messages coming to the `Messenger`. |
+| `offMessage()` | Method | Remove a function from the list of callbacks to be run when a message is received on the `Messenger`. |
+| `sendMessage()` | Method | Send a messenger to be received by any other `Messenger` instances with the same identifier. |
+| `transfer()` | Method | Turns the `Messenger` instance into an object that can be sent to and from workers. |
+| `close()` | Method | Closes the underlying `BroadcastChannel` connection that is being used. |
+
+### Dynamically sending messengers to services
+
+If you didn't provide your `Messenger` instance in the `messengers` array option when launching your service (as seen in the example [here](#sending-messages-from-the-main-thread-to-a-service)), you can still attach them dynamically with the `service.sendMessenger()` method.
+
+```TypeScript
+// index.ts
+import { Messenger } from '../index.js';
+import { api } from './worker.js';
+
+const service = await api.launchService();
+
+// Creating the messenger after launching the service
+const messenger = new Messenger('hello');
+
+// The promise resolves once the service worker has
+// notified the Messenger instance that it has
+// successfully received the messenger.
+await service.sendMessenger(messenger);
+
+messenger.sendMessage('hello from main thread!');
+
+await service.close();
+```
 
 ## Fun example
+
+Classic example. Let's "promisify" a for-loop with **Nanolith**!
 
 ```TypeScript
 // worker.ts
 import { define } from 'nanolith';
 
 export const worker = await define({
-    // Classic example. Let's "promisify" a for-loop!
     // Note that these "task functions" can be either async or sync - doesn't matter.
     bigForLoop: (msg: string) => {
         for (const _ of Array(900000000).keys()) {
@@ -464,7 +556,7 @@ export const worker = await define({
 
 Notice that there's no bloat. Just keys and values (the "task functions").
 
-In our index file (or wherever else), we can simple import the `worker` variable and call it. This `worker` variable is our **Nanolith** API.
+In our index file (or wherever else), we can simply import the `worker` variable and call it. This `worker` variable is our **Nanolith** API.
 
 ```TypeScript
 // index.ts
@@ -484,4 +576,11 @@ console.log('hello world');
 const result = await promise;
 
 console.log(result);
+```
+
+The result of this code, despite the large loop being called prior to the logging of "hello world", outputs this:
+
+```text
+hello world
+test
 ```

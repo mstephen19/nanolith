@@ -22,13 +22,13 @@ export async function taskWorkerHandler<Definitions extends TaskDefinitions>(def
     try {
         const { name, params, messengerTransfers } = workerData as TaskWorkerData;
 
-        // Turn the MessengerTransferData objects back into Messenger instances
-        // and make them available on the "messengers" property on workerData
-        if (messengerTransfers.length) applyMessengerTransferObjects(messengerTransfers);
-
         if (!definitions?.[name] || typeof definitions[name] !== 'function') {
             throw new Error(`A task with the name ${name} doesn't exist!`);
         }
+
+        // Turn the MessengerTransferData objects back into Messenger instances
+        // and make them available on the "messengers" property on workerData
+        if (messengerTransfers.length) applyMessengerTransferObjects(messengerTransfers);
 
         // Run the before hook if present
         await definitions['__beforeTask']?.(threadId);

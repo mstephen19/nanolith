@@ -152,6 +152,7 @@ export class Messenger {
     }
 
     /**
+     * Send a messenger to be received by any other `Messenger` instances with the same identifier.
      *
      * @param data The data to send to the other `Messenger`s.
      *
@@ -169,7 +170,7 @@ export class Messenger {
     }
 
     /**
-     * Turns the {@link Messenger} instance into an object that can be send to and from workers.
+     * Turns the {@link Messenger} instance into an object that can be sent to and from workers.
      *
      * @returns A {@link MessageTransferData} object
      */

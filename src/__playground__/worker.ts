@@ -1,11 +1,14 @@
-import { define } from '../index.js';
+import { define, messages } from '../index.js';
 
 export const api = await define({
-    add: async (x: number, y: number) => {
-        await new Promise((r) => setTimeout(r, 2e3));
-        return x + y;
+    async sendSomething() {
+        // We now have access to the Messenger object we
+        // created and attached to the worker through this
+        // variable.
+        const messenger = await messages.use('foo-bar');
+
+        // View all messengers currently attached to the
+        // worker
+        console.log(messages.seek());
     },
-    __beforeTask: () => console.log('starting'),
-    __afterTask: () => console.log('finished'),
-    __initializeService: () => console.log('starting service'),
 });
