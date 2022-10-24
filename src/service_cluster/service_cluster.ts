@@ -1,4 +1,4 @@
-import v4 from 'lite-uuid-v4';
+import { randomUUID as v4 } from 'crypto';
 import { pool } from '../pool/index.js';
 
 import type { Nanolith } from '../types/nanolith.js';

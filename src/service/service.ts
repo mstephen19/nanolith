@@ -1,5 +1,5 @@
 import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
-import v4 from 'lite-uuid-v4';
+import { randomUUID as v4 } from 'crypto';
 
 import type { Worker, TransferListItem } from 'worker_threads';
 import type { TaskDefinitions, Tasks } from '../types/definitions.js';
