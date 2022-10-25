@@ -1,6 +1,6 @@
 # Nanolith
 
-[![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![install size](https://packagephobia.com/badge?p=nanolith@0.1.1-beta2)](https://packagephobia.com/result?p=nanolith@latest)
+[![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
 
 ![npm](https://img.shields.io/npm/v/nanolith?color=blue&style=for-the-badge) ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/nanolith?style=for-the-badge) ![npm](https://img.shields.io/npm/dw/nanolith?color=violet&style=for-the-badge) ![npm bundle size](https://img.shields.io/bundlephobia/min/nanolith?color=lightgreen&style=for-the-badge) ![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=red&style=for-the-badge)
 
@@ -10,45 +10,45 @@
 
 Nanoservices in no time with seamless TypeScript support.
 
-## Table of Contents
+## 📖 Table of Contents
 
-* [About](#about)
-* [What's new?](#whats-new)
+* [💭About](#about)
+* [What's new❔](#whats-new)
 * [Defining a set of tasks](#defining-a-set-of-tasks)
-  * [Creating multiple sets of definitions in the same file with `identifier`s](#creating-multiple-sets-of-definitions-in-the-same-file-with-identifiers)
-  * [Hooks](#hooks)
-  * [Dealing with "Cannot find module" with the `file` option](#dealing-with-cannot-find-module-with-the-file-option)
+  * [🦄Creating multiple sets of definitions in the same file with `identifier`s](#creating-multiple-sets-of-definitions-in-the-same-file-with-identifiers)
+  * [🪝Hooks](#hooks)
+  * [💩Dealing with "Cannot find module" with the `file` option](#dealing-with-cannot-find-module-with-the-file-option)
 * [Running a task](#running-a-task)
-  * [Configuring a task](#configuring-a-task)
+  * [⚙️Configuring a task](#configuring-a-task)
   * [Using the before and after task hooks](#using-the-before-and-after-task-hooks)
 * [Launching a service](#launching-a-service)
-  * [Configuring a service](#configuring-a-service)
-  * [Using a service](#using-a-service)
+  * [⚙️Configuring a service](#configuring-a-service)
+  * [🧑‍💻Using a service](#using-a-service)
   * [Using the service initializer hook](#using-the-service-initializer-hook)
 * [Managing concurrency](#managing-concurrency)
-  * [Using `pool`](#using-pool)
+  * [🏊Using `pool`](#using-pool)
 * [Creating a service cluster](#creating-a-service-cluster)
-  * [Using `ServiceCluster`](#using-servicecluster)
+  * [🧑‍💻Using `ServiceCluster`](#using-servicecluster)
 * [Communicating between threads](#communicating-between-threads)
-  * [Sending messages from the main thread to a service](#sending-messages-from-the-main-thread-to-a-service)
-  * [Sending & receiving messages between tasks/services and the main thread](#sending--receiving-messages-between-tasksservices-and-the-main-thread)
-  * [Using `Messenger`](#using-messenger)
-  * [Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
+  * [📨Sending messages from the main thread to a service](#sending-messages-from-the-main-thread-to-a-service)
+  * [📨Sending & receiving messages between tasks/services and the main thread](#sending--receiving-messages-between-tasksservices-and-the-main-thread)
+  * [✉️Using `Messenger`](#using-messenger)
+  * [📩Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
 * [Fun example](#fun-example)
 
 ## About
 
-[Threadz](https://github.com/mstephen19/threadz) gets the job done, but after receiving a lot of feedback on its APIs, I realized that it is overly complex. You have the `Threadz` API for running one-off tasks within short-term workers, the `Interact` API for running one-off tasks, but sending messages to them, the `BackgroundThreadzWorker` API for running workers that are long-running services, the `Communicate` API for communicating between workers, etc. Each of these APIs has its own methods that need to be learned by reading the documentation. Additionally, the configuration of underlying `Worker` instances in Threadz must be defined when declaring tasks, and does not allow for flexibility. Overall, Threadz has turned into a hot coupled mess.
+[Threadz](https://github.com/mstephen19/threadz) gets the job done, but after receiving a lot of feedback on its APIs, I realized that it is overly complex. You have the `Threadz` API for running one-off tasks within short-term workers, the `Interact` API for running one-off tasks, but sending messages to them, the `BackgroundThreadzWorker` API for running workers that are long-running services, the `Communicate` API for communicating between workers, etc. Each of these APIs has its own methods that need to be learned by reading the documentation. Additionally, the configuration of underlying `Worker` instances in Threadz must be defined when declaring tasks, and does not allow for flexibility. Overall, Threadz has turned into a hot coupled mess 💩
 
-So how's **Nanolith** any different? Other than being more performant, more reliable, and having even more seamless TypeScript support, Nanolith has just two main APIs. The **Nanolith API** can be used to call one-off workers, and directly on that API, the `launchService()` function can be called to launch a long-running **Service** worker that has access to your function definitions that will only finish once it's been told to `terminate()`. When you launch a service, you are immediately able to communicate back and forth between the worker and the main thread with no other APIs needed.
+So how's ✨**Nanolith**✨ any different? Other than being more performant, more reliable, and having even more seamless TypeScript support, Nanolith has just two main APIs. The **Nanolith API** can be used to call one-off workers, and directly on that API, the `launchService()` function can be called to launch a long-running **Service** worker that has access to your function definitions that will only finish once it's been told to `terminate()`. When you launch a service, you are immediately able to communicate back and forth between the worker and the main thread with no other APIs needed.
 
 Enough talk though, let's look at how this thing works.
 
 ## What's new?
 
-The newest stable version of Nanolith is `0.1.1`.
+The newest stable version of Nanolith is `0.1.1` ✨
 
-### Features
+### Features 🆕
 
 * Support for an automatically called `__initializeService` [hook](#hooks) when launching a service.
 * Support for new `__beforeTask` and `__afterTask` [hooks](#hooks) when calling a task.
@@ -58,7 +58,7 @@ The newest stable version of Nanolith is `0.1.1`.
 * New [`waitForMessage()`](#sending-messages-from-the-main-thread-to-a-service) function under `parent`.
 * New [`seek()`](#sending--receiving-messages-between-tasksservices-and-the-main-thread) function under `messages`.
 
-### Fixes
+### Fixes 🔧
 
 * **Possible EventEmitter memory leak detected** error (thrown from `Worker` instances when calling many tasks on a service) fixed by cleaning up _all_ listeners and increasing the limit with `setMaxListeners`.
 
