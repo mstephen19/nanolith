@@ -58,7 +58,7 @@ The newest stable version of Nanolith is `0.1.1` ✨
 * New [`waitForMessage()`](#sending-messages-from-the-main-thread-to-a-service) function under `parent`.
 * New [`seek()`](#sending--receiving-messages-between-tasksservices-and-the-main-thread) function under `messages`.
 
-### Fixes 🔧
+### Fixes 🛠️
 
 * **Possible EventEmitter memory leak detected** error (thrown from `Worker` instances when calling many tasks on a service) fixed by cleaning up _all_ listeners and increasing the limit with `setMaxListeners`.
 
