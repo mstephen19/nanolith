@@ -1,6 +1,6 @@
 # Nanolith
 
-[![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![install size](https://packagephobia.com/badge?p=nanolith@0.1.1-beta2)](https://packagephobia.com/result?p=nanolith@latest)
+[![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
 
 ![npm](https://img.shields.io/npm/v/nanolith?color=blue&style=for-the-badge) ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/nanolith?style=for-the-badge) ![npm](https://img.shields.io/npm/dw/nanolith?color=violet&style=for-the-badge) ![npm bundle size](https://img.shields.io/bundlephobia/min/nanolith?color=lightgreen&style=for-the-badge) ![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=red&style=for-the-badge)
 
@@ -10,45 +10,45 @@
 
 Nanoservices in no time with seamless TypeScript support.
 
-## Table of Contents
+## 📖 Table of Contents
 
-* [About](#about)
-* [What's new?](#whats-new)
+* [💭About](#about)
+* [What's new❔](#whats-new)
 * [Defining a set of tasks](#defining-a-set-of-tasks)
-  * [Creating multiple sets of definitions in the same file with `identifier`s](#creating-multiple-sets-of-definitions-in-the-same-file-with-identifiers)
-  * [Hooks](#hooks)
-  * [Dealing with "Cannot find module" with the `file` option](#dealing-with-cannot-find-module-with-the-file-option)
+  * [🦄Creating multiple sets of definitions in the same file with `identifier`s](#creating-multiple-sets-of-definitions-in-the-same-file-with-identifiers)
+  * [🪝Hooks](#hooks)
+  * [💩Dealing with "Cannot find module" with the `file` option](#dealing-with-cannot-find-module-with-the-file-option)
 * [Running a task](#running-a-task)
-  * [Configuring a task](#configuring-a-task)
+  * [⚙️Configuring a task](#configuring-a-task)
   * [Using the before and after task hooks](#using-the-before-and-after-task-hooks)
 * [Launching a service](#launching-a-service)
-  * [Configuring a service](#configuring-a-service)
-  * [Using a service](#using-a-service)
+  * [⚙️Configuring a service](#configuring-a-service)
+  * [🧑‍💻Using a service](#using-a-service)
   * [Using the service initializer hook](#using-the-service-initializer-hook)
 * [Managing concurrency](#managing-concurrency)
-  * [Using `pool`](#using-pool)
+  * [🏊Using `pool`](#using-pool)
 * [Creating a service cluster](#creating-a-service-cluster)
-  * [Using `ServiceCluster`](#using-servicecluster)
+  * [🧑‍💻Using `ServiceCluster`](#using-servicecluster)
 * [Communicating between threads](#communicating-between-threads)
-  * [Sending messages from the main thread to a service](#sending-messages-from-the-main-thread-to-a-service)
-  * [Sending & receiving messages between tasks/services and the main thread](#sending--receiving-messages-between-tasksservices-and-the-main-thread)
-  * [Using `Messenger`](#using-messenger)
-  * [Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
+  * [📨Sending messages from the main thread to a service](#sending-messages-from-the-main-thread-to-a-service)
+  * [📨Sending & receiving messages between tasks/services and the main thread](#sending--receiving-messages-between-tasksservices-and-the-main-thread)
+  * [✉️Using `Messenger`](#using-messenger)
+  * [📩Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
 * [Fun example](#fun-example)
 
 ## About
 
-[Threadz](https://github.com/mstephen19/threadz) gets the job done, but after getting various feedback on its APIs, I realized that it is overly complex. You have the `Threadz` API for running one-off tasks within short-term workers, the `Interact` API for running one-off tasks, but sending messages to them, the `BackgroundThreadzWorker` API for running workers that are long-running services, the `Communicate` API for communicating between workers, etc. Each of these APIs has their own methods that need to be learned by reading the documentation. Additionally, the configuration of workers was placed poorly, and did not allow for flexibility. Overall, Threadz has turned into a hot coupled mess.
+[Threadz](https://github.com/mstephen19/threadz) gets the job done, but after receiving a lot of feedback on its APIs, I realized that it is overly complex. You have the `Threadz` API for running one-off tasks within short-term workers, the `Interact` API for running one-off tasks, but sending messages to them, the `BackgroundThreadzWorker` API for running workers that are long-running services, the `Communicate` API for communicating between workers, etc. Each of these APIs has its own methods that need to be learned by reading the documentation. Additionally, the configuration of underlying `Worker` instances in Threadz must be defined when declaring tasks, and does not allow for flexibility. Overall, Threadz has turned into a hot coupled mess 💩
 
-So how's **Nanolith** any different? Other than being more performant, more reliable, and having even more seamless TypeScript support, Nanolith has just two APIs. The **Nanolith API** can be used to call one-off workers, and directly on that API, the `launchService()` function can be called to launch a long-running worker that has access to your function definitions that will only finish once it's been told to `terminate()`. When you launch a service, you are immediately able to communicate back and forth between the worker and the main thread with no other APIs needed.
+So how's ✨**Nanolith**✨ any different? Other than being more performant, more reliable, and having even more seamless TypeScript support, Nanolith has just two main APIs. The **Nanolith API** can be used to call one-off workers, and directly on that API, the `launchService()` function can be called to launch a long-running **Service** worker that has access to your function definitions that will only finish once it's been told to `terminate()`. When you launch a service, you are immediately able to communicate back and forth between the worker and the main thread with no other APIs needed.
 
 Enough talk though, let's look at how this thing works.
 
 ## What's new?
 
-The newest stable version of Nanolith is `0.1.1`.
+The newest stable version of Nanolith is `0.1.1` ✨
 
-### Features
+### Features 🆕
 
 * Support for an automatically called `__initializeService` [hook](#hooks) when launching a service.
 * Support for new `__beforeTask` and `__afterTask` [hooks](#hooks) when calling a task.
@@ -58,7 +58,7 @@ The newest stable version of Nanolith is `0.1.1`.
 * New [`waitForMessage()`](#sending-messages-from-the-main-thread-to-a-service) function under `parent`.
 * New [`seek()`](#sending--receiving-messages-between-tasksservices-and-the-main-thread) function under `messages`.
 
-### Fixes
+### Fixes 🛠️
 
 * **Possible EventEmitter memory leak detected** error (thrown from `Worker` instances when calling many tasks on a service) fixed by cleaning up _all_ listeners and increasing the limit with `setMaxListeners`.
 
@@ -69,7 +69,7 @@ No matter what your use-case of Nanolith is, you will always start with the `def
 To get started, create a separate file dedicated to task definitions and export a variable pointing to the awaited value of the `define()` function containing your definitions.
 
 ```TypeScript
-// definitions.ts
+// worker.ts
 import { define } from 'nanolith';
 
 const subtract = (x: number, y: number) => x - y;
@@ -84,20 +84,23 @@ export const api = await define({
         await new Promise((resolve) => setTimeout(resolve, 5e3))
         return x + y;
     },
-    // Functions don't have to be directly define within the object parameter,
-    // they can be defined elsewhere, or even imported.
+    // Functions don't have to be directly defined within the object parameter,
+    // they can be defined elsewhere outside of "define", or even imported from
+    // a different file.
     subtract,
 });
 ```
 
-The `add()`, `waitThenAdd()`, and `subtract()` functions are now ready to be run on a thread.
+The `add()`, `waitThenAdd()`, and `subtract()` functions are now ready to be run on a separate thread.
+
+> **Important:** In these docs, we'll be using the word "task" a lot. A "task" can be defined as any function that has been provided to the `define()` function and is ready to be called and run on a separate thread.
 
 ### Creating multiple sets of definitions in the same file with `identifier`s
 
 Because of Nanolith runs workers directly within the same file you created your task definitions, you need to provide any second or third sets of definitions with a **constant** and **unique** `identifier` so Nanolith knows which code to run within the worker. This information can be provided in the options parameter of the `define()` function.
 
 ```TypeScript
-// definitions.ts
+// worker.ts
 import { define } from 'nanolith';
 
 const subtract = (x: number, y: number) => x - y;
@@ -120,7 +123,7 @@ export const logger = await define({
 }, { identifier: 'logger' });
 ```
 
-Issues will occur when multiple sets of definitions are present in the same file, but unique identifiers aren't assigned.
+Issues **will** occur when multiple sets of definitions are present in the same file, but unique identifiers aren't assigned.
 
 ### Hooks
 
@@ -143,7 +146,7 @@ Error: Cannot find module '/some/path/to/some/file.js'
 If this occurs, it means that Nanolith failed to correctly determine the location of the file in which you called `define()`. Correct this error by providing the proper path under the `file` option.
 
 ```TypeScript
-// definitions.ts
+// worker.ts
 import { define } from 'nanolith';
 
 const subtract = (x: number, y: number) => x - y;
@@ -164,15 +167,15 @@ export const api = await define({
 
 Tasks are one-off workers that are spawned, run the specified task function, then are immediately terminated automatically. The return value of the task function is available back on the main thread when using the Nanolith API.
 
-> All tasks are async, regardless of whether or not the defined task function is async.
+> **Note:** All tasks are async, regardless of whether or not the defined task function is async. This is because, behind the scenes, the task runner must wait for its turn in the [`pool`](#using-pool)'s queue, then for the `Worker` to be created, and finally for your task function to finish executing before returning its value back to you on the main thread.
 
-Considering the task definitions from the section above, this is how the `add()` task would be run on a separate thread.
+Considering the task definitions from the section above, this is how the `add()` task would be called to be run on a separate thread.
 
 ```TypeScript
 // index.ts
-import { api } from './definitions.js';
+import { api } from './worker.js';
 
-// This spawns a new worker, runs the "add" function, sends the
+// This spawns a new task worker, runs the "add" function, sends the
 // return value back to the main thread, then terminates the worker.
 const sum = await api({
     name: 'add',
@@ -200,9 +203,9 @@ When running a task, there are more configurations available other than the `nam
 |-|-|-|-|
 | `name` | string | - | The name of the task function to run. |
 | `params` | array | `[]` | The parameters to pass to the task function. |
-| `priority` | boolean | `false` | Whether or not to push the worker to the front of the `pool`'s queue and treat it as a priority task. |
+| `priority` | boolean | `false` | Whether or not to push the worker to the front of the [`pool`](#using-pool)'s queue and treat it as a priority worker. |
 | `reffed` | boolean | `true` | When `true`, [`worker.ref()`](https://nodejs.org/api/worker_threads.html#workerref) will be called. When `false`, [`worker.unref()`](https://nodejs.org/api/worker_threads.html#workerunref) will be called. |
-| `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the `Worker` constructor. |
+| `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the [`Worker`](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) constructor. |
 | `messengers` | Messenger[] | `[]` | An array of [`Messenger`](#using-messenger) objects to expose to the task's worker. |
 
 ### Using the before and after task hooks
@@ -215,7 +218,7 @@ Services differ from tasks, as they are not one-off workers. They are long-runni
 
 ```TypeScript
 // index.ts
-import { api } from './definitions.js';
+import { api } from './worker.js';
 
 // Spawns a service worker and waits for it to go
 // "online" before resolving
@@ -256,9 +259,9 @@ Similar to running a task, various options are available when configuring a serv
 | Option | Type | Default | Description |
 |-|-|-|-|
 | `exceptionHandler` | Function | - | An optional but recommended option that allows for the catching of uncaught exceptions within the service. |
-| `priority` | boolean | `false` | Whether or not to push the worker to the front of the `pool`'s queue and treat it as a priority task. |
+| `priority` | boolean | `false` | Whether or not to push the worker to the front of the [`pool`](#using-pool)'s queue and treat it as a priority worker. |
 | `reffed` | boolean | `true` | When `true`, [`worker.ref()`](https://nodejs.org/api/worker_threads.html#workerref) will be called. When `false`, [`worker.unref()`](https://nodejs.org/api/worker_threads.html#workerunref) will be called. |
-| `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the `Worker` constructor. |
+| `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the [`Worker`](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) constructor. |
 | `messengers` | Messenger[] | `[]` | An array of [`Messenger`](#using-messenger) objects to expose to the service worker. |
 
 ### Using the service initializer hook
@@ -273,8 +276,8 @@ The main method on launched services that you'll be using is `.call()`; however,
 
 | Name | Type | Description |
 |-|-|-|
-| `threadID` | Property | The thread ID of the underlying worker for the `Service` instance. |
-| `closed` | Property | Whether or not the underlying worker has exited its process. This will be `true` after calling `await service.close()`|
+| `threadID` | Property | The thread ID of the underlying [`Worker`](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) for the `Service` instance. |
+| `closed` | Property | Whether or not the underlying `Worker` has exited its process. This will be `true` after calling `await service.close()`|
 | `worker` | Property | Returns the raw underlying `Worker` instance being used by the service.. |
 | `call()` | Method | Call a task to be run within the service worker. |
 | `close()` | Method | Terminates the worker, ending its process and marking the `Service` instance as `closed`. |
@@ -285,7 +288,11 @@ The main method on launched services that you'll be using is `.call()`; however,
 
 ## Managing concurrency
 
-To keep things safe, Nanolith automatically manages the creation of workers with a single instance of the internal `Pool` class. By default, the concurrency of the `pool` is equal to the number of cores on the machine currently running the process; however, it can be changed by using the `.setConcurrency()` method and `ConcurrencyOption`.
+To keep things safe and efficient, Nanolith automatically manages the creation of workers with a single instance of the internal `Pool` class. The `pool` has a queue with a maximum size that is enqueued into any time you [run a task](#running-a-task) or [launch a service](#launching-a-service) to prevent too many workers from running at once.
+
+> **Tip:** By default, workers are added to the back of the queue; however, it is possible to mark a worker "cut in line" by marking it as `priority` in the options [for calling a task](#configuring-a-task) or [for launching a service](#configuring-a-service).
+
+By default, the concurrency of the `pool` is equal to the number of cores on the machine currently running the process; however, it can be changed by using the `.setConcurrency()` method and `ConcurrencyOption`.
 
 ```TypeScript
 // index.ts
@@ -328,12 +335,14 @@ The global `pool` instance has various properties and methods that can be access
 
 ## Creating a service cluster
 
-When you have multiple services using the same set of task definitions, it is difficult to manually allocate tasks to each of them. For example, if you have 3 services running that all have access to the `formatVideo()` function, you would ideally like to run the next call for `formatVideo()` on the service that is currently the least busy. This is the purpose of the `ServiceCluster` API.
+When you have multiple services using the same set of task definitions, it is difficult to manually allocate tasks to each of them. For example, if you have 3 services running that all have access to the `formatVideo()` function, you would ideally like to run the next call for `formatVideo()` on the service that is currently the least busy.
+
+Rather than you needing to do any guesswork or complex message passing between services to determine which one is the least busy, the `ServiceCluster` API is low-cost option that can do all of this for you.
 
 ```TypeScript
 // index.ts
 import { ServiceCluster } from 'nanolith';
-import { api } from './definitions.js';
+import { api } from './worker.js';
 
 const cluster = new ServiceCluster(api);
 
@@ -515,7 +524,7 @@ Each `Messenger` instance has access to a various methods and properties.
 
 ### Dynamically sending messengers to services
 
-If you didn't provide your `Messenger` instance in the `messengers` array option when launching your service (as seen in the example [here](#sending-messages-from-the-main-thread-to-a-service)), you can still attach them dynamically with the `service.sendMessenger()` method.
+If you didn't provide your `Messenger` instance in the `messengers` array option when launching your service (as seen in the example [here](#sending--receiving-messages-between-tasksservices-and-the-main-thread)), you can still attach them dynamically with the `service.sendMessenger()` method.
 
 ```TypeScript
 // index.ts

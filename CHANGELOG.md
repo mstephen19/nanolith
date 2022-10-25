@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Fixed various typos in README and JSDoc comments + general improvements.
+
 ## [0.1.1] - 2022-24-10
 
 ### Added
