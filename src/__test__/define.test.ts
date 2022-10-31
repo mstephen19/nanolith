@@ -52,4 +52,10 @@ describe('define', () => {
             await (await promise).close();
         });
     });
+
+    describe('earlyExitHandler', () => {
+        it('Should not allow the call to hang and should reject the promise if the worker exits early', () => {
+            expect(hookTester({ name: 'add' })).rejects.toThrowError(new Error('Worker exited early!'));
+        });
+    });
 });
