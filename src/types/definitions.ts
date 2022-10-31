@@ -8,10 +8,7 @@ export type TaskFunction = (...args: any[]) => Awaitable<any>;
 
 export type Hook = (threadID: number) => Awaitable<void>;
 
-/**
- * A collection of task functions.
- */
-export type TaskDefinitions = Record<string, TaskFunction> & {
+export type HookDefinitions = {
     /**
      * A function which will be automatically called once when a service for
      * the set of definitions is launched. If asynchronous, it will be
@@ -36,6 +33,11 @@ export type TaskDefinitions = Record<string, TaskFunction> & {
      */
     __afterTask?: Hook;
 };
+
+/**
+ * A collection of task functions.
+ */
+export type TaskDefinitions = Record<string, TaskFunction> & HookDefinitions;
 
 /**
  * A collection of task functions, excluding the `__initializeService` function if present.
