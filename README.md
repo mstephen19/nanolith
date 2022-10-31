@@ -197,6 +197,8 @@ console.log(sum2) // -> 16
 
 That's it! Simply call the **Nanolith API** directly providing the name of the task along with the parameters (if any) to pass to the task function, and the function will be run on a separate thread. Any errors thrown by the function can be safely handled by using a [`try...catch`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch) block.
 
+> **Important**: Tasks (and [services](#launching-a-service)) cannot by default be called/launched from within the same file as where their tasks were `define`d. When this is attempted, an error will be thrown. To disable this behavior, set the `safeMode` option in the `define()` function to `false` _(not recommended)_.
+
 ### Configuring a task
 
 When running a task, there are more configurations available other than the `name` and `params` of the task function.

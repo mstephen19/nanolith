@@ -2,7 +2,7 @@ import { PoolItem, pool } from '../pool/index.js';
 import { WorkerType } from '../types/workers.js';
 import { Service } from '../service/index.js';
 import { WorkerMessageType } from '../types/messages.js';
-import { getCurrentFile } from '../define/utilities.js';
+// import { getCurrentFile } from '../define/utilities.js';
 
 import type { ServiceWorkerOptions } from '../types/workers.js';
 import type { TaskDefinitions } from '../types/definitions.js';
@@ -13,8 +13,7 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
     identifier: string,
     { exceptionHandler, ...rest }: Options
 ) => {
-    if (getCurrentFile(3) === file) throw new Error('Cannot run services from the same file from which their tasks were defined!');
-
+    // if (getCurrentFile(3) === file) throw new Error('Cannot run services from the same file from which their tasks were defined!');
     const item = new PoolItem({
         file,
         workerData: {

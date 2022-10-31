@@ -10,3 +10,9 @@ export const getCurrentFile = (index?: number) => {
         return fileName;
     }
 };
+
+export const assertCurrentFileNotEqual = (file: string) => {
+    if (getCurrentFile(3) === file) {
+        throw new Error('Cannot run workers from the same file from which their tasks were defined!');
+    }
+};

@@ -67,4 +67,9 @@ export type DefineOptions = {
      * in the same file to avoid nasty clashing.
      */
     identifier?: string;
+    /**
+     * Whether or not to prevent services from being launched and tasks from being run
+     * from within the same file where their definitions live.
+     */
+    safeMode?: boolean;
 };
