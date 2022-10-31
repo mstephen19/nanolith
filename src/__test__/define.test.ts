@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { Service } from '../service/index.js';
-import { api2, api, dummy } from './worker.js';
+import { api2, api, dummy, hookTester } from './worker.js';
 
 describe('define', () => {
     it('Should contain the anticipated properties', () => {
@@ -50,6 +50,12 @@ describe('define', () => {
             expect(promise).resolves.toBeInstanceOf(Service);
 
             await (await promise).close();
+        });
+    });
+
+    describe('earlyExitHandler', () => {
+        it('Should not allow the call to hang and should reject the promise if the worker exits early', () => {
+            expect(hookTester({ name: 'add' })).rejects.toThrowError(new Error('Worker exited early!'));
         });
     });
 });

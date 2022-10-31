@@ -119,21 +119,23 @@ describe('Service', () => {
         });
     });
 
-    describe('__initializeService', () => {
-        it('Should run immediately when the service is launched without being called manually', async () => {
-            const handler = jest.fn((data: string) => data);
+    describe('Hooks', () => {
+        describe('__initializeService', () => {
+            it('Should run immediately when the service is launched without being called manually', async () => {
+                const handler = jest.fn((data: string) => data);
 
-            const service = await testServiceInitializer.launchService();
+                const service = await testServiceInitializer.launchService();
 
-            service.onMessage(handler);
-            service.sendMessage('foo');
+                service.onMessage(handler);
+                service.sendMessage('foo');
 
-            await new Promise((resolve) => setTimeout(resolve, 2e3));
+                await new Promise((resolve) => setTimeout(resolve, 2e3));
 
-            await service.close();
+                await service.close();
 
-            expect(handler).toHaveBeenCalledTimes(1);
-            expect(handler).toHaveBeenCalledWith('test test');
+                expect(handler).toHaveBeenCalledTimes(1);
+                expect(handler).toHaveBeenCalledWith('test test');
+            });
         });
     });
 });

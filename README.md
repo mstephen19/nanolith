@@ -134,6 +134,8 @@ You may run into situations where you want to run a certain function before/afte
 | `__initializeService()` | A function which will be automatically called once when a service for the set of definitions is launched. If asynchronous, it will be awaited. Note that the `launchService()` function's promise resolves only after this function has completed. |
 | `__beforeTask()` | A function which will be automatically called before each task function is run. Not supported with services. |
 | `__afterTask()` | A function which will be automatically called after each task function is run. Not supported with services. |
+| `__beforeServiceTask()` | A function which will automatically called before a task is run within a service. |
+| `__afterServiceTask()` | A function which will automatically called after a task is run within a service. |
 
 ### Dealing with "Cannot find module" with the `file` option
 
@@ -194,6 +196,8 @@ console.log(sum2) // -> 16
 ```
 
 That's it! Simply call the **Nanolith API** directly providing the name of the task along with the parameters (if any) to pass to the task function, and the function will be run on a separate thread. Any errors thrown by the function can be safely handled by using a [`try...catch`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch) block.
+
+> **Important**: Tasks (and [services](#launching-a-service)) cannot by default be called/launched from within the same file as where their tasks were `define`d. When this is attempted, an error will be thrown. To disable this behavior, set the `safeMode` option in the `define()` function to `false` _(not recommended)_.
 
 ### Configuring a task
 

@@ -79,3 +79,15 @@ export const testServiceInitializer = await define(
     },
     { identifier: 'foo-bar-baz-buzz' }
 );
+
+export const hookTester = await define(
+    {
+        __beforeTask() {
+            process.exit();
+        },
+        add() {
+            return 1 + 1;
+        },
+    },
+    { identifier: 'hook-tester-123' }
+);

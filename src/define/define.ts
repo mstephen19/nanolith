@@ -2,7 +2,7 @@ import { isMainThread, workerData } from 'worker_threads';
 import { workerHandler } from '../handlers/index.js';
 import { runTaskWorker } from '../runners/index.js';
 import { runServiceWorker } from '../runners/index.js';
-import { getCurrentFile } from './utilities.js';
+import { assertCurrentFileNotEqual, getCurrentFile } from './utilities.js';
 
 import type { DefineOptions, TaskDefinitions, Tasks } from '../types/definitions.js';
 import type { Nanolith } from '../types/nanolith.js';
@@ -35,7 +35,7 @@ import type { BaseWorkerData } from '../types/worker_data.js';
  */
 export async function define<Definitions extends TaskDefinitions>(
     definitions: Definitions,
-    { identifier = 'default', file: fileFromOptions }: DefineOptions = {}
+    { identifier = 'default', file: fileFromOptions, safeMode = true }: DefineOptions = {}
 ): Promise<Nanolith<Definitions>> {
     // If we are not on the main thread, run the worker.
     if (!isMainThread) {
@@ -47,6 +47,8 @@ export async function define<Definitions extends TaskDefinitions>(
         // Otherwise, this is the set of definitions that is meant to be used, and the worker
         // can be handled accordingly.
         await workerHandler(definitions);
+        // Since we're not running on the main thread, we can safely coerce "undefined" into
+        // our Nanolith API type.
         return undefined as any as Nanolith<Definitions>;
     }
 
@@ -56,10 +58,12 @@ export async function define<Definitions extends TaskDefinitions>(
     return Object.freeze(
         Object.assign(
             async <Name extends CleanKeyOf<Tasks<Definitions>>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
+                if (safeMode) assertCurrentFileNotEqual(file);
                 return runTaskWorker(file, identifier, options as TaskWorkerOptions) as Promise<CleanReturnType<Definitions[Name]>>;
             },
             {
                 launchService: Object.freeze(async <Options extends ServiceWorkerOptions>(options = {} as Options) => {
+                    if (safeMode) assertCurrentFileNotEqual(file);
                     return runServiceWorker<Definitions, Options>(file, identifier, options);
                 }),
                 file,
