@@ -11,12 +11,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `activeCalls` property to `Service` + docs.
 - `__beforeServiceTaskCall` and `__afterServiceTaskCall` hooks + docs.
 - `safeMode` option to `DefineOptions` + docs.
+- "License" section to the README
 
 ### Changed
 
 - Fixed various typos in README and JSDoc comments + general improvements.
 - Removed `calling` and `called` events from `Service`.
 - Same-file calling to be handled on the `define()` level instead of within `runTaskWorker` or `runServiceWorker`.
+- Description in package.json to "Multithreaded nanoservices in no time with seamless TypeScript support."
+
+### Fixed
+
+- Some typos in the README.
 
 ## [0.1.1] - 2022-24-10
 

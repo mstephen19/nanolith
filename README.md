@@ -35,6 +35,7 @@ Nanoservices in no time with seamless TypeScript support.
   * [✉️Using `Messenger`](#using-messenger)
   * [📩Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
 * [Fun example](#fun-example)
+* [License](#license)
 
 ## About
 
@@ -66,10 +67,10 @@ The newest stable version of Nanolith is `0.1.1` ✨
 
 No matter what your use-case of Nanolith is, you will always start with the `define()` function. This function takes an object containing (sync or async) task definitions, and returns an object representing the **Nanolith API**, which can be used to access Nanolith's main functionalities.
 
-To get started, create a separate file dedicated to task definitions and export a variable pointing to the awaited value of the `define()` function containing your definitions.
+To get started, create a separate file dedicated to task definitions and export a variable pointing to the awaited value of the `define()` function containing your definitions 🗒️
 
 ```TypeScript
-// worker.ts
+// worker.ts 💼
 import { define } from 'nanolith';
 
 const subtract = (x: number, y: number) => x - y;
@@ -100,7 +101,7 @@ The `add()`, `waitThenAdd()`, and `subtract()` functions are now ready to be run
 Because of Nanolith runs workers directly within the same file you created your task definitions, you need to provide any second or third sets of definitions with a **constant** and **unique** `identifier` so Nanolith knows which code to run within the worker. This information can be provided in the options parameter of the `define()` function.
 
 ```TypeScript
-// worker.ts
+// worker.ts 💼
 import { define } from 'nanolith';
 
 const subtract = (x: number, y: number) => x - y;
@@ -127,7 +128,9 @@ Issues **will** occur when multiple sets of definitions are present in the same 
 
 ### Hooks
 
-You may run into situations where you want to run a certain function before/after each task is called, or before a service is launched. There are three hooks which are available for use when creating a set of definitions that allow for these cases to be handled. These hooks have specific names, and are functions that take one parameter (the worker's `threadID`) and return nothing.
+You may run into situations where you want to run a certain function before/after each task is called, or before a service is launched. There are five hooks which are available for use when creating a set of definitions that allow for these cases to be handled 🪝
+
+These hooks have specific names, and are functions that take one parameter (the worker's `threadID`) and return nothing.
 
 | Name | Functionality |
 |-|-|
@@ -139,7 +142,7 @@ You may run into situations where you want to run a certain function before/afte
 
 ### Dealing with "Cannot find module" with the `file` option
 
-Though it shouldn't happen, in some strange cases there is a chance that an error like this will occur when the Nanolith `pool` instance tries to spawn a worker:
+Though it shouldn't happen, in some strange cases there is a chance that an error like this will occur when the Nanolith `pool` instance tries to spawn a worker 💩:
 
 ```text
 Error: Cannot find module '/some/path/to/some/file.js'
@@ -148,7 +151,7 @@ Error: Cannot find module '/some/path/to/some/file.js'
 If this occurs, it means that Nanolith failed to correctly determine the location of the file in which you called `define()`. Correct this error by providing the proper path under the `file` option.
 
 ```TypeScript
-// worker.ts
+// worker.ts 💼
 import { define } from 'nanolith';
 
 const subtract = (x: number, y: number) => x - y;
@@ -174,7 +177,7 @@ Tasks are one-off workers that are spawned, run the specified task function, the
 Considering the task definitions from the section above, this is how the `add()` task would be called to be run on a separate thread.
 
 ```TypeScript
-// index.ts
+// index.ts 💡
 import { api } from './worker.js';
 
 // This spawns a new task worker, runs the "add" function, sends the
@@ -218,10 +221,10 @@ When calling tasks, you might want to run the same piece of logic before or afte
 
 ## Launching a service
 
-Services differ from tasks, as they are not one-off workers. They are long-running workers that will continue running until they are `close()`d. A service has access to all of the task functions in the set of definitions it is using.
+Services differ from tasks, as they are not one-off workers. They are long-running workers that will continue running until they are `close()`d. A service has access to all of the task functions in the set of definitions it is using 🎩
 
 ```TypeScript
-// index.ts
+// index.ts 💡
 import { api } from './worker.js';
 
 // Spawns a service worker and waits for it to go
@@ -297,10 +300,10 @@ To keep things safe and efficient, Nanolith automatically manages the creation o
 
 > **Tip:** By default, workers are added to the back of the queue; however, it is possible to mark a worker "cut in line" by marking it as `priority` in the options [for calling a task](#configuring-a-task) or [for launching a service](#configuring-a-service).
 
-By default, the concurrency of the `pool` is equal to the number of cores on the machine currently running the process; however, it can be changed by using the `.setConcurrency()` method and `ConcurrencyOption`.
+The concurrency of the `pool` is by default equal to _the number of cores on the machine currently running the process_; however, it can be changed by using the `.setConcurrency()` method and `ConcurrencyOption`.
 
 ```TypeScript
-// index.ts
+// index.ts 💡
 import { pool, ConcurrencyOption } from 'nanolith';
 
 // One thread per four cores.
@@ -322,6 +325,8 @@ pool.setConcurrency(ConcurrencyOption.x8);
 // Ten threads per core.
 pool.setConcurrency(ConcurrencyOption.x10);
 ```
+
+The recommended values are `x1` or `x2`; however, the other options are there if a higher concurrency is necessary.
 
 ### Using `pool`
 
@@ -345,7 +350,7 @@ When you have multiple services using the same set of task definitions, it is di
 Rather than you needing to do any guesswork or complex message passing between services to determine which one is the least busy, the `ServiceCluster` API is low-cost option that can do all of this for you.
 
 ```TypeScript
-// index.ts
+// index.ts 💡
 import { ServiceCluster } from 'nanolith';
 import { api } from './worker.js';
 
@@ -404,7 +409,7 @@ In **Nanolith** there are two ways to communicate with workers.
 On the [`Service`](#using-a-service) object, there are many methods present which allow for sending and receiving messages to the service worker. These methods are `service.sendMessage()`, `service.onMessage()`, and `service.offMessage()`.
 
 ```TypeScript
-// index.ts
+// index.ts 💡
 import { api } from './worker.js';
 
 const service = await api.launchService();
@@ -427,7 +432,7 @@ That covers it on the main thread.
 Within workers, the global `parent` object can be used to send and receive messages to a `Service` instance back on the main thread. `parent` has the same exact functionalities, along with the additional `parent.waitForMessage()`.
 
 ```TypeScript
-// worker.ts
+// worker.ts 💼
 import { define, parent } from 'nanolith';
 
 export const api = await define({
@@ -461,7 +466,7 @@ More complex use cases may demand that communication can happen not only between
 The `Messenger` class fills the gap for this use case by utilizing an underlying [`BroadcastChannel`](https://nodejs.org/api/worker_threads.html#new-broadcastchannelname). A messenger can be created by calling the `Messenger` constructor and providing a unique but reproducible name.
 
 ```TypeScript
-// index.ts
+// index.ts 💡
 import { Messenger } from 'nanolith';
 
 const messenger = new Messenger('foo-bar');
@@ -470,7 +475,7 @@ const messenger = new Messenger('foo-bar');
 After the messenger has been created, it can be passed into a task worker or service worker within their initialization options.
 
 ```TypeScript
-// index.ts
+// index.ts 💡
 import { Messenger } from 'nanolith';
 import { api } from './worker.js';
 
@@ -495,7 +500,7 @@ await service.close();
 Similar to [`parent`](#sending--receiving-messages-between-tasksservices-and-the-main-thread), there is a specialized global object for using messengers within workers called `messages`. It has only two functions, `messages.view()` and `messages.use()`.
 
 ```TypeScript
-// worker.ts
+// worker.ts 💼
 import { define, messages } from 'nanolith';
 
 export const api = await define({
@@ -532,7 +537,7 @@ Each `Messenger` instance has access to a various methods and properties.
 If you didn't provide your `Messenger` instance in the `messengers` array option when launching your service (as seen in the example [here](#sending--receiving-messages-between-tasksservices-and-the-main-thread)), you can still attach them dynamically with the `service.sendMessenger()` method.
 
 ```TypeScript
-// index.ts
+// index.ts 💡
 import { Messenger } from '../index.js';
 import { api } from './worker.js';
 
@@ -556,7 +561,7 @@ await service.close();
 Classic example. Let's "promisify" a for-loop with **Nanolith**!
 
 ```TypeScript
-// worker.ts
+// worker.ts 💼
 import { define } from 'nanolith';
 
 export const worker = await define({
@@ -574,7 +579,7 @@ Notice that there's no bloat. Just keys and values (the "task functions").
 In our index file (or wherever else), we can simply import the `worker` variable and call it. This `worker` variable is our **Nanolith** API.
 
 ```TypeScript
-// index.ts
+// index.ts 💡
 import { worker } from './worker.js';
 
 // This will spin up a worker and run our bigForLoop function
@@ -599,3 +604,15 @@ The result of this code, despite the large loop being called prior to the loggin
 hello world
 test
 ```
+
+## License
+
+The MIT License (MIT)
+
+Copyright (c) 2022 Matthias Stephens
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
