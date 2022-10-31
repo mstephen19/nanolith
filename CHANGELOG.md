@@ -6,9 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## Added
+
+- `activeCalls` property to `Service` + docs.
+
 ### Changed
 
 - Fixed various typos in README and JSDoc comments + general improvements.
+- Removed `calling` and `called` events from `Service`.
 
 ## [0.1.1] - 2022-24-10
 

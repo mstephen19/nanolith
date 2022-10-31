@@ -278,6 +278,7 @@ The main method on launched services that you'll be using is `.call()`; however,
 |-|-|-|
 | `threadID` | Property | The thread ID of the underlying [`Worker`](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) for the `Service` instance. |
 | `closed` | Property | Whether or not the underlying `Worker` has exited its process. This will be `true` after calling `await service.close()`|
+| `activeCalls` | Property | The number of currently active calls on the service. |
 | `worker` | Property | Returns the raw underlying `Worker` instance being used by the service.. |
 | `call()` | Method | Call a task to be run within the service worker. |
 | `close()` | Method | Terminates the worker, ending its process and marking the `Service` instance as `closed`. |
