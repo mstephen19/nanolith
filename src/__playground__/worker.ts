@@ -1,7 +1,8 @@
+import { workerData } from 'worker_threads';
 import { define } from '../index.js';
 
 export const api = await define({
-    add: () => {
-        return 1 + 1;
+    seek: () => {
+        console.log(workerData);
     },
 });
