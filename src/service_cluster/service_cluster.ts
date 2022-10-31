@@ -9,7 +9,6 @@ import type { TaskDefinitions } from '../types/definitions.js';
 type ServiceClusterMap<Definitions extends TaskDefinitions> = {
     [key: string]: {
         service: Service<Definitions>;
-        active: number;
         identifier: string;
     };
 };
@@ -49,7 +48,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * The number of currently active task calls on all services on the cluster.
      */
     get activeServiceCalls() {
-        return Object.values(this.#serviceMap).reduce((acc, curr) => acc + curr.active, 0);
+        return Object.values(this.#serviceMap).reduce((acc, curr) => acc + curr.service.activeCalls, 0);
     }
 
     /**
@@ -93,21 +92,11 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
 
     #registerNewService(service: Service<Definitions>) {
         const identifier = v4();
-        this.#serviceMap[identifier] = { service, active: 0, identifier };
+        this.#serviceMap[identifier] = { service, identifier };
 
         // When the service is terminated, remove it from the service map.
         service.on('terminated', () => {
             delete this.#serviceMap[identifier];
-        });
-
-        // Increment the service's active count when it makes a call.
-        service.on('calling', () => {
-            this.#serviceMap[identifier].active++;
-        });
-
-        // Decrement the service's active count when it finishes making a call.
-        service.on('called', () => {
-            this.#serviceMap[identifier].active--;
         });
     }
 
@@ -146,7 +135,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
         if (values.length === 1) return values[0].service;
 
         return values.reduce((acc, curr) => {
-            if (curr.active < acc.active) return curr;
+            if (curr.service.activeCalls < acc.service.activeCalls) return curr;
             return acc;
         }, values[0]).service;
     }
@@ -164,7 +153,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * any tasks.
      */
     closeAllIdle() {
-        const promises = Object.values(this.#serviceMap).map(({ service, active }) => (active <= 0 ? service.close() : null));
+        const promises = Object.values(this.#serviceMap).map(({ service }) => (service.activeCalls <= 0 ? service.close() : null));
         return Promise.all(promises);
     }
 }
