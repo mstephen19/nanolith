@@ -55,6 +55,8 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
                     throw new Error(`A task with the name ${name} doesn't exist!`);
                 }
 
+                await definitions['__beforeServiceTask']?.(threadId);
+
                 const data = await definitions[name](...params);
 
                 const response: WorkerCallReturnMessageBody = {
@@ -64,6 +66,8 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
                 };
 
                 parentPort!.postMessage(response);
+
+                await definitions['__afterServiceTask']?.(threadId);
             } catch (error) {
                 // Don't exit the process, instead post back a message with the error
                 const response: WorkerCallErrorMessageBody = {

@@ -23,15 +23,27 @@ export type HookDefinitions = {
     /**
      * A function which will be automatically called before each task function is run.
      *
-     * Not supported with services.
+     * Not supported with services. Use `__beforeServiceTaskCall` instead.
      */
     __beforeTask?: Hook;
     /**
      * A function which will be automatically called after each task function is run.
      *
-     * Not supported with services.
+     * Not supported with services. Use `__afterServiceTaskCall` instead.
      */
     __afterTask?: Hook;
+    /**
+     * A function which will automatically called before a task is run within a service.
+     *
+     * Only for usage with services. For regular tasks, use `__beforeTask` instead.
+     */
+    __beforeServiceTask?: Hook;
+    /**
+     * A function which will automatically called after a task is run within a service.
+     *
+     * Only for usage with services. For regular tasks, use `__afterTask` instead.
+     */
+    __afterServiceTask?: Hook;
 };
 
 /**

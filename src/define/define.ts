@@ -47,6 +47,8 @@ export async function define<Definitions extends TaskDefinitions>(
         // Otherwise, this is the set of definitions that is meant to be used, and the worker
         // can be handled accordingly.
         await workerHandler(definitions);
+        // Since we're not running on the main thread, we can safely coerce "undefined" into
+        // our Nanolith API type.
         return undefined as any as Nanolith<Definitions>;
     }
 
