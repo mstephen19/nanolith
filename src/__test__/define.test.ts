@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { Service } from '../service/index.js';
-import { api2, api, dummy } from './worker.js';
+import { api2, api, dummy, hookTester } from './worker.js';
 
 describe('define', () => {
     it('Should contain the anticipated properties', () => {
