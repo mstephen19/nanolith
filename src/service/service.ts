@@ -23,15 +23,6 @@ type ServiceEvents = {
      * An event that is emitted when the service worker has exited its process.
      */
     terminated: () => void;
-    /**
-     * An event that is emitted when the service worker makes a call.
-     */
-    calling: (key: string) => void;
-    /**
-     * An event that is emitted when the service worker finishes making a call and
-     * has waited for the return value of the task.
-     */
-    called: (key: string) => void;
 };
 
 /**
@@ -40,6 +31,7 @@ type ServiceEvents = {
 export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<ServiceEvents> {
     #worker: Worker;
     #terminated = false;
+    #active = 0;
 
     constructor(worker: Worker) {
         super();
@@ -50,6 +42,13 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
             // Emit an event notifying that the service has been terminated.
             this.emit('terminated');
         });
+    }
+
+    /**
+     * Get the current number of active calls running on the `Service` instance.
+     */
+    get activeCalls() {
+        return this.#active;
     }
 
     /**
@@ -107,8 +106,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
 
         const key = v4();
 
-        // Emit an event notifying that the service is making a call
-        this.emit('calling', key);
+        // Increase the current number of active calls
+        this.#active++;
 
         const message: MainThreadCallMessageBody = {
             type: MainThreadMessageType.Call,
@@ -136,9 +135,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
 
                 // Clean up listener
                 this.#worker.off('message', callback);
-                // Emit an event notifying that the service has completed making
-                // a call
-                this.emit('called', key);
+                // Decrease the current number of active calls
+                this.#active--;
             };
 
             this.#worker.on('message', callback);
