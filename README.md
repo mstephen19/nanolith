@@ -47,7 +47,7 @@ Enough talk though, let's look at how this thing works.
 
 ## What's new?
 
-The newest stable version of Nanolith is `0.1.3` ✨
+The newest stable version of Nanolith is `0.1.4` ✨
 
 ### Features 🆕
 
