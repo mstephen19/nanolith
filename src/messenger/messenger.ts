@@ -2,7 +2,7 @@ import { randomUUID as v4 } from 'crypto';
 import { isMessengerTransferObject } from './utilities.js';
 import { BroadcastChannel } from 'worker_threads';
 
-import type { MessengerTransferData, MessengerMessageBody } from '../types/messenger.js';
+import type { MessengerTransferData, MessengerMessageBody, MessengerCloseMessageBody } from '../types/messenger.js';
 import type { Awaitable } from '../types/utilities.js';
 
 /**
@@ -14,7 +14,6 @@ import type { Awaitable } from '../types/utilities.js';
 export class Messenger {
     #channel: BroadcastChannel;
     #listenerCallbacks: ((data: any) => Awaitable<void>)[] = [];
-    #listenerRegistered = false;
     /**
      * A value specific to an instance of Messenger. Allows for
      * ignoring messages sent by itself.
@@ -52,39 +51,45 @@ export class Messenger {
      * @param data An `identifier` (string) or a {@link MessageTransferData} object.
      */
     constructor(data?: MessengerTransferData | string) {
+        // Only allow either nothing, strings, or MessengerTransferObjects to pass through
         if (data && typeof data !== 'string' && !isMessengerTransferObject(data as Exclude<typeof data, string>)) {
             throw new Error('Must either provide a string to create a new Messenger, or a MessengerTransferData object.');
         }
 
+        // Always assign each Messenger a unique key
+        this.#key = v4();
+
+        // When provided a MessengerTransferObject
         if (data && typeof data !== 'string') {
-            this.#key = v4();
             this.#identifier = data.__messengerID;
 
             this.#channel = new BroadcastChannel(data.__messengerID);
-            this.#channel.unref();
-            return;
+        } else {
+            // When provided nothing or a string
+            // Assign each set of messengers an identifier. This
+            // identifier is used to "transfer" the messenger around.
+            this.#identifier = typeof data === 'string' ? data : v4();
+            this.#channel = new BroadcastChannel(this.#identifier);
         }
-        // The first port will always be used for listening, while the second will
-        // always be used for sending.
-        this.#key = v4();
-        this.#identifier = typeof data === 'string' ? data : v4();
 
-        this.#channel = new BroadcastChannel(this.#identifier);
         this.#channel.unref();
+
+        this.#registerMainListener();
     }
 
     /**
      * A function that will not be run until `onMessage` is called for the first time.
      */
-    #registerListener() {
+    #registerMainListener() {
         this.#channel.onmessage = async (event) => {
             const { data: body } = event as { data: MessengerMessageBody };
-            // If the message was send by this Messenger, just ignore it.
+            // Handle "closeAll" calls
+            if ((body as unknown as MessengerCloseMessageBody)?.close) return this.#channel.close();
+
+            // If the message was sent by this Messenger, just ignore it.
             if (body.sender === this.#key) return;
             this.#listenerCallbacks.forEach((callback) => callback(body.data));
         };
-
-        this.#listenerRegistered = true;
     }
 
     /**
@@ -126,7 +131,6 @@ export class Messenger {
      * messenger.onMessage<string>((data) => console.log(data, 'received!'));
      */
     onMessage<Data = any>(callback: (data: Data) => Awaitable<void>) {
-        if (!this.#listenerRegistered) this.#registerListener();
         this.#listenerCallbacks.push(callback);
     }
 
@@ -182,8 +186,35 @@ export class Messenger {
 
     /**
      * Closes the underlying {@link BroadcastChannel} connection that is being used.
+     * Does not close all Messenger objects. Use `messenger.closeAll()` instead for that.
      */
     close() {
         this.#channel.close();
+        // Early cleanup
+        this.#listenerCallbacks = [];
+    }
+
+    /**
+     * Closes all underlying {@link BroadcastChannel} connections on all {@link Messenger}
+     * objects that are currently active for the corresponding identifier.
+     */
+    closeAll() {
+        // Send a message to all instances listening on the BroadcastChannel
+        // telling them to close.
+        const body: MessengerCloseMessageBody = {
+            close: true,
+        };
+
+        this.#channel.postMessage(body);
+    }
+
+    /**
+     * By default, the {@link BroadcastChannel} is unreffed. Call this function to change that.
+     * When `true`, [`ref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelref) will be called.
+     * When `false`, [`unref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelunref) will be called.
+     */
+    setRef(option: boolean) {
+        if (option) return this.#channel.ref();
+        this.#channel.unref();
     }
 }
