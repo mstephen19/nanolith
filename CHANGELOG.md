@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `launchService()` method from `ServiceCluster`.
 - `messages` object.
 
+### Fixed
+
+- Eradicated the maxListeners reached error with Services.
+
 ## [0.2.0] - 2022-30-11
 
 ### Added

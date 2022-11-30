@@ -1,5 +1,5 @@
 import { threadId } from 'worker_threads';
-import { define, parent, messages } from '../index.js';
+import { define, parent, messengers } from '../index.js';
 
 export const definitions = {
     add: (x: number, y: number) => {
@@ -36,21 +36,21 @@ export const dummy = await define({}, { file: 'foo', identifier: 'foo' });
 export const messengerTester = await define(
     {
         registerListener: async () => {
-            const messenger = await messages.use('testing');
+            const messenger = await messengers.use('testing');
 
             messenger.onMessage(() => {
                 messenger.sendMessage('hi from worker');
             });
         },
         registerListener2: async () => {
-            const messenger = await messages.use('testing');
+            const messenger = await messengers.use('testing');
 
             messenger.onMessage(() => {
                 parent.sendMessage('received a message');
             });
         },
         sendMessage: async () => {
-            const messenger = await messages.use('testing');
+            const messenger = await messengers.use('testing');
             messenger.sendMessage('foo');
         },
     },

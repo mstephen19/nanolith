@@ -121,9 +121,9 @@ class Pool {
         // Otherwise, fall back to a default of unreffed.
         else worker.unref();
 
-        // ! Temporary
-        worker.setMaxListeners(Infinity);
-        // ! Temporary
+        // // ! Temporary
+        // worker.setMaxListeners(Infinity);
+        // // ! Temporary
 
         item.emit('created', worker);
 
