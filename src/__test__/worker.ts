@@ -18,6 +18,7 @@ export const definitions = {
             throw new Error('angry worker');
         });
     },
+    waitABit: () => new Promise((resolve) => setTimeout(resolve, 2e3)),
 };
 
 export const api = await define(definitions);

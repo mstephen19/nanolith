@@ -154,7 +154,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
 
         this.#worker.postMessage(message, transferList);
 
-        // Wait for the
         const data = await promise;
         this.#active--;
         return data;

@@ -76,6 +76,17 @@ describe('Service', () => {
         });
     });
 
+    it('Should accurately state the number of active calls', async () => {
+        const p1 = service.call({ name: 'waitABit' });
+        const p2 = service.call({ name: 'waitABit' });
+
+        expect(service.activeCalls).toBe(2);
+
+        await Promise.all([p1, p2]);
+
+        expect(service.activeCalls).toBe(0);
+    });
+
     describe('exceptionHandler', () => {
         it('Should run the handler and not shut down the service when an uncaught exception is thrown', async () => {
             const handler = jest.fn(({ error }) => error.message);
