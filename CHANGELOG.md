@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Exporting `TaskDefinitions` type from the main index file.
 - `closeAll()` method to `Messenger`.
 - `setRef()` method to `Messenger`.
+- Docs for `closeAll()` and `setRef()` under "Using Messenger".
 
 ### Changed
 
