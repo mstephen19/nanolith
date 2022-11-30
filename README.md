@@ -34,14 +34,15 @@ Multi-threaded nanoservices in no time with seamless TypeScript support.
   * [📨Sending & receiving messages between tasks/services and the main thread](#sending--receiving-messages-between-tasksservices-and-the-main-thread)
   * [✉️Using `Messenger`](#using-messenger)
   * [📩Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
-* [Fun example](#fun-example)
+* [Examples](#examples)
+  * ["Promisify-ing" a for-loop](#promisify-ing-a-for-loop)
 * [License](#license)
 
 ## About
 
-<!-- [Threadz](https://github.com/mstephen19/threadz) gets the job done, but after receiving a lot of feedback on its APIs, I realized that it is overly complex. You have the `Threadz` API for running one-off tasks within short-term workers, the `Interact` API for running one-off tasks, but sending messages to them, the `BackgroundThreadzWorker` API for running workers that are long-running services, the `Communicate` API for communicating between workers, etc. Each of these APIs has its own methods that need to be learned by reading the documentation. Additionally, the configuration of underlying `Worker` instances in Threadz must be defined when declaring tasks, and does not allow for flexibility. Overall, Threadz has turned into a hot coupled mess 💩 -->
+What's ✨**Nanolith**✨? Nanolith is a performant, reliable, and (super) simple-to-use multi-threading library with great documentation and seamless TypeScript support. It serves to entirely replace the _(now deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
 
-What's ✨**Nanolith**✨? Other than being more performant, more reliable, and having even more seamless TypeScript support than [Threadz](https://github.com/mstephen19/threadz) (my previous multi-threading library), Nanolith was designed with simplicity in mind - it has just two APIs. The **Nanolith API** can be used to call one-off [task workers](#running-a-task), and directly on that API, the [`launchService()`](#launching-a-service) function can be called to launch a long-running **Service** worker that has access to your function definitions that will only finish once it's been told to `close()`. When you launch a service, you are immediately able to communicate back and forth between the worker and the main thread with no other APIs needed.
+Nanolith was designed with simplicity in mind - it has just two basic APIs. The **Nanolith API** can be used to call one-off [task workers](#running-a-task), and directly on that API, the [`launchService()`](#launching-a-service) function can be called to launch a long-running **Service** worker which has access to your task function [definitions](#defining-a-set-of-tasks) and will only finish once it's been told to `close()`. When you launch a service, you are immediately able to [communicate](#sending-messages-from-the-main-thread-to-a-service) back and forth between the worker and the main thread.
 
 Enough talk though, let's look at how this thing works.
 
@@ -64,7 +65,7 @@ The newest stable version of Nanolith is `0.1.4` ✨
 
 No matter what your use-case of Nanolith is, you will always start with the `define()` function. This function takes an object containing (sync or async) task definitions, and returns an object representing the **Nanolith API**, which can be used to access Nanolith's main functionalities.
 
-To get started, create a separate file dedicated to task definitions and export a variable pointing to the awaited value of the `define()` function containing your definitions 🗒️
+To get started, **create a separate file dedicated to task definitions** and export a variable pointing to the awaited value of the `define()` function containing your definitions 🗒️ It is **absolutely key** to ensure that you don't have any other function calls within this file.
 
 ```TypeScript
 // worker.ts 💼
@@ -95,7 +96,7 @@ The `add()`, `waitThenAdd()`, and `subtract()` functions are now ready to be run
 
 ### Creating multiple sets of definitions in the same file with `identifier`s
 
-Because of Nanolith runs workers directly within the same file you created your task definitions, you need to provide any second or third sets of definitions with a **constant** and **unique** `identifier` so Nanolith knows which code to run within the worker. This information can be provided in the options parameter of the `define()` function.
+Because Nanolith runs workers directly within the same file you created your task definitions, you need to provide any second or third sets of definitions with a **constant** and **unique** `identifier` so Nanolith knows which code to run within the worker ✏️ This information can be provided in the options parameter of the `define()` function.
 
 ```TypeScript
 // worker.ts 💼
@@ -123,9 +124,26 @@ export const logger = await define({
 
 Issues **will** occur when multiple sets of definitions are present in the same file, but unique identifiers aren't assigned.
 
+Identifiers **must always stay the same**. You cannot, for example, do something like this:
+
+```TypeScript
+// WRONG! WRONG! WRONG!
+import { define } from 'nanolith';
+import { v4 } from 'uuid';
+
+export const logger = await define({
+    sayHello: () => console.log('hello'),
+    // The below code is wrong
+    // and will result in errors!
+}, { identifier: v4() });
+// WRONG! WRONG! WRONG!
+```
+
+These identifiers are only used internally by Nanolith, so they can be absolutely anything; however, you might want to make your identifiers recognizable purely for documentation purposes (ex. "image_processing", "general_utils", "data_parsing").
+
 ### Hooks
 
-You may run into situations where you want to run a certain function before/after each task is called, or before a service is launched. There are five hooks which are available for use when creating a set of definitions that allow for these cases to be handled 🪝
+You may run into situations where you want to run a certain piece of logic before/after each task is called, or before a service is launched. There are five hooks which are available for use when creating a set of definitions that provide this functionality 🪝
 
 These hooks have specific names, and are functions that take one parameter (the worker's `threadID`) and return nothing.
 
@@ -293,7 +311,7 @@ The main method on launched services that you'll be using is `.call()`; however,
 
 ## Managing concurrency
 
-To keep things safe and efficient, Nanolith automatically manages the creation of workers with a single instance of the internal `Pool` class. The `pool` has a queue with a maximum size that is enqueued into any time you [run a task](#running-a-task) or [launch a service](#launching-a-service) to prevent too many workers from running at once.
+To keep things safe and efficient, Nanolith automatically manages the creation of task and service workers with a single instance of the internal `Pool` class. The `pool` has a queue with a maximum size, and is enqueued into any time you [run a task](#running-a-task) or [launch a service](#launching-a-service). It has been implemented to prevent too many workers from running at once. This basically means that if, for example, the pool's concurrency is configured to 12 and you are running 12 services but then try to launch another one, that service will wait for one of the already running services to shut down before launching.
 
 > **Tip:** By default, workers are added to the back of the queue; however, it is possible to mark a worker "cut in line" by marking it as `priority` in the options [for calling a task](#configuring-a-task) or [for launching a service](#configuring-a-service).
 
@@ -527,7 +545,7 @@ Each `Messenger` instance has access to a various methods and properties.
 | `offMessage()` | Method | Remove a function from the list of callbacks to be run when a message is received on the `Messenger`. |
 | `sendMessage()` | Method | Send a messenger to be received by any other `Messenger` instances with the same identifier. |
 | `transfer()` | Method | Turns the `Messenger` instance into an object that can be sent to and from workers. |
-| `close()` | Method | Closes the underlying `BroadcastChannel` connection that is being used. |
+| `close()` | Method | Closes the underlying `BroadcastChannel` connection that is being used. Does not close all `BroadcastChannel`s on all Messenger objects |
 
 ### Dynamically sending messengers to services
 
@@ -553,7 +571,11 @@ messenger.sendMessage('hello from main thread!');
 await service.close();
 ```
 
-## Fun example
+## Examples
+
+Here are a few fun examples where Nanolith is used.
+
+### "Promisify-ing" a for-loop
 
 Classic example. Let's "promisify" a for-loop with **Nanolith**!
 
