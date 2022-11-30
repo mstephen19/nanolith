@@ -6,3 +6,5 @@ export { Messenger, messages, messengers } from './messenger/index.js';
 export { ServiceCluster } from './service_cluster/index.js';
 
 export type { TaskDefinitions } from './types/definitions.js';
+export type { Nanolith } from './types/nanolith.js';
+export type { TaskWorkerOptions, ServiceWorkerOptions } from './types/workers.js';
