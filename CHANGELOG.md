@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `launchService()` method from `ServiceCluster`.
 - `messages` object.
+- Disabled `declarationMap` as it is unnecessary (.ts files don't go onto NPM) - lowers install size
 
 ### Fixed
 
