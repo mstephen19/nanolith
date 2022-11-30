@@ -3,4 +3,8 @@ import { api } from './worker.js';
 
 const cluster = new ServiceCluster(api);
 
-const x = await cluster.launch(1, { reffed: true });
+await cluster.launch(3, {
+    exceptionHandler: (error) => {
+        console.error(error);
+    },
+});

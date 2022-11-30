@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `setRef()` method to `Messenger`.
 - Docs for `closeAll()` and `setRef()` under "Using Messenger".
 - `launch()` method to `ServiceCluster`.
+- Docs for `launch()`.
 
 ### Changed
 

@@ -372,9 +372,12 @@ import { api } from './worker.js';
 const cluster = new ServiceCluster(api);
 
 // Launch three services that will be managed by the cluster
-await cluster.launchService();
-await cluster.launchService();
-await cluster.launchService();
+await cluster.launch(3, {
+    // All three services will be launched using these options
+    exceptionHandler: (error) => {
+        console.error(error);
+    },
+});
 
 // The ".use()" method returns the least busy service out of all
 // the services.
@@ -409,7 +412,8 @@ Each `ServiceCluster` instance has access to a few methods and properties.
 | `activeServices` | Property | The number of currently running services on the cluster. |
 | `activeServiceCalls` | Property | The number of currently active task calls on all services on the cluster. |
 | `currentServices` | Property | An array of objects for each active service on the cluster. Each object contains the `service`, its current `active` count, and its unique `identifier`. |
-| `launchService()` | Method | Launch a new service on the provided **Nanolith API**, and automatically manage it with the `ServiceCluster`. |
+| `launchService()` | Method **Deprecated** | Launch a new service on the provided **Nanolith API** and automatically manage it with the `ServiceCluster`. |
+| `launch()` | Method | Launch a number of new services on the provided **Nanolith API** and automatically manage them with the `ServiceCluster` instance. Accepts a number and `service.launchService()` options as its arguments. |
 | `addService()` | Method | Add an already running service to to the cluster. |
 | `use()` | Method | Returns the `Service` instance on the cluster that is currently the least active. If no services are active on the cluster, an error will be thrown. |
 | `closeAll()` | Method | Runs the `close()` method on all `Service` instances on the cluster. |
