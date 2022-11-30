@@ -12,18 +12,14 @@ describe('ServiceCluster', () => {
         await cluster.closeAll();
     });
 
-    it('Should accurately describe the number of active services', async () => {
-        await cluster.launchService();
-        await cluster.launchService();
-        await cluster.launchService();
-        await cluster.launchService();
+    it('Should launch and accurately describe the number of active services', async () => {
+        await cluster.launch(4);
 
         expect(cluster.activeServices).toBe(4);
     });
 
     it('Should accurately describe the number of active calls', async () => {
-        const service1 = await cluster.launchService();
-        const service2 = await cluster.launchService();
+        const [service1, service2] = await cluster.launch(2);
 
         const p1 = service1!.call({
             name: 'add',
@@ -42,8 +38,7 @@ describe('ServiceCluster', () => {
 
     describe('use', () => {
         it('Should choose the least active service', async () => {
-            await cluster.launchService();
-            await cluster.launchService();
+            await cluster.launch(2);
 
             const p1 = cluster.use().call({ name: 'getThreadId' });
             const p2 = cluster.use().call({ name: 'getThreadId' });
@@ -56,8 +51,7 @@ describe('ServiceCluster', () => {
 
     describe('closeAllIdle', () => {
         it('Should close any idle services', async () => {
-            await cluster.launchService();
-            await cluster.launchService();
+            await cluster.launch(2);
 
             cluster.use().call({ name: 'add', params: [1, 2] });
 
