@@ -37,11 +37,15 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         super();
 
         this.#worker = worker;
-        this.#worker.on('exit', () => {
+
+        const handler = () => {
             this.#terminated = true;
             // Emit an event notifying that the service has been terminated.
             this.emit('terminated');
-        });
+            worker.off('exit', handler);
+        };
+
+        this.#worker.on('exit', handler);
     }
 
     /**
