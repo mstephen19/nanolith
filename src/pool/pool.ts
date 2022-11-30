@@ -101,7 +101,7 @@ class Pool {
     #next() {
         // If the concurrency is currency reached, or the queue
         // has a length of zero, do nothing.
-        if (this.maxed || !this.queueLength) return;
+        if (this.maxed || !this.#queue.length) return;
 
         this.#active++;
 
