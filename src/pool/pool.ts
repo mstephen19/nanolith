@@ -115,7 +115,10 @@ class Pool {
             env: SHARE_ENV,
         });
 
+        // If the worker should be reffed according to the config options,
+        // go ahead and ref it.
         if (reffed) worker.ref();
+        // Otherwise, fall back to a default of unreffed.
         else worker.unref();
 
         worker.setMaxListeners(100);
