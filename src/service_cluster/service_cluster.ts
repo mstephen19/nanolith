@@ -37,8 +37,8 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     }
 
     /**
-     * An array of objects for each active service on the cluster. Each object contains the `service`,
-     * its current `active` count, and its unique `identifier`.
+     * An array of objects for each active service on the cluster. Each object contains the
+     * `service` itself, and its unique `identifier` within the cluster.
      */
     get currentServices() {
         return Object.freeze(Object.values(this.#serviceMap));
@@ -58,18 +58,62 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * @param options A {@link ServiceWorkerOptions} object
      * @returns A promise of a {@link Service} instance. The promise resolves once the worker is online.
      *
+     * **Note:** As a safety measure, if the cluster would exceed the pool's `maxConcurrency`, this
+     * function will quietly return `undefined` instead of launching a service.
+     *
      * @example
      * const cluster = new ServiceCluster(api);
      *
+     * // Launch 2 services on the cluster
+     * await cluster.launch(2, { priority: true });
+     */
+    async launch<Options extends ServiceWorkerOptions>(count?: 1, options?: Options): Promise<Service<Definitions> | undefined>;
+    async launch<Options extends ServiceWorkerOptions>(
+        count: Exclude<number, 1 | 2>,
+        options?: Options
+    ): Promise<(Service<Definitions> | undefined)[]>;
+    async launch<Options extends ServiceWorkerOptions>(count?: number, options = {} as Options) {
+        // Don't allow more services to be added if it exceeds the pool's `maxConcurrency`
+        if (!count || count === 1) return this.#launchService(options);
+
+        const promises: Promise<Service<Definitions> | undefined>[] = [];
+
+        for (let i = 1; i <= count; i++) {
+            promises.push(this.#launchService(options));
+        }
+
+        return Promise.all(promises);
+    }
+
+    /**
+     * @deprecated Use `cluster.launch()` instead.
+     *
+     * Launch a new service on the provided {@link Nanolith} API, and automatically manage it
+     * with the `ServiceCluster`.
+     *
+     * @param options A {@link ServiceWorkerOptions} object
+     * @returns A promise of a {@link Service} instance. The promise resolves once the worker is online.
+     *
+     * **Note:** As a safety measure, if the cluster would exceed the pool's `maxConcurrency`, this
+     * function will quietly return `undefined` instead of launching a service.
+     *
+     * @example
+     * const cluster = new ServiceCluster(api);
+     *
+     * // Launch 2 services on the cluster
      * await cluster.launchService({ priority: true });
      * await cluster.launchService({ priority: true });
      */
     async launchService<Options extends ServiceWorkerOptions>(options = {} as Options) {
-        // Don't allow more services to be added if it exceeds the pool's max concurrency
+        return this.launch(1, options);
+    }
+
+    async #launchService<Options extends ServiceWorkerOptions>(options = {} as Options) {
+        // Don't allow more services to be added if it will cause
+        // exceeding of the pool's `maxConcurrency`
         if (Object.values(this.#serviceMap).length >= pool.maxConcurrency) return;
 
         const service = await this.#nanolith.launchService(options);
-
         this.#registerNewService(service);
 
         return service;
@@ -132,8 +176,10 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
         const values = Object.values(this.#serviceMap);
         if (!values.length) throw new Error('No running services found on this ServiceCluster!');
 
+        // Don't bother looping at all if there's just one service running on the cluster
         if (values.length === 1) return values[0].service;
 
+        // Retrieve and return the least busy service in the map
         return values.reduce((acc, curr) => {
             if (curr.service.activeCalls < acc.service.activeCalls) return curr;
             return acc;
@@ -153,7 +199,11 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * any tasks.
      */
     closeAllIdle() {
-        const promises = Object.values(this.#serviceMap).map(({ service }) => (service.activeCalls <= 0 ? service.close() : null));
+        const promises = Object.values(this.#serviceMap).reduce((acc, { service }) => {
+            if (service.activeCalls <= 0) acc.push(service.close());
+            return acc;
+        }, [] as Promise<void>[]);
+
         return Promise.all(promises);
     }
 }

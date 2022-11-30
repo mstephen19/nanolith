@@ -12,11 +12,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `closeAll()` method to `Messenger`.
 - `setRef()` method to `Messenger`.
 - Docs for `closeAll()` and `setRef()` under "Using Messenger".
+- `launch()` method to `ServiceCluster`.
 
 ### Changed
 
 - Fixed typos and revamped README.
 - Refactored `Messenger` constructor.
+- Deprecated `launchService()` method on `ServiceCluster`.
 
 ## [0.1.3] - 2022-02-11
 
