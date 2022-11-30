@@ -47,14 +47,17 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
                 // If the message is for a call with a different key, also ignore the message.
                 if (body.key !== key) return;
 
-                // Resolve with the function's return value.
-                if (body.type === WorkerMessageType.CallReturn) {
-                    resolve((body as WorkerCallReturnMessageBody).data);
-                }
-
-                // Or, if the call failed, reject with the caught error.
-                if (body.type === WorkerMessageType.CallError) {
-                    reject((body as WorkerCallErrorMessageBody).data);
+                switch (body.type) {
+                    case WorkerMessageType.CallReturn: {
+                        resolve((body as WorkerCallReturnMessageBody).data);
+                        break;
+                    }
+                    case WorkerMessageType.CallError: {
+                        reject((body as WorkerCallErrorMessageBody).data);
+                        break;
+                    }
+                    default:
+                        break;
                 }
             });
         };

@@ -9,10 +9,8 @@ import type {
     WorkerTaskErrorMessageBody,
     WorkerExceptionMessageBody,
 } from '../types/messages.js';
-// import { getCurrentFile } from '../define/utilities.js';
 
 export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, identifier: string, { name, params, ...rest }: Options) => {
-    // if (getCurrentFile(3) === file) throw new Error('Cannot call tasks from the same file from which they were defined!');
     const item = new PoolItem({
         file,
         workerData: {
@@ -38,20 +36,25 @@ export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, i
             // Handles the receiving of the task's return value
             // and the receiving of caught errors
             worker.on('message', async (body: WorkerBaseMessageBody) => {
-                if (body.type === WorkerMessageType.WorkerException) {
-                    worker.off('exit', earlyExitHandler);
-                    await worker.terminate();
-                    reject((body as WorkerExceptionMessageBody).data);
-                }
-
-                if (body.type === WorkerMessageType.TaskReturn) {
-                    worker.off('exit', earlyExitHandler);
-                    resolve((body as WorkerTaskReturnMessageBody).data);
-                }
-
-                if (body.type === WorkerMessageType.TaskError) {
-                    worker.off('exit', earlyExitHandler);
-                    reject((body as WorkerTaskErrorMessageBody).data);
+                switch (body.type) {
+                    case WorkerMessageType.WorkerException: {
+                        worker.off('exit', earlyExitHandler);
+                        await worker.terminate();
+                        reject((body as WorkerExceptionMessageBody).data);
+                        break;
+                    }
+                    case WorkerMessageType.TaskReturn: {
+                        worker.off('exit', earlyExitHandler);
+                        resolve((body as WorkerTaskReturnMessageBody).data);
+                        break;
+                    }
+                    case WorkerMessageType.TaskError: {
+                        worker.off('exit', earlyExitHandler);
+                        reject((body as WorkerTaskErrorMessageBody).data);
+                        break;
+                    }
+                    default:
+                        break;
                 }
             });
         });
