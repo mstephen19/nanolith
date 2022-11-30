@@ -13,6 +13,7 @@ Multi-threaded nanoservices in no time with seamless TypeScript support.
 ## 📖 Table of Contents
 
 * [💭About](#about)
+* [Installation](#installation)
 * [What's new❔](#whats-new)
 * [Defining a set of tasks](#defining-a-set-of-tasks)
   * [🦄Creating multiple sets of definitions in the same file with `identifier`s](#creating-multiple-sets-of-definitions-in-the-same-file-with-identifiers)
@@ -45,6 +46,28 @@ What's ✨**Nanolith**✨? Nanolith is a performant, reliable, and (super) simpl
 Nanolith was designed with simplicity in mind - it has just two basic APIs. The **Nanolith API** can be used to call one-off [task workers](#running-a-task), and directly on that API, the [`launchService()`](#launching-a-service) function can be called to launch a long-running **Service** worker which has access to your task function [definitions](#defining-a-set-of-tasks) and will only finish once it's been told to `close()`. When you launch a service, you are immediately able to [communicate](#sending-messages-from-the-main-thread-to-a-service) back and forth between the worker and the main thread.
 
 Enough talk though, let's look at how this thing works.
+
+## Installation
+
+The latest version can be installed via any package manager of your choice.
+
+```shell
+npm install nanolith@latest
+```
+
+```shell
+yarn add nanolith@latest
+```
+
+Beta versions are released under the "next" tag, and can be installed like this:
+
+```shell
+npm install nanolith@next
+```
+
+```shell
+yarn add nanolith@next
+```
 
 ## What's new?
 
