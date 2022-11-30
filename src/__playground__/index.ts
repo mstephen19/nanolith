@@ -8,3 +8,12 @@ await cluster.launch(3, {
         console.error(error);
     },
 });
+
+const data = await cluster.use().call({
+    name: 'add5',
+    params: [2],
+});
+
+console.log(data);
+
+await cluster.closeAll();

@@ -64,18 +64,6 @@ function seek() {
 }
 
 /**
- * @deprecated Use `messengers` instead.
- *
- * An object containing functions to be used within workers when interacting with {@link Messenger}s.
- *
- * @example
- * const messenger = await messages.use('foo');
- *
- * messenger.onMessage<string>((data) => console.log(data, 'received!'));
- */
-export const messages = Object.freeze({ use, seek });
-
-/**
  *
  * An object containing functions to be used within workers when interacting with {@link Messenger}s.
  *

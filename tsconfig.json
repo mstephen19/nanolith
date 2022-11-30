@@ -10,7 +10,7 @@
         "removeComments": false,
         "rootDir": "./src",
         "outDir": "./dist",
-        "pretty": true,
+        "pretty": false,
         "allowSyntheticDefaultImports": true
     },
     "include": ["./src"],

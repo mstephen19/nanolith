@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- if-statements for message type to switch-statements (easier to read + scalable + micro performance upgrade)
+
+### Added
+
+- Test for `activeCalls` getter on `Service`
+
+### Removed
+
+- `launchService()` method from `ServiceCluster`.
+- `messages` object.
+
+### Fixed
+
+- Eradicated the maxListeners reached error with Services.
+
 ## [0.2.0] - 2022-30-11
 
 ### Added

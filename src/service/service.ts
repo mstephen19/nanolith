@@ -32,20 +32,48 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     #worker: Worker;
     #terminated = false;
     #active = 0;
+    #callbacks: Map<string, { resolve: (value: any) => void; reject: (value: any) => void }> = new Map();
 
     constructor(worker: Worker) {
         super();
 
         this.#worker = worker;
 
+        // Only attach one listener onto the worker instead of attaching a listener for each task called.
+        const taskHandler = (body: WorkerBaseMessageBody & { key: string }) => {
+            this.#callbacks.forEach(({ resolve, reject }, key) => {
+                // Ignore all messages that aren't one of these two types.
+                if (body.type !== WorkerMessageType.CallError && body.type !== WorkerMessageType.CallReturn) return;
+                // If the message is for a call with a different key, also ignore the message.
+                if (body.key !== key) return;
+
+                switch (body.type) {
+                    case WorkerMessageType.CallReturn: {
+                        resolve((body as WorkerCallReturnMessageBody).data);
+                        break;
+                    }
+                    case WorkerMessageType.CallError: {
+                        reject((body as WorkerCallErrorMessageBody).data);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            });
+        };
+
+        this.#worker.on('message', taskHandler);
+
+        // Exit handler
         const handler = () => {
             this.#terminated = true;
             // Emit an event notifying that the service has been terminated.
             this.emit('terminated');
-            worker.off('exit', handler);
+            // Clean up task handler listener
+            worker.off('message', taskHandler);
         };
 
-        this.#worker.on('exit', handler);
+        this.#worker.once('exit', handler);
     }
 
     /**
@@ -121,34 +149,25 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         };
 
         const promise = new Promise((resolve, reject) => {
-            const callback = (body: WorkerBaseMessageBody & { key: string }) => {
-                // Ignore all messages that aren't one of these two types.
-                if (body.type !== WorkerMessageType.CallError && body.type !== WorkerMessageType.CallReturn) return;
-                // If the message is for a call with a different key, also ignore the message.
-                if (body.key !== key) return;
-
-                // Resolve with the function's return value.
-                if (body.type === WorkerMessageType.CallReturn) {
-                    resolve((body as WorkerCallReturnMessageBody).data);
-                }
-
-                // Or, if the call failed, reject with the caught error.
-                if (body.type === WorkerMessageType.CallError) {
-                    reject((body as WorkerCallErrorMessageBody).data);
-                }
-
-                // Clean up listener
-                this.#worker.off('message', callback);
-                // Decrease the current number of active calls
-                this.#active--;
-            };
-
-            this.#worker.on('message', callback);
+            // Add the data to the callbacks map. The promise
+            // will be resolved when the corresponding message
+            // is received.
+            this.#addCallbacks({ key, resolve, reject });
         }) as Promise<CleanReturnType<Definitions[Name]>>;
 
         this.#worker.postMessage(message, transferList);
 
-        return promise;
+        const data = await promise;
+        this.#active--;
+        return data;
+    }
+
+    #addCallbacks({ key, ...rest }: { key: string; resolve: (value: any) => void; reject: (value: any) => void }) {
+        this.#callbacks.set(key, rest);
+
+        return () => {
+            this.#callbacks.delete(key);
+        };
     }
 
     /**

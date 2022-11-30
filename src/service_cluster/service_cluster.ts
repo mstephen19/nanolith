@@ -86,29 +86,6 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
         return Promise.all(promises);
     }
 
-    /**
-     * @deprecated Use `cluster.launch()` instead.
-     *
-     * Launch a new service on the provided {@link Nanolith} API, and automatically manage it
-     * with the `ServiceCluster`.
-     *
-     * @param options A {@link ServiceWorkerOptions} object
-     * @returns A promise of a {@link Service} instance. The promise resolves once the worker is online.
-     *
-     * **Note:** As a safety measure, if the cluster would exceed the pool's `maxConcurrency`, this
-     * function will quietly return `undefined` instead of launching a service.
-     *
-     * @example
-     * const cluster = new ServiceCluster(api);
-     *
-     * // Launch 2 services on the cluster
-     * await cluster.launchService({ priority: true });
-     * await cluster.launchService({ priority: true });
-     */
-    async launchService<Options extends ServiceWorkerOptions>(options = {} as Options) {
-        return this.launch(1, options);
-    }
-
     async #launchService<Options extends ServiceWorkerOptions>(options = {} as Options) {
         // Don't allow more services to be added if it will cause
         // exceeding of the pool's `maxConcurrency`
