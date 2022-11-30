@@ -4,7 +4,7 @@
         "declaration": true,
         "declarationMap": true,
         "sourceMap": false,
-        "module": "NodeNext",
+        "module": "ESNext",
         "moduleResolution": "node",
         "target": "ESNext",
         "removeComments": false,

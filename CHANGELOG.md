@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Exporting `TaskDefinitions` type from the main index file
+
+### Changed
+
+- Fixed typos and revamped README
+
 ## [0.1.3] - 2022-02-11
 
 ## Added
