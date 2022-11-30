@@ -8,18 +8,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Exporting `TaskDefinitions` type from the main index file.
+- Export `TaskDefinitions`, `Nanolith`, `TaskWorkerOptions`, and `ServiceWorkerOptions` types from the main index file.
 - `closeAll()` method to `Messenger`.
 - `setRef()` method to `Messenger`.
 - Docs for `closeAll()` and `setRef()` under "Using Messenger".
 - `launch()` method to `ServiceCluster`.
 - Docs for `launch()`.
+- `messengers` object (identical to `messages`).
 
 ### Changed
 
 - Fixed typos and revamped README.
 - Refactored `Messenger` constructor.
-- Deprecated `launchService()` method on `ServiceCluster`.
+- Performance refactor for `ServiceCluster`.
+
+### Deprecated
+
+- `launchService()` method on `ServiceCluster`.
+- `messages` object in favor of new identical `messengers` object.
 
 ## [0.1.3] - 2022-02-11
 

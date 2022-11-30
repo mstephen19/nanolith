@@ -6,12 +6,13 @@ import type { Service } from '../service/index.js';
 import type { ServiceWorkerOptions } from '../types/workers.js';
 import type { TaskDefinitions } from '../types/definitions.js';
 
-type ServiceClusterMap<Definitions extends TaskDefinitions> = {
-    [key: string]: {
+type ServiceClusterMap<Definitions extends TaskDefinitions> = Map<
+    string,
+    {
         service: Service<Definitions>;
         identifier: string;
-    };
-};
+    }
+>;
 
 /**
  * A lightweight API for managing multiple services using the same set
@@ -19,7 +20,7 @@ type ServiceClusterMap<Definitions extends TaskDefinitions> = {
  */
 export class ServiceCluster<Definitions extends TaskDefinitions> {
     #nanolith: Nanolith<Definitions>;
-    #serviceMap: ServiceClusterMap<Definitions> = {};
+    #serviceMap: ServiceClusterMap<Definitions> = new Map();
 
     /**
      *
@@ -33,7 +34,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * The number of currently running services on the cluster.
      */
     get activeServices() {
-        return Object.values(this.#serviceMap).length;
+        return this.#serviceMap.size;
     }
 
     /**
@@ -41,14 +42,14 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * `service` itself, and its unique `identifier` within the cluster.
      */
     get currentServices() {
-        return Object.freeze(Object.values(this.#serviceMap));
+        return [...this.#serviceMap.values()];
     }
 
     /**
      * The number of currently active task calls on all services on the cluster.
      */
     get activeServiceCalls() {
-        return Object.values(this.#serviceMap).reduce((acc, curr) => acc + curr.service.activeCalls, 0);
+        return [...this.#serviceMap.values()].reduce((acc, curr) => acc + curr.service.activeCalls, 0);
     }
 
     /**
@@ -111,7 +112,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     async #launchService<Options extends ServiceWorkerOptions>(options = {} as Options) {
         // Don't allow more services to be added if it will cause
         // exceeding of the pool's `maxConcurrency`
-        if (Object.values(this.#serviceMap).length >= pool.maxConcurrency) return;
+        if (this.#serviceMap.size >= pool.maxConcurrency) return;
 
         const service = await this.#nanolith.launchService(options);
         this.#registerNewService(service);
@@ -136,11 +137,11 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
 
     #registerNewService(service: Service<Definitions>) {
         const identifier = v4();
-        this.#serviceMap[identifier] = { service, identifier };
+        this.#serviceMap.set(identifier, { service, identifier });
 
         // When the service is terminated, remove it from the service map.
-        service.on('terminated', () => {
-            delete this.#serviceMap[identifier];
+        service.once('terminated', () => {
+            this.#serviceMap.delete(identifier);
         });
     }
 
@@ -168,12 +169,12 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      */
     use(identifier?: string) {
         // Handle the case of if the identifier is provided
-        if (typeof identifier === 'string' && identifier in this.#serviceMap) {
-            return this.#serviceMap[identifier];
+        if (typeof identifier === 'string' && this.#serviceMap.has(identifier)) {
+            return this.#serviceMap.get(identifier);
         }
 
         // Default behavior - find the least active service.
-        const values = Object.values(this.#serviceMap);
+        const values = [...this.#serviceMap.values()];
         if (!values.length) throw new Error('No running services found on this ServiceCluster!');
 
         // Don't bother looping at all if there's just one service running on the cluster
@@ -190,7 +191,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * Runs the `.close()` method on all `Service` instances on the cluster.
      */
     closeAll() {
-        const promises = Object.values(this.#serviceMap).map(({ service }) => service.close());
+        const promises = [...this.#serviceMap.values()].map(({ service }) => service.close());
         return Promise.all(promises);
     }
 
@@ -199,7 +200,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * any tasks.
      */
     closeAllIdle() {
-        const promises = Object.values(this.#serviceMap).reduce((acc, { service }) => {
+        const promises = [...this.#serviceMap.values()].reduce((acc, { service }) => {
             if (service.activeCalls <= 0) acc.push(service.close());
             return acc;
         }, [] as Promise<void>[]);
