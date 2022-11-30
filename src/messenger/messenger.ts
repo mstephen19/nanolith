@@ -2,7 +2,7 @@ import { randomUUID as v4 } from 'crypto';
 import { isMessengerTransferObject } from './utilities.js';
 import { BroadcastChannel } from 'worker_threads';
 
-import type { MessengerTransferData, MessengerMessageBody } from '../types/messenger.js';
+import type { MessengerTransferData, MessengerMessageBody, MessengerCloseMessageBody } from '../types/messenger.js';
 import type { Awaitable } from '../types/utilities.js';
 
 /**
@@ -83,7 +83,10 @@ export class Messenger {
     #registerListener() {
         this.#channel.onmessage = async (event) => {
             const { data: body } = event as { data: MessengerMessageBody };
-            // If the message was send by this Messenger, just ignore it.
+            // Handle "closeAll" calls
+            if ((body as unknown as MessengerCloseMessageBody)?.close) return this.#channel.close();
+
+            // If the message was sent by this Messenger, just ignore it.
             if (body.sender === this.#key) return;
             this.#listenerCallbacks.forEach((callback) => callback(body.data));
         };
@@ -183,8 +186,21 @@ export class Messenger {
 
     /**
      * Closes the underlying {@link BroadcastChannel} connection that is being used.
+     * Does not close all Messenger objects. Use `messenger.closeAll()` instead for that.
      */
     close() {
         this.#channel.close();
+        // Early cleanup
+        this.#listenerCallbacks = [];
+    }
+
+    closeAll() {
+        // Send a message to all instances listening on the BroadcastChannel
+        // telling them to close.
+        const body: MessengerCloseMessageBody = {
+            close: true,
+        };
+
+        this.#channel.postMessage(body);
     }
 }

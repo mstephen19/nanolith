@@ -8,11 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Exporting `TaskDefinitions` type from the main index file
+- Exporting `TaskDefinitions` type from the main index file.
+- `closeAll()` method to `Messenger`.
 
 ### Changed
 
-- Fixed typos and revamped README
+- Fixed typos and revamped README.
+- Refactored `Messenger` constructor.
 
 ## [0.1.3] - 2022-02-11
 
