@@ -122,7 +122,7 @@ class Pool {
         else worker.unref();
 
         // ! Temporary
-        worker.setMaxListeners(0);
+        worker.setMaxListeners(Infinity);
         // ! Temporary
 
         item.emit('created', worker);

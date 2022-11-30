@@ -516,11 +516,11 @@ await service.close();
 
 > You can attach as many messengers as you want to workers; however, ensure that they all have different names to avoid issues!
 
-Similar to [`parent`](#sending--receiving-messages-between-tasksservices-and-the-main-thread), there is a specialized global object for using messengers within workers called `messages`. It has only two functions, `messages.view()` and `messages.use()`.
+Similar to [`parent`](#sending--receiving-messages-between-tasksservices-and-the-main-thread), there is a specialized global object for using messengers within workers called `messengers`. It has only two functions, `messengers.seek()` and `messengers.use()`.
 
 ```TypeScript
 // worker.ts 💼
-import { define, messages } from 'nanolith';
+import { define, messengers } from 'nanolith';
 
 export const api = await define({
     async sendSomething() {
@@ -528,11 +528,11 @@ export const api = await define({
         // created and attached to the worker through this
         // variable. It can be used to send and receive
         // messages on the underlying BroadcastChannel.
-        const messenger = await messages.use('foo-bar');
+        const messenger = await messengers.use('foo-bar');
 
         // View all messengers currently attached to the
-        // worker
-        console.log(messages.seek());
+        // worker as an object.
+        console.log(messengers.seek());
     },
 });
 ```
