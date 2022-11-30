@@ -48,18 +48,21 @@ Enough talk though, let's look at how this thing works.
 
 ## What's new?
 
-The newest stable version of Nanolith is `0.1.4` ✨
+The newest stable version of Nanolith is `0.2.0` ✨
 
 ### Features 🆕
 
-* New `activeCalls` property available on [`Service`](#using-a-service) instances.
-* Support for `__beforeServiceTask` and `__afterServiceTask` [hooks](#hooks).
-* New [`safeMode`](#running-a-task) feature in the options for `define()` (read more about this option in the quote at the end of the linked section).
+* `TaskDefinitions`, `Nanolith`, `TaskWorkerOptions`, and `ServiceWorkerOptions` types now available at the top-level.
+* [`closeAll()`](#using-messenger) and `setRef()` methods on `Messenger`.
+* Deprecated `messages` object in favor of the new identical [`messengers`](#sending--receiving-messages-between-tasksservices-and-the-main-thread) object.
+* Deprecated `launchService()` on `ServiceCluster` in favor of the new [`launch()`](#using-servicecluster) method.
 
 ### Fixes & improvements 🛠️
 
-* Slightly improved performance for [`ServiceCluster`](#creating-a-service-cluster).
-* Improved checking for whether or not a task worker or service worker is being launched from the same file where its definitions were created.
+* Large performance improvements for [`ServiceCluster`](#creating-a-service-cluster).
+* Slight performance improvements for [`Service`](#launching-a-service).
+* Slight performance improvements for [`Messenger`](#sending--receiving-messages-between-tasksservices-and-the-main-thread).
+* Disabled the max-listeners memory leak warning for all `Worker` instances **(this is temporary)**.
 
 ## Defining a set of tasks
 
