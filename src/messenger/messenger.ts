@@ -74,13 +74,13 @@ export class Messenger {
 
         this.#channel.unref();
 
-        this.#registerListener();
+        this.#registerMainListener();
     }
 
     /**
      * A function that will not be run until `onMessage` is called for the first time.
      */
-    #registerListener() {
+    #registerMainListener() {
         this.#channel.onmessage = async (event) => {
             const { data: body } = event as { data: MessengerMessageBody };
             // Handle "closeAll" calls
