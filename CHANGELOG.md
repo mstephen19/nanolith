@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- if-statements for message type to switch-statements (easier to read + scalable + micro performance upgrade)
+
 ### Added
 
 - Test for `activeCalls` getter on `Service`
