@@ -43,7 +43,7 @@ Multi-threaded nanoservices in no time with seamless TypeScript support.
 
 What's ✨**Nanolith**✨? Nanolith is a performant, reliable, and super simple-to-use multi-threading library with great documentation and seamless TypeScript support. It serves to entirely replace the _(now deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
 
-Nanolith was designed with simplicity in mind - it has just two basic APIs. The **Nanolith API** can be used to call one-off [task workers](#running-a-task), and directly on that API, the [`launchService()`](#launching-a-service) function can be called to launch a long-running **Service** worker which has access to your task function [definitions](#defining-a-set-of-tasks) and will only finish once it's been told to `close()`. When you launch a service, you are immediately able to [communicate](#sending-messages-from-the-main-thread-to-a-service) back and forth between the worker and the main thread.
+Nanolith was designed with simplicity and performance in mind - it has just two main APIs. The **Nanolith API** can be used to call one-off [task workers](#running-a-task), and directly on that API, the [`launchService()`](#launching-a-service) function can be called to launch a long-running **Service** worker which has access to your task function [definitions](#defining-a-set-of-tasks) and will only finish once it's been told to `close()`. When you launch a service, you are immediately able to [communicate](#sending-messages-from-the-main-thread-to-a-service) back and forth between the worker and the main thread.
 
 Enough talk though, let's look at how this thing works.
 
