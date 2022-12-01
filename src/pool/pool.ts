@@ -80,7 +80,7 @@ class Pool {
      * This method is used internally to queue tasks and services up to the pool
      * to be created and run.
      *
-     * This function will throw an error when trying to spawn up workers from within
+     * This function **will** throw an error when trying to spawn up workers from within
      * any thread that is not the main one.
      */
     enqueue(item: PoolItem) {
@@ -120,10 +120,6 @@ class Pool {
         if (reffed) worker.ref();
         // Otherwise, fall back to a default of unreffed.
         else worker.unref();
-
-        // // ! Temporary
-        // worker.setMaxListeners(Infinity);
-        // // ! Temporary
 
         item.emit('created', worker);
 

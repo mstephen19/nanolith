@@ -13,7 +13,6 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
     identifier: string,
     { exceptionHandler, ...rest }: Options
 ) => {
-    // if (getCurrentFile(3) === file) throw new Error('Cannot run services from the same file from which their tasks were defined!');
     const item = new PoolItem({
         file,
         workerData: {
