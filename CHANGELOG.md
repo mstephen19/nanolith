@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.2.2] - 2022-03-12
+
+### Added
+
+- package.json `homepage` and `bugs` URLs
+
 ## [0.2.1] - 2022-03-12
 
 ### Changed
