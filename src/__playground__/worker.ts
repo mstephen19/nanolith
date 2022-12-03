@@ -15,9 +15,9 @@ export const api2 = await define({
     __beforeTask() {
         console.log('running api2');
     },
-    something: () => {
-        // console.log(workerData);
-        return workerData;
+    something: async () => {
+        console.log('hellooooo');
+        return 'foo';
     },
     cool: () => 'foo',
     test: () => 'xyz',

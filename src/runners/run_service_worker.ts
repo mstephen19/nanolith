@@ -29,7 +29,7 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
             const handleInitialization = (body: WorkerBaseMessageBody) => {
                 if (body.type !== WorkerMessageType.Initialized) return;
 
-                const service = new Service(worker);
+                const service = Object.seal(new Service(worker));
                 // Register the listener for the exception handler
                 if (exceptionHandler && typeof exceptionHandler === 'function') {
                     worker.on('message', async (body: WorkerBaseMessageBody) => {
@@ -53,7 +53,7 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
         });
     }) as Promise<Service<Definitions>>;
 
-    pool.enqueue(item);
+    pool.__enqueue(item);
 
     return promise;
 };
