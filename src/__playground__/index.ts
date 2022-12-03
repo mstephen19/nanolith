@@ -1,19 +1,5 @@
-import { ServiceCluster } from '../index.js';
-import { api } from './worker.js';
+import { api2 } from './worker.js';
 
-const cluster = new ServiceCluster(api);
-
-await cluster.launch(3, {
-    exceptionHandler: (error) => {
-        console.error(error);
-    },
-});
-
-const data = await cluster.use().call({
-    name: 'add5',
-    params: [2],
-});
+const data = await api2({ name: 'something' });
 
 console.log(data);
-
-await cluster.closeAll();

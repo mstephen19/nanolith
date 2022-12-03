@@ -60,7 +60,7 @@ export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, i
         });
     });
 
-    pool.enqueue(item);
+    pool.__enqueue(item);
 
     return promise;
 };

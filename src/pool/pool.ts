@@ -83,7 +83,7 @@ class Pool {
      * This function **will** throw an error when trying to spawn up workers from within
      * any thread that is not the main one.
      */
-    enqueue(item: PoolItem) {
+    __enqueue(item: PoolItem) {
         // Prevent workers from being run on any other thread than the main thread.
         if (!isMainThread) throw new Error("Can't enqueue items to the pool on any other thread than the main thread!");
 
@@ -133,4 +133,4 @@ class Pool {
 /**
  * The single global instance of {@link Pool} that manages all Nanolith workers 💪
  */
-export const pool = new Pool();
+export const pool = Object.seal(new Pool());

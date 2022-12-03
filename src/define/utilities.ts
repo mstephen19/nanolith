@@ -1,6 +1,8 @@
 import callsites from 'callsites';
 import { fileURLToPath } from 'url';
 
+import type { TaskDefinitions } from '../types/definitions';
+
 export const getCurrentFile = (index?: number) => {
     const fileName = callsites()[index ?? 2].getFileName()!;
     try {
@@ -16,3 +18,5 @@ export const assertCurrentFileNotEqual = (file: string) => {
         throw new Error('Cannot run workers from the same file from which their tasks were defined!');
     }
 };
+
+export const getAutoIdentifier = (definitions: TaskDefinitions) => Object.keys(definitions).join('&');

@@ -185,6 +185,16 @@ export class Messenger {
     }
 
     /**
+     * By default, the {@link BroadcastChannel} is unreffed. Call this function to change that.
+     * When `true`, [`ref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelref) will be called.
+     * When `false`, [`unref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelunref) will be called.
+     */
+    setRef(option: boolean) {
+        if (option) return this.#channel.ref();
+        this.#channel.unref();
+    }
+
+    /**
      * Closes the underlying {@link BroadcastChannel} connection that is being used.
      * Does not close all Messenger objects. Use `messenger.closeAll()` instead for that.
      */
@@ -206,15 +216,5 @@ export class Messenger {
         };
 
         this.#channel.postMessage(body);
-    }
-
-    /**
-     * By default, the {@link BroadcastChannel} is unreffed. Call this function to change that.
-     * When `true`, [`ref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelref) will be called.
-     * When `false`, [`unref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelunref) will be called.
-     */
-    setRef(option: boolean) {
-        if (option) return this.#channel.ref();
-        this.#channel.unref();
     }
 }

@@ -31,7 +31,7 @@ function sendMessage<Data = any>(data: Data, transferList?: readonly TransferLis
         data,
     };
 
-    parentPort?.postMessage(body, transferList);
+    parentPort!.postMessage(body, transferList);
 }
 
 /**
@@ -59,11 +59,11 @@ async function waitForMessage<Data = any>(callback: (body: Data) => Awaitable<bo
                 resolve(data);
 
                 // Clean up listener
-                parentPort?.off('message', handler);
+                parentPort!.off('message', handler);
             }
         };
 
-        parentPort?.on('message', handler);
+        parentPort!.on('message', handler);
     }) as Promise<Data>;
 }
 
@@ -78,7 +78,7 @@ async function waitForMessage<Data = any>(callback: (body: Data) => Awaitable<bo
 function onMessage<Data = any>(callback: (body: Data) => Awaitable<void>) {
     assertIsNotMainThread('parent.onMessage');
 
-    parentPort?.on('message', async (body: MainThreadBaseMessageBody) => {
+    parentPort!.on('message', async (body: MainThreadBaseMessageBody) => {
         if (body.type !== MainThreadMessageType.Message) return;
         await callback((body as MainThreadSendMessageBody<Data>).data);
     });
@@ -100,7 +100,7 @@ function onMessage<Data = any>(callback: (body: Data) => Awaitable<void>) {
 function offMessage<Data = any>(callback: (body: Data) => Awaitable<void>) {
     assertIsNotMainThread('parent.offMessage');
 
-    parentPort?.off('message', callback);
+    parentPort!.off('message', callback);
 }
 
 /**
@@ -116,7 +116,7 @@ function onMessengerReceived(callback: (messenger: Messenger) => Awaitable<any>)
 
     const { messengers } = workerData as BaseWorkerData;
 
-    parentPort?.on('message', async (body: MainThreadBaseMessageBody) => {
+    parentPort!.on('message', async (body: MainThreadBaseMessageBody) => {
         if (body.type !== MainThreadMessageType.MessengerTransfer) return;
         await callback(messengers[(body as MainThreadMessengerTransferBody).data.__messengerID]);
     });
