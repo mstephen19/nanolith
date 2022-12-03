@@ -2,7 +2,7 @@ import { isMainThread, workerData } from 'worker_threads';
 import { workerHandler } from '../handlers/index.js';
 import { runTaskWorker } from '../runners/index.js';
 import { runServiceWorker } from '../runners/index.js';
-import { assertCurrentFileNotEqual, getCurrentFile } from './utilities.js';
+import { assertCurrentFileNotEqual, getCurrentFile, getAutoIdentifier } from './utilities.js';
 
 import type { DefineOptions, TaskDefinitions, Tasks } from '../types/definitions.js';
 import type { Nanolith } from '../types/nanolith.js';
@@ -35,23 +35,31 @@ import type { BaseWorkerData } from '../types/worker_data.js';
  */
 export async function define<Definitions extends TaskDefinitions>(
     definitions: Definitions,
-    { identifier = 'default', file: fileFromOptions, safeMode = true }: DefineOptions = {}
+    { identifier, file: fileFromOptions, safeMode = true }: DefineOptions = {}
 ): Promise<Nanolith<Definitions>> {
+    // If a custom identifier was provided, use that. Otherwise, use the auto-generated one.
+    const identifierToUse = identifier || getAutoIdentifier(definitions);
+
+    // ? This code runs on the worker thread
     // If we are not on the main thread, run the worker.
     if (!isMainThread) {
         // If the identifier in the workerData is not equal to the identifier provided
         // in the options of the "define" function, return out immediately.
         const { identifier: workerIdentifier } = workerData as BaseWorkerData;
-        if (workerIdentifier !== identifier) return undefined as any as Nanolith<Definitions>;
+        // If the identifier for the call is not equal to the one passed into this set of definitions,
+        // don't use this set of definitions - they are trying to use a different set.
+        if (workerIdentifier !== identifierToUse) return undefined as any as Nanolith<Definitions>;
 
         // Otherwise, this is the set of definitions that is meant to be used, and the worker
         // can be handled accordingly.
         await workerHandler(definitions);
         // Since we're not running on the main thread, we can safely coerce "undefined" into
-        // our Nanolith API type.
+        // our Nanolith API type. Worker handler will always exit the process anyways, so this
+        // is only here to make the TypeScript compiler happy.
         return undefined as any as Nanolith<Definitions>;
     }
 
+    // ? This code runs on the main thread
     // Determine the file of the worker if it was not provided in the options.
     const file = fileFromOptions ?? getCurrentFile();
 
@@ -59,12 +67,12 @@ export async function define<Definitions extends TaskDefinitions>(
         Object.assign(
             async <Name extends CleanKeyOf<Tasks<Definitions>>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
                 if (safeMode) assertCurrentFileNotEqual(file);
-                return runTaskWorker(file, identifier, options as TaskWorkerOptions) as Promise<CleanReturnType<Definitions[Name]>>;
+                return runTaskWorker(file, identifierToUse, options as TaskWorkerOptions) as Promise<CleanReturnType<Definitions[Name]>>;
             },
             {
                 launchService: Object.freeze(async <Options extends ServiceWorkerOptions>(options = {} as Options) => {
                     if (safeMode) assertCurrentFileNotEqual(file);
-                    return runServiceWorker<Definitions, Options>(file, identifier, options);
+                    return runServiceWorker<Definitions, Options>(file, identifierToUse, options);
                 }),
                 file,
             }

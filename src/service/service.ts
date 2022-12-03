@@ -65,15 +65,17 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         this.#worker.on('message', taskHandler);
 
         // Exit handler
-        const handler = () => {
+        const terminationHandler = () => {
             this.#terminated = true;
+            // Early cleanup of the callbacks map
+            this.#callbacks.clear();
             // Emit an event notifying that the service has been terminated.
             this.emit('terminated');
             // Clean up task handler listener
             worker.off('message', taskHandler);
         };
 
-        this.#worker.once('exit', handler);
+        this.#worker.once('exit', terminationHandler);
     }
 
     /**

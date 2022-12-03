@@ -17,6 +17,7 @@ scripts
 **.tsbuildinfo
 tsconfig.json
 package-lock.json
+yarn.lock
 bun.lockb
 jest.config.js
 .eslintrc.json
