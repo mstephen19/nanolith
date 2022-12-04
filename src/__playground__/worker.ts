@@ -1,24 +1,26 @@
-import { workerData } from 'worker_threads';
-import { define } from '../index.js';
+import { Readable } from 'stream';
+import { createWriteStream } from 'fs';
+import { define, parent } from '../index.js';
 
 export const api = await define({
-    __beforeTask() {
-        console.log('running api1');
-    },
-    seek: () => {
-        console.log(workerData);
-    },
-    add5: (num: number) => num + 5,
-});
+    __initializeService() {
+        parent.onMessage<{ type: 'init_stream'; id: string }>(({ type, id }) => {
+            if (type !== 'init_stream') return;
 
-export const api2 = await define({
-    __beforeTask() {
-        console.log('running api2');
+            const stream = new Readable({
+                read() {},
+            });
+
+            parent.onMessage<{ type: `stream_data-${string}`; data: Buffer; done: boolean }>(({ type, data, done }) => {
+                if (type !== `stream_data-${id}`) return;
+
+                stream.push(data);
+                if (done) return void stream.push(null);
+            });
+
+            const writable = createWriteStream('./data.txt');
+
+            stream.pipe(writable);
+        });
     },
-    something: async () => {
-        console.log('hellooooo');
-        return 'foo';
-    },
-    cool: () => 'foo',
-    test: () => 'xyz',
 });
