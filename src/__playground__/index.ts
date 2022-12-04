@@ -2,9 +2,14 @@ import { api } from './worker.js';
 
 const service = await api.launchService();
 
-service.sendMessage({ type: 'init_stream', id: '123' });
+service.onStream((stream) => {
+    console.log(stream.metaData);
 
-service.sendMessage({ type: 'stream_data-123', data: Buffer.from('hello '), done: false });
-service.sendMessage({ type: 'stream_data-123', data: Buffer.from('world'), done: true });
+    stream.on('data', (data) => {
+        console.log(Buffer.from(data).toString('utf-8'));
+    });
+});
+
+await service.call({ name: 'sendStream' });
 
 // await service.close();
