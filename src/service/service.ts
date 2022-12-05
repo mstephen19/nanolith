@@ -243,6 +243,39 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
+     * Wait for specific messages coming from the service worker.
+     *
+     * @param callback A function returning a boolean that will be run each time a message is received the service worker.
+     * Once the condition is met and the function returns `true`, the promise will resolve with the data received.
+     *
+     * @returns A promise of the received data.
+     *
+     * @example
+     * const data = await service.waitForMessage<{ foo: string }>(({ foo }) => foo === 'bar');
+     *
+     * console.log(data);
+     */
+    async waitForMessage<Data = any>(callback: (body: Data) => Awaitable<boolean>) {
+        this.#assertIsNotTerminated();
+
+        return new Promise((resolve) => {
+            const handler = async (body: WorkerBaseMessageBody) => {
+                if (body.type !== WorkerMessageType.Message) return;
+                const { data } = body as WorkerSendMessageBody<Data>;
+
+                if (callback(data)) {
+                    resolve(data);
+
+                    // Clean up the listener
+                    this.#worker.off('message', handler);
+                }
+            };
+
+            this.#worker.on('message', handler);
+        }) as Promise<Data>;
+    }
+
+    /**
      * Remove a function from the list of callbacks to be run when a message is received from the service.
      *
      * @param callback The function to remove.

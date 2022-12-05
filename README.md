@@ -345,6 +345,7 @@ The main method on launched services that you'll be using is `.call()`; however,
 | `sendMessage()` | Method | Send a message to the service worker. |
 | `onMessage()` | Method | Receive messages from the service worker. |
 | `offMessage()` | Method | Remove a callback function added with `onMessage()`. |
+| `waitForMessage()` | Method | Wait for specific messages coming from the service worker. |
 | [`sendMessenger()`](#dynamically-sending-messengers-to-services) | Method | Dynamically send a [`Messenger`](#using-messenger) object to the service worker. |
 | [`onStream()`](#streaming-data-between-threads) | Method | Receive data streams from the service worker. |
 | [`createStream()`](#streaming-data-between-threads) | Method | Create a `Writable` instance that can be piped into in order to stream data to the service worker. The service worker can listen for incoming streams with the `parent.onStream()` listener. |

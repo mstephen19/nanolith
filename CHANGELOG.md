@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `parent.onStream()` and `parent.createStream()` methods
 - `Service.createStream()` and `Service.onStream()` methods
 - "Streaming data between threads" section in the docs
+- `waitForMessage()` method to `Service` + docs
 
 ### Changed
 

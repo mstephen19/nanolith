@@ -3,6 +3,6 @@ import { api } from './worker.js';
 
 const service = await api.launchService();
 
-const messenger = new Messenger('foo');
+const result = await service.waitForMessage<string>((data) => data === 'foo');
 
-await service.sendMessenger(messenger);
+console.log('success', result);

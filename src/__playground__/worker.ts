@@ -2,8 +2,8 @@ import { define, parent, messengers } from '../index.js';
 
 export const api = await define({
     __initializeService() {
-        parent.onMessengerReceived((messenger) => {
-            console.log(messenger);
-        });
+        setTimeout(() => {
+            parent.sendMessage('foo');
+        }, 10e3);
     },
 });
