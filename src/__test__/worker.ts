@@ -1,6 +1,9 @@
 import { threadId } from 'worker_threads';
 import { define, parent, messengers } from '../index.js';
 
+import type { TaskDefinitions } from '../index.js';
+import { createDataStream } from './consts.js';
+
 export const definitions = {
     add: (x: number, y: number) => {
         return x + y;
@@ -92,3 +95,34 @@ export const hookTester = await define(
     },
     { identifier: 'hook-tester-123' }
 );
+
+export const streamDefinitions = {
+    receiveStream() {
+        parent.onStream((stream) => {
+            if (stream.metaData.id !== 'test') return;
+
+            parent.sendMessage('stream received!');
+        });
+    },
+    receiveStreamData() {
+        parent.onStream((stream) => {
+            if (stream.metaData.id !== 'test') return;
+
+            const arr: string[] = [];
+
+            stream.on('data', (data) => {
+                arr.push(Buffer.from(data).toString('utf-8'));
+            });
+
+            stream.on('end', () => {
+                parent.sendMessage(arr.join(''));
+            });
+        });
+    },
+    async sendStream() {
+        const stream = createDataStream();
+        stream.pipe(await parent.createStream({ id: 'test' }));
+    },
+};
+
+export const streamTester = await define(streamDefinitions);
