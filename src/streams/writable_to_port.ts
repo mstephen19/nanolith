@@ -68,6 +68,7 @@ export class WritableToPort<Target extends Messagable> extends Writable {
 
             target.postMessage(body);
             // ? Perhaps destroy the stream ?
+            this.destroy();
         });
     }
 

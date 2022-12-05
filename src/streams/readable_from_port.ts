@@ -44,6 +44,7 @@ export class ReadableFromPort<Sender extends Messagable> extends Readable {
                     // sender.
                     this.#sender.off('message', handler);
                     // ? Maybe destroy ?
+                    this.destroy();
                     break;
                 }
                 default:

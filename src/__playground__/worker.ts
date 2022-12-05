@@ -3,13 +3,6 @@ import { Readable } from 'stream';
 import { define, parent } from '../index.js';
 
 export const api = await define({
-    __initializeService() {
-        parent.onStream((stream) => {
-            stream.on('data', (data) => {
-                console.log(Buffer.from(data).toString('utf-8'));
-            });
-        });
-    },
     sendStream() {
         class DataEmitter extends EventEmitter {
             constructor() {
@@ -64,6 +57,7 @@ export const api = await define({
         }
 
         const stream = new MyReadable();
+
         stream.pipe(parent.createStream({ name: 'foo' }));
     },
 });
