@@ -1,8 +1,14 @@
 import { randomUUID as v4 } from 'crypto';
 import { isMessengerTransferObject } from './utilities.js';
 import { BroadcastChannel } from 'worker_threads';
+import { MessengerMessageType } from '../types/messenger.js';
 
-import type { MessengerTransferData, MessengerMessageBody, MessengerCloseMessageBody } from '../types/messenger.js';
+import type {
+    MessengerTransferData,
+    MessengerMessageBody,
+    MessengerCloseMessageBody,
+    MessengerBaseMessageBody,
+} from '../types/messenger.js';
 import type { Awaitable } from '../types/utilities.js';
 
 /**
@@ -82,13 +88,24 @@ export class Messenger {
      */
     #registerMainListener() {
         this.#channel.onmessage = async (event) => {
-            const { data: body } = event as { data: MessengerMessageBody };
-            // Handle "closeAll" calls
-            if ((body as unknown as MessengerCloseMessageBody)?.close) return this.#channel.close();
+            const { data: body } = event as { data: MessengerBaseMessageBody };
 
-            // If the message was sent by this Messenger, just ignore it.
-            if (body.sender === this.#key) return;
-            await Promise.all(this.#listenerCallbacks.map((callback) => callback(body.data)));
+            switch (body?.type) {
+                // Handle "closeAll" calls
+                case MessengerMessageType.Close: {
+                    return this.#channel.close();
+                }
+                case MessengerMessageType.Message: {
+                    const { sender, data } = body as MessengerMessageBody;
+                    // If the message was sent by this Messenger, just ignore it. We don't want to
+                    // run our listener callbacks for messages we sent.
+                    if (sender === this.#key) return;
+                    await Promise.all(this.#listenerCallbacks.map((callback) => callback(data)));
+                    break;
+                }
+                default:
+                    break;
+            }
         };
     }
 
@@ -193,6 +210,7 @@ export class Messenger {
      */
     sendMessage<Data = any>(data: Data) {
         const body: MessengerMessageBody = {
+            type: MessengerMessageType.Message,
             sender: this.#key,
             data,
         };
@@ -239,7 +257,7 @@ export class Messenger {
         // Send a message to all instances listening on the BroadcastChannel
         // telling them to close.
         const body: MessengerCloseMessageBody = {
-            close: true,
+            type: MessengerMessageType.Close,
         };
 
         this.#channel.postMessage(body);

@@ -1,9 +1,9 @@
-import type { TransferListItem } from 'worker_threads';
+// import type { TransferListItem } from 'worker_threads';
 
 export interface Messagable {
     on(event: 'message', callback: (value: any) => void): any;
     off(event: 'message', callback: (value: any) => void): any;
-    postMessage(value: any, transferList?: readonly TransferListItem[]): void;
+    postMessage(value: any): void;
 }
 
 export const enum StreamMessageType {
