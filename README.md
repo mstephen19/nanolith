@@ -31,10 +31,11 @@ Multi-threaded nanoservices in no time with seamless TypeScript support.
 * [Creating a service cluster](#creating-a-service-cluster)
   * [🧑‍💻Using `ServiceCluster`](#using-servicecluster)
 * [Communicating between threads](#communicating-between-threads)
-  * [📨Sending messages from the main thread to a service](#sending-messages-from-the-main-thread-to-a-service)
+  * [📨Messaging between the main thread and a service](#messaging-between-the-main-thread-and-a-service)
   * [📨Sending & receiving messages between tasks/services and the main thread](#sending--receiving-messages-between-tasksservices-and-the-main-thread)
   * [✉️Using `Messenger`](#using-messenger)
   * [📩Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
+  * [Streaming data between threads](#streaming-data-between-threads)
 * [Examples](#examples)
   * ["Promisify-ing" a for-loop](#promisify-ing-a-for-loop)
 * [License](#license)
@@ -43,7 +44,7 @@ Multi-threaded nanoservices in no time with seamless TypeScript support.
 
 What's ✨**Nanolith**✨? Nanolith is a performant, reliable, and super simple-to-use multi-threading library with great documentation and seamless TypeScript support. It serves to entirely replace the _(now deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
 
-Nanolith was designed with simplicity and performance in mind - it has just two main APIs. The **Nanolith API** can be used to call one-off [task workers](#running-a-task), and directly on that API, the [`launchService()`](#launching-a-service) function can be called to launch a long-running **Service** worker which has access to your task function [definitions](#defining-a-set-of-tasks) and will only finish once it's been told to `close()`. When you launch a service, you are immediately able to [communicate](#sending-messages-from-the-main-thread-to-a-service) back and forth between the worker and the main thread.
+Nanolith was designed with simplicity and performance in mind - it has just two main APIs. The **Nanolith API** can be used to call one-off [task workers](#running-a-task), and directly on that API, the [`launchService()`](#launching-a-service) function can be called to launch a long-running **Service** worker which has access to your task function [definitions](#defining-a-set-of-tasks) and will only finish once it's been told to `close()`. When you launch a service, you are immediately able to [communicate](#messaging-between-the-main-thread-and-a-service) back and forth between the worker and the main thread.
 
 Enough talk though, let's look at how this thing works.
 
@@ -345,6 +346,8 @@ The main method on launched services that you'll be using is `.call()`; however,
 | `onMessage()` | Method | Receive messages from the service worker. |
 | `offMessage()` | Method | Remove a callback function added with `onMessage()`. |
 | [`sendMessenger()`](#dynamically-sending-messengers-to-services) | Method | Dynamically send a [`Messenger`](#using-messenger) object to the service worker. |
+| [`onStream()`](#streaming-data-between-threads) | Method | Receive data streams from the service worker. |
+| [`createStream()`](#streaming-data-between-threads) | Method | Create a `Writable` instance that can be piped into in order to stream data to the service worker. The service worker can listen for incoming streams with the `parent.onStream()` listener. |
 
 ## Managing concurrency
 
@@ -460,7 +463,7 @@ Each `ServiceCluster` instance has access to a few methods and properties.
 
 In **Nanolith** there are two ways to communicate with workers.
 
-### Sending messages from the main thread to a service
+### Messaging between the main thread and a service
 
 On the [`Service`](#using-a-service) object, there are many methods present which allow for sending and receiving messages to the service worker. These methods are `service.sendMessage()`, `service.onMessage()`, and `service.offMessage()`.
 
@@ -613,6 +616,57 @@ messenger.sendMessage('hello from main thread!');
 
 await service.close();
 ```
+
+### Streaming data between threads
+
+Sending data between services and the main thread using methods like [`service.sendMessage()`](#using-a-service) or [`parent.sendMessage()`](#messaging-between-the-main-thread-and-a-service) is efficient and intuitive; however, there may be cases where you need to send much larger pieces of data to a service, or from a service to the main thread. In Node.js, we usually use the [`Readable` and `Writable` APIs](https://nodejs.org/api/stream.html) to do this.
+
+> **Note:** Cross-thread data streaming is currently only supported between service workers and the main thread. It is not yet available on the `Messenger` API.
+
+Both the `parent` object and all [`Service`](#using-a-service) instances have access to the `createStream()` and `onStream()` functions, which intuitively do exactly what they describe.
+
+When handling incoming streams from the main thread, this logic can be placed within the [`__initializeService` hook](#hooks):
+
+```TypeScript
+// worker.ts 💼
+import { define, parent } from 'nanolith';
+
+export const api = await define({
+    __initializeService() {
+        parent.onStream((stream) => {
+            // Only handle streams where an object with a name
+            // of "foo" has been attached to it.
+            if (stream.metaData.name !== 'foo') return;
+
+            stream.on('data', (data) => {
+                console.log(data);
+            })
+        })
+    }
+});
+```
+
+On the main thread, we simply need to create a stream to the service worker with the `createStream()` method, then pipe our stream into it.
+
+```TypeScript
+// index.ts 💡
+import { Readable } from 'stream';
+import { api } from './worker.js';
+
+const data = ['hello', 'world', 'foo', 'bar']
+
+const myStream = new Readable({
+    read() {
+        if (!data.length) return this.push(null);
+
+        this.push(data.splice(0, 1));
+    }
+});
+
+const service = await api.launchService();
+```
+
+> **Important:** The `.onStream()` listener must be registered before the stream is received by the sender. Otherwise, the event will be received.
 
 ## Examples
 

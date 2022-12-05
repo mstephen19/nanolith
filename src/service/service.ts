@@ -1,6 +1,6 @@
 import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
 import { randomUUID as v4 } from 'crypto';
-import { listenForStream, WritableToPort } from '../streams/index.js';
+import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
 import { TypedEmitter } from 'tiny-typed-emitter';
 
 import type { Worker, TransferListItem } from 'worker_threads';
@@ -207,13 +207,13 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     /**
      * Create a {@link Writable} instance that can be piped into in order to stream data to
      * the service worker. The service worker can listen for incoming streams with the
-     * `parent.onStream` listener.
+     * `parent.onStream()` listener.
      *
      * @param metaData Any specific data about the stream that should be accessible when
      * using it.
      */
     createStream(metaData?: Record<any, any>) {
-        return new WritableToPort(this.#worker, metaData);
+        return prepareWritableToPortStream(this.#worker, metaData ?? {});
     }
 
     /**
