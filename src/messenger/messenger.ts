@@ -88,7 +88,7 @@ export class Messenger {
 
             // If the message was sent by this Messenger, just ignore it.
             if (body.sender === this.#key) return;
-            this.#listenerCallbacks.forEach((callback) => callback(body.data));
+            await Promise.all(this.#listenerCallbacks.map((callback) => callback(body.data)));
         };
     }
 
@@ -132,6 +132,33 @@ export class Messenger {
      */
     onMessage<Data = any>(callback: (data: Data) => Awaitable<void>) {
         this.#listenerCallbacks.push(callback);
+    }
+
+    /**
+     * Wait for specific messages on the `Messenger`.
+     *
+     * @param callback A function returning a boolean that will be run each time a message is received from another `Messenger`
+     * Once the condition is met and the function returns `true`, the promise will resolve with the data received.
+     *
+     * @returns A promise of the received data.
+     *
+     * @example
+     * const data = await messenger.waitForMessage<{ foo: string }>(({ foo }) => foo === 'bar');
+     *
+     * console.log(data);
+     */
+    async waitForMessage<Data = any>(callback: (data: Data) => Awaitable<boolean>) {
+        return new Promise((resolve) => {
+            const handler = async (data: Data) => {
+                if (await callback(data)) {
+                    resolve(data);
+
+                    this.offMessage(handler);
+                }
+            };
+
+            this.onMessage<Data>(handler);
+        }) as Promise<Data>;
     }
 
     /**

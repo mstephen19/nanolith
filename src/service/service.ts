@@ -245,7 +245,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     /**
      * Wait for specific messages coming from the service worker.
      *
-     * @param callback A function returning a boolean that will be run each time a message is received the service worker.
+     * @param callback A function returning a boolean that will be run each time a message is received from the service worker.
      * Once the condition is met and the function returns `true`, the promise will resolve with the data received.
      *
      * @returns A promise of the received data.
