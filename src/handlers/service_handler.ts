@@ -29,7 +29,7 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
         parentPort!.postMessage(body);
     });
 
-    // These listeners are a priority, so should be added first
+    // This listener is a priority, so should be added first
     parentPort!.on('message', async (body: MainThreadBaseMessageBody) => {
         switch (body?.type) {
             // Exit the worker's process when the terminate message is sent
