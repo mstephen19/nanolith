@@ -8,14 +8,15 @@ export class WritableToPort<Target extends Messagable> extends Writable {
     #id: string;
     // The target to send the chunks to.
     #target: Target;
-    // // Whether or not the port has notified that it
-    // // is ready to start receiving chunks.
-    // #ready = false;
     // Various metadata that can be attached to the stream and carried
     // over to the receiving port so that the user can identify it
     // properly.
     #meta: Record<any, any>;
 
+    /**
+     * The object containing any meta data about the stream that can be
+     * used to identify it.
+     */
     get metaData() {
         return this.#meta;
     }
@@ -38,15 +39,11 @@ export class WritableToPort<Target extends Messagable> extends Writable {
             };
 
             target.postMessage(body);
-            // ? Perhaps destroy the stream ?
             this.destroy();
         });
     }
 
     _write(chunk: Buffer, _: BufferEncoding, callback: (error?: Error | null | undefined) => void): void {
-        // if (!this.#ready) return callback();
-        // if (!(chunk instanceof Buffer)) callback(new Error('Can only send "Buffer" instances in a WritableToPort stream!'));
-
         const body: StreamChunkMessageBody = {
             type: StreamMessageType.Chunk,
             id: this.#id,

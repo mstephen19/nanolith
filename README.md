@@ -72,24 +72,16 @@ yarn add nanolith@next
 
 ## What's new?
 
-The newest stable version of Nanolith is `0.2.1` ✨
+The newest stable version of Nanolith is `0.2.3` ✨
 
 ### Features 🆕
 
-* Added [automatically generated identifiers](#creating-multiple-sets-of-definitions-in-the-same-file-with-identifiers) to the `define()` function. Manually providing them is still possible, but no longer necessary.
-* `TaskDefinitions`, `Nanolith`, `TaskWorkerOptions`, and `ServiceWorkerOptions` types now available at the top-level.
-* [`closeAll()`](#using-messenger) and `setRef()` methods on `Messenger`.
-* Removed `messages` object in favor of the new identical [`messengers`](#sending--receiving-messages-between-tasksservices-and-the-main-thread) object.
-* Removed `launchService()` on `ServiceCluster` in favor of the new [`launch()`](#using-servicecluster) method.
+* `waitForMessage()` method on [`Messenger`](#using-messenger) and [`Service`](#using-a-service)
+* _Streaming_ data between threads! See examples [here](#streaming-data-between-threads)
 
 ### Fixes & improvements 🛠️
 
-* Eradicated the `maxListeners` error when calling a high volume of tasks on a `Service`.
-* Large performance improvements for [`ServiceCluster`](#creating-a-service-cluster).
-* Slight performance improvements for [`Service`](#launching-a-service).
-* Slight performance improvements for [`Messenger`](#sending--receiving-messages-between-tasksservices-and-the-main-thread).
-* Various other performance improvements.
-* Lowered bundle size by disabling declaration map files.
+* `parent.waitForMessenger()` not working when registered in an `__initializeService()` hook call.
 
 ## Defining a set of tasks
 
@@ -587,6 +579,7 @@ Each `Messenger` instance has access to a various methods and properties.
 | `ID` | Property | The unique identifier that is shared across all messenger instances using the two ports originally created when instantiating the first `Messenger`. |
 | `uniqueKey` | Property | Each `Messenger` instance is assigned a unique key that allows it to internally ignore messages on the `BroadcastChannel` which were sent by itself. |
 | `onMessage()` | Method | Listen for messages coming to the `Messenger`. |
+| `waitForMessage()` | Method | Wait for a specific message on the `Messenger`. |
 | `offMessage()` | Method | Remove a function from the list of callbacks to be run when a message is received on the `Messenger`. |
 | `sendMessage()` | Method | Send a messenger to be received by any other `Messenger` instances with the same identifier. |
 | `transfer()` | Method | Turns the `Messenger` instance into an object that can be sent to and from workers. |

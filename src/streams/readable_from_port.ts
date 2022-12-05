@@ -9,6 +9,10 @@ export class ReadableFromPort<Sender extends Messagable> extends Readable {
     #meta: Record<any, any>;
     #registered = false;
 
+    /**
+     * The object containing any meta data about the stream that can be
+     * used to identify it.
+     */
     get metaData() {
         return this.#meta;
     }
@@ -43,7 +47,6 @@ export class ReadableFromPort<Sender extends Messagable> extends Readable {
                     // since the stream has ended, as confirmed by the
                     // sender.
                     this.#sender.off('message', handler);
-                    // ? Maybe destroy ?
                     this.destroy();
                     break;
                 }

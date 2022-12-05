@@ -17,8 +17,6 @@ import type { BaseWorkerData } from '../types/worker_data.js';
  * @param options An optional set of {@link DefineOptions}. The `file` can be specified (if necessary),
  * as well as a unique `identifier` for the set of definitions.
  *
- *
- *
  * @example
  * import { define } from 'nanolith';
  *
@@ -40,7 +38,6 @@ export async function define<Definitions extends TaskDefinitions>(
     // If a custom identifier was provided, use that. Otherwise, use the auto-generated one.
     const identifierToUse = identifier || getAutoIdentifier(definitions);
 
-    // ? This code runs on the worker thread
     // If we are not on the main thread, run the worker.
     if (!isMainThread) {
         // If the identifier in the workerData is not equal to the identifier provided
@@ -59,7 +56,6 @@ export async function define<Definitions extends TaskDefinitions>(
         return undefined as any as Nanolith<Definitions>;
     }
 
-    // ? This code runs on the main thread
     // Determine the file of the worker if it was not provided in the options.
     const file = fileFromOptions ?? getCurrentFile();
 

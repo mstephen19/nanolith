@@ -19,7 +19,7 @@ describe('Streams', () => {
     });
 
     describe('Main thread to Service', () => {
-        it('Should successfully the stream to the worker', async () => {
+        it('Should successfully send the stream to the worker', async () => {
             const callback = jest.fn(() => undefined);
 
             await service.call({ name: 'receiveStream' });

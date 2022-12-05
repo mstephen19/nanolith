@@ -12,10 +12,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `Service.createStream()` and `Service.onStream()` methods
 - "Streaming data between threads" section in the docs
 - `waitForMessage()` method to `Service` + docs
+- `waitForMessage()` method to `Messenger` + docs
 
 ### Changed
 
 - "Sending messages from the main thread to a service" README title to "Messaging between the main thread and a service"
+
+### Fixed
+
+- `parent.waitForMessenger()` not working when registered in an `__initializeService()` hook call.
 
 ## [0.2.2] - 2022-03-12
 

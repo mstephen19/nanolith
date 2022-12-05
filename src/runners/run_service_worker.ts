@@ -2,7 +2,6 @@ import { PoolItem, pool } from '../pool/index.js';
 import { WorkerType } from '../types/workers.js';
 import { Service } from '../service/index.js';
 import { WorkerMessageType } from '../types/messages.js';
-// import { getCurrentFile } from '../define/utilities.js';
 
 import type { ServiceWorkerOptions } from '../types/workers.js';
 import type { TaskDefinitions } from '../types/definitions.js';
