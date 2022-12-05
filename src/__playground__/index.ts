@@ -1,16 +1,15 @@
-import { Readable } from 'stream';
 import { api } from './worker.js';
-
-const data = ['hello', 'world', 'foo', 'bar'];
-
-const myStream = new (class MyStream extends Readable {
-    _read() {
-        if (!data.length) return this.push(null);
-
-        this.push(data.splice(0, 1)[0]);
-    }
-})();
 
 const service = await api.launchService();
 
-myStream.pipe(await service.createStream({ name: 'foo' }));
+service.onStream((stream) => {
+    // Only handle streams where an object with a name
+    // of "foo" has been attached to it.
+    if (stream.metaData.name !== 'foo') return;
+
+    stream.on('data', (data) => {
+        console.log('received on main thread', data);
+    });
+});
+
+await service.call({ name: 'sendStream' });

@@ -1,14 +1,7 @@
 import { Writable } from 'stream';
-import { randomUUID as v4 } from 'crypto';
 import { StreamMessageType } from '../types/streams.js';
 
-import type {
-    Messagable,
-    StreamChunkMessageBody,
-    StreamReadyMessageBody,
-    StreamEndMessageBody,
-    StreamStartMessageBody,
-} from '../types/streams.js';
+import type { Messagable, StreamChunkMessageBody, StreamEndMessageBody } from '../types/streams.js';
 
 export class WritableToPort<Target extends Messagable> extends Writable {
     // The unique ID for the data stream.

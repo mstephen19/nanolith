@@ -4,6 +4,9 @@ import { StreamMessageType } from '../types/streams.js';
 
 import type { Messagable, StreamReadyMessageBody, StreamStartMessageBody } from '../types/streams.js';
 
+/**
+ * Ensure the other thread is ready to start receiving data before resolving with a Writable stream.
+ */
 export function prepareWritableToPortStream<Target extends Messagable>(target: Target, metaData: Record<any, any>) {
     const id = v4();
 

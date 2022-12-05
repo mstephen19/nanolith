@@ -1,15 +1,18 @@
+import { Readable } from 'stream';
 import { define, parent } from '../index.js';
 
 export const api = await define({
-    __initializeService() {
-        parent.onStream((stream) => {
-            // Only handle streams where an object with a name
-            // of "foo" has been attached to it.
-            if (stream.metaData.name !== 'foo') return;
+    async sendStream() {
+        const data = ['hello', 'world', 'foo', 'bar'];
 
-            stream.on('data', (data) => {
-                console.log('received', data);
-            });
+        const myStream = new Readable({
+            read() {
+                if (!data.length) return this.push(null);
+
+                this.push(data.splice(0, 1)[0]);
+            },
         });
+
+        myStream.pipe(await parent.createStream({ name: 'foo' }));
     },
 });

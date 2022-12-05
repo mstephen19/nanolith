@@ -599,7 +599,7 @@ If you didn't provide your `Messenger` instance in the `messengers` array option
 
 ```TypeScript
 // index.ts 💡
-import { Messenger } from '../index.js';
+import { Messenger } from 'nanolith';
 import { api } from './worker.js';
 
 const service = await api.launchService();
@@ -639,10 +639,10 @@ export const api = await define({
             if (stream.metaData.name !== 'foo') return;
 
             stream.on('data', (data) => {
-                console.log(data);
-            })
-        })
-    }
+                console.log('received in worker', data);
+            });
+        });
+    },
 });
 ```
 
@@ -653,20 +653,77 @@ On the main thread, we simply need to create a stream to the service worker with
 import { Readable } from 'stream';
 import { api } from './worker.js';
 
-const data = ['hello', 'world', 'foo', 'bar']
+const data = ['hello', 'world', 'foo', 'bar'];
 
 const myStream = new Readable({
     read() {
         if (!data.length) return this.push(null);
 
-        this.push(data.splice(0, 1));
-    }
+        this.push(data.splice(0, 1)[0]);
+    },
 });
 
 const service = await api.launchService();
+
+myStream.pipe(await service.createStream({ name: 'foo' }));
 ```
 
-> **Important:** The `.onStream()` listener must be registered before the stream is received by the sender. Otherwise, the event will be received.
+The console output of the code above looks like this:
+
+```text
+received in worker <Buffer 68 65 6c 6c 6f>
+received in worker <Buffer 77 6f 72 6c 64>
+received in worker <Buffer 66 6f 6f>
+received in worker <Buffer 62 61 72>
+```
+
+Streams can be send over the main thread from a service by simply reversing the roles:
+
+```TypeScript
+// worker.ts 💼
+import { Readable } from 'stream';
+import { define, parent } from 'nanolith';
+
+export const api = await define({
+    async sendStream() {
+        const data = ['hello', 'world', 'foo', 'bar'];
+
+        const myStream = new Readable({
+            read() {
+                if (!data.length) return this.push(null);
+
+                this.push(data.splice(0, 1)[0]);
+            },
+        });
+
+        myStream.pipe(await parent.createStream({ name: 'foo' }));
+    },
+});
+```
+
+```TypeScript
+// index.ts 💡
+import { api } from './worker.js';
+
+const service = await api.launchService();
+
+service.onStream((stream) => {
+    // Only handle streams where an object with a name
+    // of "foo" has been attached to it.
+    if (stream.metaData.name !== 'foo') return;
+
+    stream.on('data', (data) => {
+        console.log('received on main thread', data);
+    });
+});
+
+// Call the task that creates and starts the stream
+await service.call({ name: 'sendStream' });
+```
+
+The output of this code is almost exactly the same as the previous example; however, the logs occur on the main thread rather than within the service worker thread.
+
+> **Important:** The `.onStream()` listener must be registered before the stream is received by the sender. Otherwise, the event will be received. That means that it must be called within `__initializeService()`, or in a task that occurs prior to the stream being sent.
 
 ## Examples
 

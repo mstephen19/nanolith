@@ -4,6 +4,9 @@ import { StreamMessageType } from '../types/streams.js';
 import type { Messagable, StreamReadyMessageBody, StreamStartMessageBody } from '../types/streams.js';
 import type { Awaitable } from '../types/utilities.js';
 
+/**
+ * Ensure the current port is ready to start receiving data before notifying the sender.
+ */
 export function listenForStream<Sender extends Messagable>(
     sender: Sender,
     callback: (stream: ReadableFromPort<Sender>) => Awaitable<void>
