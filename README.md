@@ -619,7 +619,7 @@ await service.close();
 
 ### Streaming data between threads
 
-Sending data between services and the main thread using methods like [`service.sendMessage()`](#using-a-service) or [`parent.sendMessage()`](#messaging-between-the-main-thread-and-a-service) is efficient and intuitive; however, there may be cases where you need to send much larger pieces of data to a service, or from a service to the main thread. In Node.js, we usually use the [`Readable` and `Writable` APIs](https://nodejs.org/api/stream.html) to do this.
+Sending data between services and the main thread using methods like [`service.sendMessage()`](#using-a-service) or [`parent.sendMessage()`](#messaging-between-the-main-thread-and-a-service) is efficient and intuitive; however, there may be cases where you need to send much larger pieces of data to a service, or from a service to the main thread. In Node.js, we usually use the [`Readable` and `Writable` APIs](https://nodejs.org/api/stream.html) to do this in chunks.
 
 > **Note:** Cross-thread data streaming is currently only supported between service workers and the main thread. It is not yet available on the `Messenger` API.
 
@@ -665,6 +665,7 @@ const myStream = new Readable({
 
 const service = await api.launchService();
 
+// Simply pipe right into the stream resolved by ".createStream()"
 myStream.pipe(await service.createStream({ name: 'foo' }));
 ```
 
@@ -696,6 +697,7 @@ export const api = await define({
             },
         });
 
+        // Simply pipe right into the stream resolved by ".createStream()"
         myStream.pipe(await parent.createStream({ name: 'foo' }));
     },
 });
