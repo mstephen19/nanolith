@@ -1,6 +1,7 @@
 import { parentPort, workerData } from 'worker_threads';
 import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
 import { assertIsNotMainThread } from '../utilities/index.js';
+import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
 
 import type { TransferListItem } from 'worker_threads';
 import type { Awaitable } from '../types/utilities.js';
@@ -12,6 +13,7 @@ import type {
 } from '../types/messages.js';
 import type { Messenger } from '../messenger/index.js';
 import type { BaseWorkerData } from '../types/worker_data.js';
+import type { ReadableFromPort } from '../streams/index.js';
 
 /**
  *
@@ -123,6 +125,30 @@ function onMessengerReceived(callback: (messenger: Messenger) => Awaitable<any>)
 }
 
 /**
+ * Receive data streams from the main thread.
+ *
+ * @param callback The callback to run once the stream has been initialized and is ready to consume.
+ */
+function onStream(callback: (stream: ReadableFromPort<Exclude<typeof parentPort, null>>) => Awaitable<void>) {
+    assertIsNotMainThread('parent.onStream');
+    listenForStream(parentPort!, callback);
+}
+
+/**
+ * Create a {@link Writable} instance that can be piped into in order to stream data to
+ * the main thread. The main thread can listen for incoming streams with the
+ * `service.onStream()` listener.
+ *
+ * @param metaData Any specific data about the stream that should be accessible when
+ * using it.
+ */
+async function createStream(metaData?: Record<any, any>) {
+    assertIsNotMainThread('parent.stream');
+
+    return prepareWritableToPortStream(parentPort!, metaData ?? {});
+}
+
+/**
  *
  * An object containing functions to be used within workers when communicating with the main thread.
  *
@@ -139,4 +165,6 @@ export const parent = Object.freeze({
     offMessage,
     onMessengerReceived,
     waitForMessage,
+    onStream,
+    createStream,
 });

@@ -2,9 +2,14 @@ import { api } from './worker.js';
 
 const service = await api.launchService();
 
-service.sendMessage({ type: 'init_stream', id: '123' });
+service.onStream((stream) => {
+    // Only handle streams where an object with a name
+    // of "foo" has been attached to it.
+    if (stream.metaData.name !== 'foo') return;
 
-service.sendMessage({ type: 'stream_data-123', data: Buffer.from('hello '), done: false });
-service.sendMessage({ type: 'stream_data-123', data: Buffer.from('world'), done: true });
+    stream.on('data', (data) => {
+        console.log('received on main thread', data);
+    });
+});
 
-// await service.close();
+await service.call({ name: 'sendStream' });

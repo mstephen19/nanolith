@@ -1,26 +1,18 @@
 import { Readable } from 'stream';
-import { createWriteStream } from 'fs';
 import { define, parent } from '../index.js';
 
 export const api = await define({
-    __initializeService() {
-        parent.onMessage<{ type: 'init_stream'; id: string }>(({ type, id }) => {
-            if (type !== 'init_stream') return;
+    async sendStream() {
+        const data = ['hello', 'world', 'foo', 'bar'];
 
-            const stream = new Readable({
-                read() {},
-            });
+        const myStream = new Readable({
+            read() {
+                if (!data.length) return this.push(null);
 
-            parent.onMessage<{ type: `stream_data-${string}`; data: Buffer; done: boolean }>(({ type, data, done }) => {
-                if (type !== `stream_data-${id}`) return;
-
-                stream.push(data);
-                if (done) return void stream.push(null);
-            });
-
-            const writable = createWriteStream('./data.txt');
-
-            stream.pipe(writable);
+                this.push(data.splice(0, 1)[0]);
+            },
         });
+
+        myStream.pipe(await parent.createStream({ name: 'foo' }));
     },
 });

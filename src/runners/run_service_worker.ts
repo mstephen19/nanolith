@@ -26,6 +26,9 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
         item.once('created', (worker) => {
             worker.on('error', reject);
 
+            // Ensure the Service instance has initialized and the
+            // __initializeService hook has completed before creating the
+            // service and resolving with it.
             const handleInitialization = (body: WorkerBaseMessageBody) => {
                 if (body.type !== WorkerMessageType.Initialized) return;
 

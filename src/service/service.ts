@@ -1,5 +1,7 @@
 import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
 import { randomUUID as v4 } from 'crypto';
+import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
+import { TypedEmitter } from 'tiny-typed-emitter';
 
 import type { Worker, TransferListItem } from 'worker_threads';
 import type { TaskDefinitions, Tasks } from '../types/definitions.js';
@@ -16,7 +18,8 @@ import type {
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.js';
 import type { ServiceCallOptions } from '../types/workers.js';
 import type { Messenger } from '../messenger/messenger.js';
-import { TypedEmitter } from 'tiny-typed-emitter';
+import type { ReadableFromPort } from '../streams/index.js';
+import type { Messagable } from '../types/streams.js';
 
 type ServiceEvents = {
     /**
@@ -199,6 +202,27 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         };
 
         this.#worker!.postMessage(body, transferList);
+    }
+
+    /**
+     * Create a {@link Writable} instance that can be piped into in order to stream data to
+     * the service worker. The service worker can listen for incoming streams with the
+     * `parent.onStream()` listener.
+     *
+     * @param metaData Any specific data about the stream that should be accessible when
+     * using it.
+     */
+    createStream(metaData?: Record<any, any>) {
+        return prepareWritableToPortStream(this.#worker, metaData ?? {});
+    }
+
+    /**
+     * Receive data streams from the service worker.
+     *
+     * @param callback The callback to run once the stream has been initialized and is ready to consume.
+     */
+    onStream(callback: (stream: ReadableFromPort<Messagable>) => Awaitable<void>) {
+        listenForStream(this.#worker, callback);
     }
 
     /**
