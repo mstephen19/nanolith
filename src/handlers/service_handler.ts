@@ -90,6 +90,11 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
         }
     });
 
+    const { messengerTransfers } = workerData as ServiceWorkerData;
+    // Turn the MessengerTransferData objects back into Messenger instances
+    // and make them available on the "messengers" property on workerData
+    if (messengerTransfers.length) applyMessengerTransferObjects(messengerTransfers);
+
     // If provided an initialization hook, run it.
     await definitions['__initializeService']?.(threadId);
 
@@ -97,9 +102,4 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
     parentPort?.postMessage({
         type: WorkerMessageType.Initialized,
     } as WorkerInitializedMessageBody);
-
-    const { messengerTransfers } = workerData as ServiceWorkerData;
-    // Turn the MessengerTransferData objects back into Messenger instances
-    // and make them available on the "messengers" property on workerData
-    if (messengerTransfers.length) applyMessengerTransferObjects(messengerTransfers);
 }

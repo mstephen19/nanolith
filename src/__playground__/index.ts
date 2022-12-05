@@ -1,8 +1,8 @@
 import { Messenger } from '../index.js';
 import { api } from './worker.js';
 
-const service = await api.launchService();
+const messenger = new Messenger('channel');
 
-const result = await service.waitForMessage<string>((data) => data === 'foo');
-
-console.log('success', result);
+const service = await api.launchService({
+    messengers: [messenger],
+});
