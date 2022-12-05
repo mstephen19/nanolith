@@ -29,19 +29,7 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
         parentPort!.postMessage(body);
     });
 
-    // If provided an initialization hook, run it.
-    await definitions['__initializeService']?.(threadId);
-
-    // Notify the main thread that the worker has initialized.
-    parentPort?.postMessage({
-        type: WorkerMessageType.Initialized,
-    } as WorkerInitializedMessageBody);
-
-    const { messengerTransfers } = workerData as ServiceWorkerData;
-    // Turn the MessengerTransferData objects back into Messenger instances
-    // and make them available on the "messengers" property on workerData
-    if (messengerTransfers.length) applyMessengerTransferObjects(messengerTransfers);
-
+    // These listeners are a priority, so should be added first
     parentPort!.on('message', async (body: MainThreadBaseMessageBody) => {
         switch (body?.type) {
             // Exit the worker's process when the terminate message is sent
@@ -101,4 +89,17 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
                 break;
         }
     });
+
+    // If provided an initialization hook, run it.
+    await definitions['__initializeService']?.(threadId);
+
+    // Notify the main thread that the worker has initialized.
+    parentPort?.postMessage({
+        type: WorkerMessageType.Initialized,
+    } as WorkerInitializedMessageBody);
+
+    const { messengerTransfers } = workerData as ServiceWorkerData;
+    // Turn the MessengerTransferData objects back into Messenger instances
+    // and make them available on the "messengers" property on workerData
+    if (messengerTransfers.length) applyMessengerTransferObjects(messengerTransfers);
 }
