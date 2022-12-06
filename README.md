@@ -335,8 +335,7 @@ The main method on launched services that you'll be using is `.call()`; however,
 | `call()` | Method | Call a task to be run within the service worker. |
 | `close()` | Method | Terminates the worker, ending its process and marking the `Service` instance as `closed`. |
 | `sendMessage()` | Method | Send a message to the service worker. |
-| `onMessage()` | Method | Receive messages from the service worker. |
-| `offMessage()` | Method | Remove a callback function added with `onMessage()`. |
+| `onMessage()` | Method | Receive messages from the service worker. Returns a function that will remove the listener when called. |
 | `waitForMessage()` | Method | Wait for specific messages coming from the service worker. |
 | [`sendMessenger()`](#dynamically-sending-messengers-to-services) | Method | Dynamically send a [`Messenger`](#using-messenger) object to the service worker. |
 | [`onStream()`](#streaming-data-between-threads) | Method | Receive data streams from the service worker. |
@@ -458,7 +457,7 @@ In **Nanolith** there are two ways to communicate with workers.
 
 ### Messaging between the main thread and a service
 
-On the [`Service`](#using-a-service) object, there are many methods present which allow for sending and receiving messages to the service worker. These methods are `service.sendMessage()`, `service.onMessage()`, and `service.offMessage()`.
+On the [`Service`](#using-a-service) object, there are many methods present which allow for sending and receiving messages to the service worker. These methods are `service.sendMessage()` and `service.onMessage()`.
 
 ```TypeScript
 // index.ts 💡
@@ -470,10 +469,10 @@ const service = await api.launchService();
 service.sendMessage('hi');
 
 // Handle messages received from the service worker
-service.onMessage<string>(function callback(data) {
+const removeListener = ervice.onMessage<string>(function callback(data) {
     console.log(`received message from worker: ${data}`);
     // Once the message has been received, remove the listener
-    service.offMessage(callback);
+    removeListener();
 });
 
 await service.close();
@@ -490,10 +489,10 @@ import { define, parent } from 'nanolith';
 export const api = await define({
     __initializeService() {
         // Handle messages received from the main thread
-        parent.onMessage<number>(function callback(data) {
+        const removeListener = parent.onMessage<number>(function callback(data) {
             console.log(data - 351);
             // Once the message has been received, remove the listener
-            parent.offMessage(callback);
+            removeListener();
         });
     },
     async sendSomething() {
@@ -578,9 +577,8 @@ Each `Messenger` instance has access to a various methods and properties.
 |-|-|-|
 | `ID` | Property | The unique identifier that is shared across all messenger instances using the two ports originally created when instantiating the first `Messenger`. |
 | `uniqueKey` | Property | Each `Messenger` instance is assigned a unique key that allows it to internally ignore messages on the `BroadcastChannel` which were sent by itself. |
-| `onMessage()` | Method | Listen for messages coming to the `Messenger`. |
+| `onMessage()` | Method | Listen for messages coming to the `Messenger`. Returns a function that will remove the listener when called. |
 | `waitForMessage()` | Method | Wait for a specific message on the `Messenger`. |
-| `offMessage()` | Method | Remove a function from the list of callbacks to be run when a message is received on the `Messenger`. |
 | `sendMessage()` | Method | Send a messenger to be received by any other `Messenger` instances with the same identifier. |
 | `transfer()` | Method | Turns the `Messenger` instance into an object that can be sent to and from workers. |
 | `createStream()` | Method | Create a {@link Writable} instance that can be piped into in order to stream data to other `Messenger`s on the channel. The messengers can listen for incoming streams with the `messenger.onStream()` listener. |

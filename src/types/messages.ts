@@ -1,5 +1,7 @@
 import type { MessengerTransferData } from './messenger.js';
 
+export type RemoveListenerFunction = () => void;
+
 /**
  * Message types that will only be sent from the main thread
  * to workers, and never the other way around.

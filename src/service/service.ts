@@ -14,6 +14,7 @@ import type {
     WorkerSendMessageBody,
     MainThreadMessengerTransferBody,
     WorkerMessengerTransferSuccessBody,
+    RemoveListenerFunction,
 } from '../types/messages.js';
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.js';
 import type { ServiceCallOptions } from '../types/workers.js';
@@ -230,16 +231,22 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      *
      * @param callback A function to run each time a message is received from the service.
      *
+     * @returns A function that will remove the listener when called.
+     *
      * @example
      * service.onMessage<string>((data) => console.log(data, 'received!'));
      */
-    onMessage<Data = any>(callback: (body: Data) => Awaitable<any>) {
+    onMessage<Data = any>(callback: (body: Data) => Awaitable<any>): RemoveListenerFunction {
         this.#assertIsNotTerminated();
 
-        this.#worker.on('message', async (body: WorkerBaseMessageBody) => {
+        const handler = async (body: WorkerBaseMessageBody) => {
             if (body.type !== WorkerMessageType.Message) return;
             await callback((body as WorkerSendMessageBody<Data>).data);
-        });
+        };
+
+        this.#worker.on('message', handler);
+
+        return () => this.#worker.off('message', handler);
     }
 
     /**
@@ -273,25 +280,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
 
             this.#worker.on('message', handler);
         }) as Promise<Data>;
-    }
-
-    /**
-     * Remove a function from the list of callbacks to be run when a message is received from the service.
-     *
-     * @param callback The function to remove.
-     *
-     * @example
-     * const callback = (data: string) => console.log(data, 'received!');
-     *
-     * service.onMessage(callback);
-     *
-     * // ...later...
-     * service.offMessage(callback);
-     */
-    offMessage<Data = any>(callback: (body: Data) => Awaitable<any>) {
-        this.#assertIsNotTerminated();
-
-        this.#worker.off('message', callback);
     }
 
     /**

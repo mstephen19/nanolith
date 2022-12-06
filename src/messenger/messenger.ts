@@ -15,6 +15,7 @@ import type {
 import type { Awaitable } from '../types/utilities.js';
 import type { Messagable, StreamBaseMessageBody } from '../types/streams.js';
 import type { ReadableFromPort } from '../streams/index.js';
+import type { RemoveListenerFunction } from '../types/messages.js';
 
 /**
  * Communicate like a boss 🗣️
@@ -215,11 +216,14 @@ export class Messenger {
      *
      * @param callback A function to run each time a message is received.
      *
+     * @returns A function that will remove the listener when called.
+     *
      * @example
      * messenger.onMessage<string>((data) => console.log(data, 'received!'));
      */
-    onMessage<Data = any>(callback: (data: Data) => Awaitable<void>) {
+    onMessage<Data = any>(callback: (data: Data) => Awaitable<void>): RemoveListenerFunction {
         this.#listenerCallbacks.push(callback);
+        return () => this.#offMessage(callback);
     }
 
     /**
@@ -241,7 +245,7 @@ export class Messenger {
                 if (await callback(data)) {
                     resolve(data);
 
-                    this.offMessage(handler);
+                    this.#offMessage(handler);
                 }
             };
 
@@ -251,18 +255,8 @@ export class Messenger {
 
     /**
      * Remove a function from the list of callbacks to be run when a message is received on the `Messenger`.
-     *
-     * @param callback The function to remove.
-     *
-     * @example
-     * const callback = (data: string) => console.log(data, 'received!');
-     *
-     * messenger.onMessage(callback);
-     *
-     * // ...later...
-     * messenger.offMessage(callback);
      */
-    offMessage<Data = any>(callback: (body: Data) => Awaitable<void>) {
+    #offMessage<Data = any>(callback: (body: Data) => Awaitable<void>) {
         const index = this.#listenerCallbacks.indexOf(callback);
         // If it's -1, the item wasn't found
         if (index <= -1) return;

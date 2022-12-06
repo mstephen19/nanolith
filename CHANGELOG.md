@@ -13,10 +13,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 
 - Refactored `Messenger`
+- `Service`, `Messenger`, and `Parent` `.onMessage` methods to return a function that removes a listener
+- Docs to reflect removals of `offMessage`
 
 ### Fixed
 
 - `MessengerTransferObject`s being applied after `__initializeService()` is called.
+
+### Removed
+
+- `offMessage` from `Service`, `Messenger`, and `parent`
 
 ## [0.2.3] - 2022-05-12
 

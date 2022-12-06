@@ -14,6 +14,7 @@ import type {
 import type { Messenger } from '../messenger/index.js';
 import type { BaseWorkerData } from '../types/worker_data.js';
 import type { ReadableFromPort } from '../streams/index.js';
+import type { RemoveListenerFunction } from '../types/messages.js';
 
 /**
  *
@@ -74,35 +75,22 @@ async function waitForMessage<Data = any>(callback: (body: Data) => Awaitable<bo
  *
  * @param callback A function to run each time a message is received from the main thread.
  *
+ * @returns A function that will remove the listener when called.
+ *
  * @example
  * parent.onMessage<string>((data) => console.log(data, 'received!'));
  */
-function onMessage<Data = any>(callback: (body: Data) => Awaitable<void>) {
+function onMessage<Data = any>(callback: (body: Data) => Awaitable<void>): RemoveListenerFunction {
     assertIsNotMainThread('parent.onMessage');
 
-    parentPort!.on('message', async (body: MainThreadBaseMessageBody) => {
+    const handler = async (body: MainThreadBaseMessageBody) => {
         if (body.type !== MainThreadMessageType.Message) return;
         await callback((body as MainThreadSendMessageBody<Data>).data);
-    });
-}
+    };
 
-/**
- * Remove a function from the list of callbacks to be run when a message is received from the main thread.
- *
- * @param callback The function to remove.
- *
- * @example
- * const callback = (data: string) => console.log(data, 'received!');
- *
- * parent.onMessage(callback);
- *
- * // ...later...
- * parent.offMessage(callback);
- */
-function offMessage<Data = any>(callback: (body: Data) => Awaitable<void>) {
-    assertIsNotMainThread('parent.offMessage');
+    parentPort!.on('message', handler);
 
-    parentPort!.off('message', callback);
+    return () => parentPort!.off('message', handler);
 }
 
 /**
@@ -162,7 +150,6 @@ async function createStream(metaData?: Record<any, any>) {
 export const parent = Object.freeze({
     sendMessage,
     onMessage,
-    offMessage,
     onMessengerReceived,
     waitForMessage,
     onStream,
