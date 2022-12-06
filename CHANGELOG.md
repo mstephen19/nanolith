@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `onStream()` and `createStream()` support for streaming data between `Messenger` instances on separate threads.
+
 ### Changed
 
 - Refactored `Messenger`

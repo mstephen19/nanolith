@@ -2,6 +2,12 @@ import { define, parent, messengers } from '../index.js';
 
 export const api = await define({
     async __initializeService() {
-        console.log(await messengers.use('channel'));
+        const messenger = await messengers.use('channel');
+
+        messenger.onStream((stream) => {
+            stream.on('data', (data) => {
+                console.log(data);
+            });
+        });
     },
 });

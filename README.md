@@ -583,6 +583,8 @@ Each `Messenger` instance has access to a various methods and properties.
 | `offMessage()` | Method | Remove a function from the list of callbacks to be run when a message is received on the `Messenger`. |
 | `sendMessage()` | Method | Send a messenger to be received by any other `Messenger` instances with the same identifier. |
 | `transfer()` | Method | Turns the `Messenger` instance into an object that can be sent to and from workers. |
+| `createStream()` | Method | Create a {@link Writable} instance that can be piped into in order to stream data to other `Messenger`s on the channel. The messengers can listen for incoming streams with the `messenger.onStream()` listener. |
+| `onStream()` | Method | Receive data streams on the `Messenger`. |
 | `setRef()` | Method | By default, the `BroadcastChannel` is unreffed. Call this function to change that. When `true`, [`ref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelref) will be called. When `false`, [`unref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelunref) will be called. |
 | `close()` | Method | Closes the underlying `BroadcastChannel` connection that is being used. Does not close all `BroadcastChannel`s on all Messenger objects |
 | `closeAll()` | Method | Closes **all** underlying `BroadcastChannel` connections on all `Messenger` objects that are currently active for the corresponding identifier. |

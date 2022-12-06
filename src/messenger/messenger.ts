@@ -2,14 +2,18 @@ import { randomUUID as v4 } from 'crypto';
 import { isMessengerTransferObject } from './utilities.js';
 import { BroadcastChannel } from 'worker_threads';
 import { MessengerMessageType } from '../types/messenger.js';
+import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
 
 import type {
     MessengerTransferData,
     MessengerMessageBody,
     MessengerCloseMessageBody,
     MessengerBaseMessageBody,
+    MessengerStreamMessageBody,
 } from '../types/messenger.js';
 import type { Awaitable } from '../types/utilities.js';
+import type { Messagable } from '../types/streams.js';
+import type { ReadableFromPort } from '../streams/index.js';
 
 /**
  * Communicate like a boss 🗣️
@@ -24,12 +28,38 @@ export class Messenger {
      * A value specific to an instance of Messenger. Allows for
      * ignoring messages sent by itself.
      */
-    #key: string;
+    #key = v4();
     /**
      * A value specific to all Messenger instances using the ports
      * in the ports array.
      */
     #identifier: string;
+
+    /**
+     * The object implementing the methods on "Messagable" so that the
+     * streaming API built for Services and the main thread can also work
+     * with the Messenger API.
+     */
+    #messagableInterop: Messagable = {
+        on: (_: 'message', callback: (value: any) => void) => {
+            this.onMessage(callback);
+        },
+        off: (_: 'message', callback: (value: any) => void) => {
+            this.offMessage(callback);
+        },
+        postMessage: (value: any) => {
+            const body: MessengerStreamMessageBody = {
+                type: MessengerMessageType.StreamMessage,
+                sender: this.#key,
+                // Put the StreamMessageBody as the data that will be
+                // directly handled by the listeners added by the
+                // Nanolith streaming APIs
+                data: value,
+            };
+
+            this.#channel.postMessage(body);
+        },
+    };
 
     /**
      *
@@ -62,9 +92,6 @@ export class Messenger {
             throw new Error('Must either provide a string to create a new Messenger, or a MessengerTransferData object.');
         }
 
-        // Always assign each Messenger a unique key
-        this.#key = v4();
-
         // When provided a MessengerTransferObject
         if (data && typeof data !== 'string') {
             this.#identifier = data.__messengerID;
@@ -95,6 +122,7 @@ export class Messenger {
                 case MessengerMessageType.Close: {
                     return this.#channel.close();
                 }
+                case MessengerMessageType.StreamMessage:
                 case MessengerMessageType.Message: {
                     const { sender, data } = body as MessengerMessageBody;
                     // If the message was sent by this Messenger, just ignore it. We don't want to
@@ -137,6 +165,27 @@ export class Messenger {
      */
     get uniqueKey() {
         return this.#key;
+    }
+
+    /**
+     * Create a {@link Writable} instance that can be piped into in order to stream data to
+     * other `Messenger`s on the channel. The messengers can listen for incoming streams with the
+     * `messenger.onStream()` listener.
+     *
+     * @param metaData Any specific data about the stream that should be accessible when
+     * using it.
+     */
+    createStream(metaData?: Record<any, any>) {
+        return prepareWritableToPortStream(this.#messagableInterop, metaData ?? {});
+    }
+
+    /**
+     * Receive data streams on the `Messenger`.
+     *
+     * @param callback The callback to run once the stream has been initialized and is ready to consume.
+     */
+    onStream(callback: (stream: ReadableFromPort<Messagable>) => Awaitable<void>) {
+        listenForStream(this.#messagableInterop, callback);
     }
 
     /**
@@ -257,6 +306,7 @@ export class Messenger {
         // Send a message to all instances listening on the BroadcastChannel
         // telling them to close.
         const body: MessengerCloseMessageBody = {
+            sender: this.#key,
             type: MessengerMessageType.Close,
         };
 

@@ -1,20 +1,23 @@
-import type { StreamMessageType } from './streams.js';
-
 export const enum MessengerMessageType {
     Message = 'message',
     Close = 'close',
+    StreamMessage = 'stream-message',
 }
 
-export type MessengerBaseMessageBody<Type = MessengerMessageType | StreamMessageType> = {
+export type MessengerBaseMessageBody<Type = MessengerMessageType> = {
     type: Type;
+    sender: string;
 };
 
 export type MessengerMessageBody = {
-    sender: string;
     data: any;
 } & MessengerBaseMessageBody<MessengerMessageType.Message>;
 
 export type MessengerCloseMessageBody = MessengerBaseMessageBody<MessengerMessageType.Close>;
+
+export type MessengerStreamMessageBody = {
+    data: any;
+} & MessengerBaseMessageBody<MessengerMessageType.StreamMessage>;
 
 export type MessengerTransferData = Readonly<{
     /**
