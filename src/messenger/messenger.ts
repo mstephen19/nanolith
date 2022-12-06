@@ -25,6 +25,7 @@ import type { ReadableFromPort } from '../streams/index.js';
 export class Messenger {
     #channel: BroadcastChannel;
     #listenerCallbacks: ((data: any) => Awaitable<void>)[] = [];
+    #streamEventCallbacks: ((data: any) => void)[] = [];
     /**
      * A value specific to an instance of Messenger. Allows for
      * ignoring messages sent by itself.
@@ -42,10 +43,14 @@ export class Messenger {
      */
     #messagableInterop: Messagable = {
         on: (_: 'message', callback: (value: any) => void) => {
-            this.#listenerCallbacks.push(callback);
+            this.#streamEventCallbacks.push(callback);
         },
         off: (_: 'message', callback: (value: any) => void) => {
-            this.offMessage(callback);
+            const index = this.#streamEventCallbacks.indexOf(callback);
+            // If it's -1, the item wasn't found
+            if (index <= -1) return;
+
+            this.#streamEventCallbacks.splice(index, 1);
         },
         postMessage: (value: any) => {
             const body: MessengerStreamMessageBody = {
@@ -54,11 +59,7 @@ export class Messenger {
                 // Put the StreamMessageBody as the data that will be
                 // directly handled by the listeners added by the
                 // Nanolith streaming APIs
-                data: {
-                    // ! temporary fix for filtering out stream-related messages
-                    ...value,
-                    __isInteropStreamMessage__: true,
-                },
+                data: value,
             };
 
             this.#channel.postMessage(body);
@@ -119,10 +120,6 @@ export class Messenger {
      * A function that will not be run until `onMessage` is called for the first time.
      */
     #registerMainListener() {
-        const handleMessageBody = async (body: MessengerMessageBody) => {
-            await Promise.all(this.#listenerCallbacks.map((callback) => callback(body.data)));
-        };
-
         this.#channel.onmessage = async (event) => {
             const { data: body } = event as { data: MessengerBaseMessageBody };
 
@@ -145,14 +142,14 @@ export class Messenger {
                         return;
                     }
 
-                    await handleMessageBody(body as MessengerMessageBody);
+                    this.#streamEventCallbacks.map((callback) => callback((body as MessengerMessageBody).data));
                     break;
                 }
                 case MessengerMessageType.Message: {
                     // If the message was sent by this Messenger, just ignore it. We don't want to
                     // run our listener callbacks for messages we sent.
                     if (body.sender === this.#key) return;
-                    await handleMessageBody(body as MessengerMessageBody);
+                    await Promise.all(this.#listenerCallbacks.map((callback) => callback((body as MessengerMessageBody).data)));
                     break;
                 }
                 default:
@@ -222,11 +219,7 @@ export class Messenger {
      * messenger.onMessage<string>((data) => console.log(data, 'received!'));
      */
     onMessage<Data = any>(callback: (data: Data) => Awaitable<void>) {
-        this.#listenerCallbacks.push((data) => {
-            // ! temporary fix for filtering out stream-related messages
-            if (data.__isInteropStreamMessage__) return;
-            callback(data);
-        });
+        this.#listenerCallbacks.push(callback);
     }
 
     /**
