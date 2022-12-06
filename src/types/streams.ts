@@ -3,6 +3,14 @@ import type { Awaitable } from './utilities.js';
 
 export type OnStreamCallback<Sender extends Messagable> = (stream: ReadableFromPort<Sender>) => Awaitable<void>;
 
+export type AcceptStreamFunction<Sender extends Messagable> = () => ReadableFromPort<Sender>;
+export type DeclineStreamFunction = () => void;
+
+export type ConfirmStreamCallback<Sender extends Messagable> = (data: {
+    metaData: Record<any, any>;
+    accept: AcceptStreamFunction<Sender>;
+}) => Awaitable<void>;
+
 export interface Messagable {
     on(event: 'message', callback: (value: any) => void): any;
     off(event: 'message', callback: (value: any) => void): any;
@@ -14,6 +22,11 @@ export const enum StreamMessageType {
     Start = 'stream-start',
     End = 'stream-finished',
     Chunk = 'stream-chunk',
+}
+
+export const enum ListenForStreamMode {
+    AcceptAll,
+    ConfirmFirst,
 }
 
 export type StreamBaseMessageBody<Type = StreamMessageType> = {

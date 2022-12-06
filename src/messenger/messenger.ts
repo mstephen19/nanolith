@@ -3,7 +3,7 @@ import { isMessengerTransferObject } from './utilities.js';
 import { BroadcastChannel } from 'worker_threads';
 import { MessengerMessageType } from '../types/messenger.js';
 import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
-import { StreamMessageType } from '../types/streams';
+import { ListenForStreamMode, StreamMessageType } from '../types/streams';
 
 import type {
     MessengerTransferData,
@@ -14,7 +14,7 @@ import type {
 } from '../types/messenger.js';
 import type { Awaitable } from '../types/utilities.js';
 import type { Messagable, StreamBaseMessageBody } from '../types/streams.js';
-import type { ReadableFromPort } from '../streams/index.js';
+import type { ConfirmStreamCallback } from '../types/streams.js';
 import type { RemoveListenerFunction } from '../types/messages.js';
 
 /**
@@ -26,7 +26,7 @@ import type { RemoveListenerFunction } from '../types/messages.js';
 export class Messenger {
     #channel: BroadcastChannel;
     #listenerCallbacks: ((data: any) => Awaitable<void>)[] = [];
-    #streamEventCallbacks: ((data: any) => void)[] = [];
+    #streamEventCallbacks: ConfirmStreamCallback<Messagable>[] = [];
     /**
      * A value specific to an instance of Messenger. Allows for
      * ignoring messages sent by itself.
@@ -206,9 +206,9 @@ export class Messenger {
      *
      * @param callback The callback to run once the stream has been initialized and is ready to consume.
      */
-    onStream(callback: (stream: ReadableFromPort<Messagable>) => Awaitable<void>) {
+    onStream(callback: ConfirmStreamCallback<Messagable>) {
         this.#acceptStreams = true;
-        listenForStream(this.#messagableInterop, callback);
+        listenForStream(this.#messagableInterop, callback, ListenForStreamMode.ConfirmFirst);
     }
 
     /**

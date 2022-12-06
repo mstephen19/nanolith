@@ -4,7 +4,11 @@ import { api } from './worker.js';
 
 const messenger = new Messenger('channel');
 
-const service = await api.launchService({
+await api.launchService({
+    messengers: [messenger],
+});
+
+await api.launchService({
     messengers: [messenger],
 });
 
@@ -17,4 +21,4 @@ const myStream = new Readable({
     },
 });
 
-myStream.pipe(await messenger.createStream());
+myStream.pipe(await messenger.createStream({ name: 'foo' }));

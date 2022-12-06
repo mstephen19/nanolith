@@ -19,8 +19,7 @@ import type {
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.js';
 import type { ServiceCallOptions } from '../types/workers.js';
 import type { Messenger } from '../messenger/messenger.js';
-import type { ReadableFromPort } from '../streams/index.js';
-import type { Messagable, OnStreamCallback } from '../types/streams.js';
+import type { OnStreamCallback } from '../types/streams.js';
 
 type ServiceEvents = {
     /**
