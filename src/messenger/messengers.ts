@@ -30,14 +30,12 @@ async function use(name: string) {
                   reject(new Error(`Timed out after waiting 10 seconds to receive a messenger named ${name}`));
               }, 10e3);
 
-              const callback = (messenger: Messenger) => {
+              const removeListener = parent.onMessengerReceived((messenger: Messenger) => {
                   if (messenger.ID !== name) return;
                   resolve(messenger);
                   clearTimeout(timeout);
-                  parent.offMessage(callback);
-              };
-
-              parent.onMessengerReceived(callback);
+                  removeListener();
+              });
           })) as Messenger)
         : messengers[name];
 

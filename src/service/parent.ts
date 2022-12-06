@@ -98,6 +98,8 @@ function onMessage<Data = any>(callback: (body: Data) => Awaitable<void>): Remov
  *
  * @param callback A function to run each time a `Messenger` is received from the main thread.
  *
+ * @returns A function that will remove the listener when called.
+ *
  * @example
  * parent.onMessengerReceived((messenger) => console.log(messenger.ID));
  */
@@ -106,10 +108,14 @@ function onMessengerReceived(callback: (messenger: Messenger) => Awaitable<any>)
 
     const { messengers } = workerData as BaseWorkerData;
 
-    parentPort!.on('message', async (body: MainThreadBaseMessageBody) => {
+    const handler = async (body: MainThreadBaseMessageBody) => {
         if (body.type !== MainThreadMessageType.MessengerTransfer) return;
         await callback(messengers[(body as MainThreadMessengerTransferBody).data.__messengerID]);
-    });
+    };
+
+    parentPort!.on('message', handler);
+
+    return () => parentPort!.off('message', handler);
 }
 
 /**
