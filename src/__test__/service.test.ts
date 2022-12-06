@@ -149,4 +149,23 @@ describe('Service', () => {
             });
         });
     });
+
+    describe('listenerRemover', () => {
+        it('Should remove the listener for messages', async () => {
+            const handler = jest.fn((data: string) => data);
+
+            const off = service.onMessage<string>((data) => {
+                handler(data);
+                // remove the listener right when the first message is received
+                off();
+            });
+
+            await service.call({ name: 'sendMessageToParent' });
+            await service.call({ name: 'sendMessageToParent' });
+            await service.call({ name: 'sendMessageToParent' });
+            await service.call({ name: 'sendMessageToParent' });
+
+            expect(handler).toHaveBeenCalledTimes(1);
+        });
+    });
 });

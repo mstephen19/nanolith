@@ -22,6 +22,9 @@ export const definitions = {
         });
     },
     waitABit: () => new Promise((resolve) => setTimeout(resolve, 2e3)),
+    sendMessageToParent: () => {
+        parent.sendMessage('data');
+    },
 };
 
 export const api = await define(definitions);

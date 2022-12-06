@@ -13,7 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 
 - Refactored `Messenger`
-- `Service`, `Messenger`, and `Parent` `.onMessage` methods to return a function that removes a listener
+- `Service`, `Messenger`, and `parent` `.onMessage` methods to return a function that removes the listener.
+- `parent` `.onMessengerReceived` function to return a function that removes the listener.
 - Docs to reflect removals of `offMessage`
 
 ### Fixed
