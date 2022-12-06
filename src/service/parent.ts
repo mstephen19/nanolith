@@ -13,8 +13,8 @@ import type {
 } from '../types/messages.js';
 import type { Messenger } from '../messenger/index.js';
 import type { BaseWorkerData } from '../types/worker_data.js';
-import type { ReadableFromPort } from '../streams/index.js';
 import type { RemoveListenerFunction } from '../types/messages.js';
+import type { OnStreamCallback } from '../types/streams.js';
 
 /**
  *
@@ -123,7 +123,7 @@ function onMessengerReceived(callback: (messenger: Messenger) => Awaitable<any>)
  *
  * @param callback The callback to run once the stream has been initialized and is ready to consume.
  */
-function onStream(callback: (stream: ReadableFromPort<Exclude<typeof parentPort, null>>) => Awaitable<void>) {
+function onStream(callback: OnStreamCallback<Exclude<typeof parentPort, null>>) {
     assertIsNotMainThread('parent.onStream');
     listenForStream(parentPort!, callback);
 }

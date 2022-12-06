@@ -1,4 +1,7 @@
-// import type { TransferListItem } from 'worker_threads';
+import type { ReadableFromPort } from '../streams/index.js';
+import type { Awaitable } from './utilities.js';
+
+export type OnStreamCallback<Sender extends Messagable> = (stream: ReadableFromPort<Sender>) => Awaitable<void>;
 
 export interface Messagable {
     on(event: 'message', callback: (value: any) => void): any;

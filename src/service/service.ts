@@ -20,7 +20,7 @@ import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.
 import type { ServiceCallOptions } from '../types/workers.js';
 import type { Messenger } from '../messenger/messenger.js';
 import type { ReadableFromPort } from '../streams/index.js';
-import type { Messagable } from '../types/streams.js';
+import type { Messagable, OnStreamCallback } from '../types/streams.js';
 
 type ServiceEvents = {
     /**
@@ -222,7 +222,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      *
      * @param callback The callback to run once the stream has been initialized and is ready to consume.
      */
-    onStream(callback: (stream: ReadableFromPort<Messagable>) => Awaitable<void>) {
+    onStream(callback: OnStreamCallback<typeof this['worker']>) {
         listenForStream(this.#worker, callback);
     }
 
