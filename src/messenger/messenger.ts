@@ -34,7 +34,6 @@ export class Messenger {
      * in the ports array.
      */
     #identifier: string;
-
     /**
      * The object implementing the methods on "Messagable" so that the
      * streaming API built for Services and the main thread can also work
@@ -60,6 +59,7 @@ export class Messenger {
             this.#channel.postMessage(body);
         },
     };
+    #acceptStreams = false;
 
     /**
      *
@@ -114,6 +114,10 @@ export class Messenger {
      * A function that will not be run until `onMessage` is called for the first time.
      */
     #registerMainListener() {
+        const handleMessageBody = async (body: MessengerMessageBody) => {
+            await Promise.all(this.#listenerCallbacks.map((callback) => callback(body.data)));
+        };
+
         this.#channel.onmessage = async (event) => {
             const { data: body } = event as { data: MessengerBaseMessageBody };
 
@@ -122,13 +126,17 @@ export class Messenger {
                 case MessengerMessageType.Close: {
                     return this.#channel.close();
                 }
-                case MessengerMessageType.StreamMessage:
+                case MessengerMessageType.StreamMessage: {
+                    if (body.sender === this.#key) return;
+                    if (!this.#acceptStreams) return;
+                    await handleMessageBody(body as MessengerMessageBody);
+                    break;
+                }
                 case MessengerMessageType.Message: {
-                    const { sender, data } = body as MessengerMessageBody;
                     // If the message was sent by this Messenger, just ignore it. We don't want to
                     // run our listener callbacks for messages we sent.
-                    if (sender === this.#key) return;
-                    await Promise.all(this.#listenerCallbacks.map((callback) => callback(data)));
+                    if (body.sender === this.#key) return;
+                    await handleMessageBody(body as MessengerMessageBody);
                     break;
                 }
                 default:
@@ -185,6 +193,7 @@ export class Messenger {
      * @param callback The callback to run once the stream has been initialized and is ready to consume.
      */
     onStream(callback: (stream: ReadableFromPort<Messagable>) => Awaitable<void>) {
+        this.#acceptStreams = true;
         listenForStream(this.#messagableInterop, callback);
     }
 

@@ -10,12 +10,23 @@ import type { Messagable, StreamReadyMessageBody, StreamStartMessageBody } from 
 export function prepareWritableToPortStream<Target extends Messagable>(target: Target, metaData: Record<any, any>) {
     const id = v4();
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(
+            () =>
+                reject(
+                    new Error(
+                        'Stream creation failed after 15 seconds. Receiver failed to notify of its ready status. If you are using the Messenger API, make sure you are using the ".onStream()" listener on one of the receiving ends.'
+                    )
+                ),
+            15e3
+        );
+
         // When the target notifies that it is ready to start receiving
         // chunks, resolve with a new WritableToPort instance
         const readyHandler = (data: StreamReadyMessageBody) => {
             if (data.type !== StreamMessageType.Ready) return;
             if (data.id !== id) return;
+            clearTimeout(timeout);
 
             resolve(new WritableToPort(target, id, metaData));
 
