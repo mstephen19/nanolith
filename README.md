@@ -617,7 +617,9 @@ await service.close();
 
 Sending data between services and the main thread using methods like [`service.sendMessage()`](#using-a-service) or [`parent.sendMessage()`](#messaging-between-the-main-thread-and-a-service) is efficient and intuitive; however, there may be cases where you need to send much larger pieces of data to a service, or from a service to the main thread. In Node.js, we usually use the [`Readable` and `Writable` APIs](https://nodejs.org/api/stream.html) to do this in chunks.
 
-> **Note:** Cross-thread data streaming is currently only supported between service workers and the main thread. It is not yet available on the `Messenger` API.
+<!-- > **Note:** Cross-thread data streaming is currently only supported between service workers and the main thread. It is not yet available on the `Messenger` API. -->
+
+> **Note:** When streaming between [`Messenger`](#using-messenger) instances, instances that have no `.onStream()` listener registered will not receive streams at all (to avoid obvious memory issues).
 
 Both the `parent` object and all [`Service`](#using-a-service) instances have access to the `createStream()` and `onStream()` functions, which intuitively do exactly what they describe.
 

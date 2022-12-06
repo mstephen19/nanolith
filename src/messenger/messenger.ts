@@ -3,6 +3,7 @@ import { isMessengerTransferObject } from './utilities.js';
 import { BroadcastChannel } from 'worker_threads';
 import { MessengerMessageType } from '../types/messenger.js';
 import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
+import { StreamMessageType } from '../types/streams';
 
 import type {
     MessengerTransferData,
@@ -12,7 +13,7 @@ import type {
     MessengerStreamMessageBody,
 } from '../types/messenger.js';
 import type { Awaitable } from '../types/utilities.js';
-import type { Messagable } from '../types/streams.js';
+import type { Messagable, StreamBaseMessageBody } from '../types/streams.js';
 import type { ReadableFromPort } from '../streams/index.js';
 
 /**
@@ -41,7 +42,7 @@ export class Messenger {
      */
     #messagableInterop: Messagable = {
         on: (_: 'message', callback: (value: any) => void) => {
-            this.onMessage(callback);
+            this.#listenerCallbacks.push(callback);
         },
         off: (_: 'message', callback: (value: any) => void) => {
             this.offMessage(callback);
@@ -53,7 +54,11 @@ export class Messenger {
                 // Put the StreamMessageBody as the data that will be
                 // directly handled by the listeners added by the
                 // Nanolith streaming APIs
-                data: value,
+                data: {
+                    // ! temporary fix for filtering out stream-related messages
+                    ...value,
+                    __isInteropStreamMessage__: true,
+                },
             };
 
             this.#channel.postMessage(body);
@@ -128,7 +133,18 @@ export class Messenger {
                 }
                 case MessengerMessageType.StreamMessage: {
                     if (body.sender === this.#key) return;
-                    if (!this.#acceptStreams) return;
+                    // If we haven't registered a .onStream listener, that means we don't want to
+                    // accept streams on this Messenger instance on the channel, and we should only
+                    // accept the "Ready" message type in cases where we are sending a stream.
+                    if (
+                        [StreamMessageType.Start, StreamMessageType.Chunk, StreamMessageType.End].includes(
+                            ((body as MessengerStreamMessageBody)?.data as StreamBaseMessageBody)?.type
+                        ) &&
+                        !this.#acceptStreams
+                    ) {
+                        return;
+                    }
+
                     await handleMessageBody(body as MessengerMessageBody);
                     break;
                 }
@@ -206,7 +222,11 @@ export class Messenger {
      * messenger.onMessage<string>((data) => console.log(data, 'received!'));
      */
     onMessage<Data = any>(callback: (data: Data) => Awaitable<void>) {
-        this.#listenerCallbacks.push(callback);
+        this.#listenerCallbacks.push((data) => {
+            // ! temporary fix for filtering out stream-related messages
+            if (data.__isInteropStreamMessage__) return;
+            callback(data);
+        });
     }
 
     /**
