@@ -78,15 +78,15 @@ describe('Messenger', () => {
             const promise = new Promise((resolve) => {
                 let received = 0;
 
-                service1.onMessage(function cb() {
-                    service1.offMessage(cb);
+                const off = service1.onMessage(function cb() {
+                    off();
                     callback();
                     received++;
                     if (received === 2) resolve(true);
                 });
 
-                service2.onMessage(function cb() {
-                    service1.offMessage(cb);
+                const off2 = service2.onMessage(function cb() {
+                    off2();
                     callback();
                     received++;
                     if (received === 2) resolve(true);
