@@ -4,6 +4,7 @@ import { api } from './worker.js';
 
 const messenger = new Messenger('channel');
 
+// Launch two services
 await api.launchService({
     messengers: [messenger],
 });
@@ -12,6 +13,10 @@ await api.launchService({
     messengers: [messenger],
 });
 
+// At this point, there are three Messenger instances
+// connected to our channel named "channel"
+
+// Create a basic stream
 const arr = ['hello', 'world', 'foo', 'bar'];
 const myStream = new Readable({
     read() {
@@ -21,4 +26,5 @@ const myStream = new Readable({
     },
 });
 
+// Send the stream over the channel
 myStream.pipe(await messenger.createStream({ name: 'foo' }));

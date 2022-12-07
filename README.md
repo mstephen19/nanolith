@@ -36,6 +36,7 @@ Multi-threaded nanoservices in no time with seamless TypeScript support.
   * [✉️Using `Messenger`](#using-messenger)
   * [📩Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
   * [Streaming data between threads](#streaming-data-between-threads)
+    * [Streaming using `parent` in a service worker](#streaming-using-parent-in-a-service-worker)
 * [Examples](#examples)
   * ["Promisify-ing" a for-loop](#promisify-ing-a-for-loop)
 * [License](#license)
@@ -338,8 +339,8 @@ The main method on launched services that you'll be using is `.call()`; however,
 | `onMessage()` | Method | Receive messages from the service worker. Returns a function that will remove the listener when called. |
 | `waitForMessage()` | Method | Wait for specific messages coming from the service worker. |
 | [`sendMessenger()`](#dynamically-sending-messengers-to-services) | Method | Dynamically send a [`Messenger`](#using-messenger) object to the service worker. |
-| [`onStream()`](#streaming-data-between-threads) | Method | Receive data streams from the service worker. |
-| [`createStream()`](#streaming-data-between-threads) | Method | Create a `Writable` instance that can be piped into in order to stream data to the service worker. The service worker can listen for incoming streams with the `parent.onStream()` listener. |
+| [`onStream()`](#streaming-using-parent-in-a-service-worker) | Method | Receive data streams from the service worker. |
+| [`createStream()`](#streaming-using-parent-in-a-service-worker) | Method | Create a `Writable` instance that can be piped into in order to stream data to the service worker. The service worker can listen for incoming streams with the `parent.onStream()` listener. |
 
 ## Managing concurrency
 
@@ -581,8 +582,8 @@ Each `Messenger` instance has access to a various methods and properties.
 | `waitForMessage()` | Method | Wait for a specific message on the `Messenger`. |
 | `sendMessage()` | Method | Send a messenger to be received by any other `Messenger` instances with the same identifier. |
 | `transfer()` | Method | Turns the `Messenger` instance into an object that can be sent to and from workers. |
-| `createStream()` | Method | Create a {@link Writable} instance that can be piped into in order to stream data to other `Messenger`s on the channel. The messengers can listen for incoming streams with the `messenger.onStream()` listener. |
-| `onStream()` | Method | Receive data streams on the `Messenger`. |
+| [`createStream()`](#streaming-with-messenger) | Method | Create a {@link Writable} instance that can be piped into in order to stream data to other `Messenger`s on the channel. The messengers can listen for incoming streams with the `messenger.onStream()` listener. |
+| [`onStream()`](#streaming-with-messenger) | Method | Receive data streams on the `Messenger`. |
 | `setRef()` | Method | By default, the `BroadcastChannel` is unreffed. Call this function to change that. When `true`, [`ref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelref) will be called. When `false`, [`unref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelunref) will be called. |
 | `close()` | Method | Closes the underlying `BroadcastChannel` connection that is being used. Does not close all `BroadcastChannel`s on all Messenger objects |
 | `closeAll()` | Method | Closes **all** underlying `BroadcastChannel` connections on all `Messenger` objects that are currently active for the corresponding identifier. |
@@ -613,11 +614,11 @@ await service.close();
 
 ### Streaming data between threads
 
-Sending data between services and the main thread using methods like [`service.sendMessage()`](#using-a-service) or [`parent.sendMessage()`](#messaging-between-the-main-thread-and-a-service) is efficient and intuitive; however, there may be cases where you need to send much larger pieces of data to a service, or from a service to the main thread. In Node.js, we usually use the [`Readable` and `Writable` APIs](https://nodejs.org/api/stream.html) to do this in chunks.
+Sending data between services and the main thread using methods like [`service.sendMessage()`](#using-a-service), [`parent.sendMessage()`](#messaging-between-the-main-thread-and-a-service), or the [`Messenger`](#using-messenger) API is efficient and intuitive; however, there may be cases where you need to send much larger pieces of data to a service, or from a service to the main thread. In Node.js, we usually use the [`Readable` and `Writable` APIs](https://nodejs.org/api/stream.html) to do this in chunks.
 
-<!-- > **Note:** Cross-thread data streaming is currently only supported between service workers and the main thread. It is not yet available on the `Messenger` API. -->
+<!-- > **Note:** When streaming between [`Messenger`](#using-messenger) instances, instances that have no `.onStream()` listener registered will not receive streams at all (to avoid obvious memory issues). -->
 
-> **Note:** When streaming between [`Messenger`](#using-messenger) instances, instances that have no `.onStream()` listener registered will not receive streams at all (to avoid obvious memory issues).
+#### Streaming using `parent` in a service worker
 
 Both the `parent` object and all [`Service`](#using-a-service) instances have access to the `createStream()` and `onStream()` functions, which intuitively do exactly what they describe.
 
@@ -722,6 +723,72 @@ await service.call({ name: 'sendStream' });
 The output of this code is almost exactly the same as the previous example; however, the logs occur on the main thread rather than within the service worker thread.
 
 > **Important:** The `.onStream()` listener must be registered before the stream is received by the sender. Otherwise, the event will be received. That means that it must be called within `__initializeService()`, or in a task that occurs prior to the stream being sent.
+
+#### Streaming with `Messenger`
+
+Streaming data between threads with the `Messenger` API is similar to with `Service` and `parent`; however, because there can be multiple recipients rather than the just one, the `.onStream()` method boasts a slightly different functionality.
+
+```TypeScript
+// worker.ts 💼
+import { threadId } from 'worker_threads';
+import { define, messengers } from 'nanolith';
+
+export const api = await define({
+    async __initializeService() {
+        const messenger = await messengers.use('channel');
+
+        // In the .onStream callback, rather than having access to the stream
+        // right away, it is only created after we call the "accept()" function.
+        // The metadata sent along with the stream is also available in the
+        // callback function.
+        messenger.onStream(({ metaData, accept }) => {
+            // Ignore the stream if the thread ID is 1
+            if (threadId === 1) return;
+
+            // Otherwise, accept it and start receiving the data
+            const stream = accept();
+
+            stream.on('data', (data) => {
+                console.log(data);
+            });
+        });
+    },
+});
+```
+
+```TypeScript
+// index.ts 💡
+import { Readable } from 'stream';
+import { Messenger } from 'nanolith';
+import { api } from './worker.js';
+
+const messenger = new Messenger('channel');
+
+// Launch two services
+await api.launchService({
+    messengers: [messenger],
+});
+
+await api.launchService({
+    messengers: [messenger],
+});
+
+// At this point, there are three Messenger instances
+// connected to our channel named "channel"
+
+// Create a basic stream
+const arr = ['hello', 'world', 'foo', 'bar'];
+const myStream = new Readable({
+    read() {
+        if (!arr.length) this.push(null);
+
+        this.push(arr.splice(0, 1)[0]);
+    },
+});
+
+// Send the stream over the channel
+myStream.pipe(await messenger.createStream({ name: 'foo' }));
+```
 
 ## Examples
 

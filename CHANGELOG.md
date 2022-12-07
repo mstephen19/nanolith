@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `onStream()` and `createStream()` support for streaming data between `Messenger` instances on separate threads + docs.
 - Extra functionality for `listenForStream()` to allow for accepting or not accepting a stream on a `Messenger` channel.
+- Docs for streaming on the `Messenger` API.
 
 ### Changed
 

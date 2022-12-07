@@ -4,15 +4,16 @@ import { define, messengers } from '../index.js';
 export const api = await define({
     async __initializeService() {
         const messenger = await messengers.use('channel');
-        messenger.onMessage((data) => {
-            console.log(data);
-        });
 
+        // In the .onStream callback, rather than having access to the stream
+        // right away, it is only created after we call the "accept()" function.
+        // The metadata sent along with the stream is also available in the
+        // callback function.
         messenger.onStream(({ metaData, accept }) => {
-            console.log(metaData);
-            if (threadId === 1) return console.log('declining');
-            console.log('accepting');
+            // Ignore the stream if the thread ID is 1
+            if (threadId === 1) return;
 
+            // Otherwise, accept it and start receiving the data
             const stream = accept();
 
             stream.on('data', (data) => {
