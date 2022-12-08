@@ -41,6 +41,8 @@ Multi-threaded nanoservices in no time with seamless TypeScript support.
     * [Streaming using `parent` in a service worker](#streaming-using-parent-in-a-service-worker)
 * [Examples](#examples)
   * ["Promisify-ing" a for-loop](#promisify-ing-a-for-loop)
+  * [Streaming fetched data to a service](#streaming-fetched-data-to-a-service)
+  * [Streaming data between two services](#streaming-data-between-two-services)
 * [License](#license)
 
 ## About
@@ -845,6 +847,132 @@ The result of this code, despite the large loop being called prior to the loggin
 ```text
 hello world
 test
+```
+
+### Streaming fetched data to a service
+
+```TypeScript
+// worker.ts 💼
+import { define, parent } from 'nanolith';
+import { createWriteStream } from 'fs';
+
+export const api = await define({
+    __initializeService() {
+        parent.onStream((stream) => {
+            // Stream the data received from the main thread into
+            // a new file called data.json
+            const writeStream = createWriteStream('data.json');
+            stream.pipe(writeStream);
+
+            // Once the write stream has finished its work, notify
+            // the parent port that the service is ready to be closed.
+            writeStream.on('finish', () => parent.sendMessage('complete'));
+        });
+    },
+});
+```
+
+```TypeScript
+// index.ts 💡
+import axios from 'axios';
+import { api } from './worker.js';
+
+import type { Readable } from 'stream';
+
+// First, launch a service on the set of definitions
+const service = await api.launchService();
+
+// Once we're notified to stop the service, close it.
+service.onMessage<string>(async (msg) => {
+    if (msg === 'complete') await service.close();
+});
+
+// Fetch a stream of data
+const { data: stream } = await axios.get<Readable>('https://jsonplaceholder.typicode.com/todos', {
+    responseType: 'stream',
+});
+
+// Create a new stream on the service and pipe the fetched
+// stream into the newly created stream.
+stream.pipe(await service.createStream());
+```
+
+### Streaming data between two services
+
+```TypeScript
+// worker.ts 💼
+import { define, messengers, parent } from 'nanolith';
+import { createWriteStream } from 'fs';
+import axios from 'axios';
+
+import type { Readable } from 'stream';
+
+export const senderApi = await define({
+    // A task which sends a data stream on the "cool-channel" messenger channel.
+    async sendStream() {
+        // Grab hold of the attached messenger
+        const messenger = await messengers.use('cool-channel');
+
+        // Fetch a stream of data
+        const { data: stream } = await axios.get<Readable>('https://jsonplaceholder.typicode.com/todos', {
+            responseType: 'stream',
+        });
+
+        // Create a new stream on the service and pipe the fetched
+        // stream into the newly created stream.
+        stream.pipe(await messenger.createStream({ type: 'data' }));
+    },
+});
+
+export const receiverApi = await define({
+    async __initializeService() {
+        const messenger = await messengers.use('cool-channel');
+
+        messenger.onStream(({ metaData, accept }) => {
+            // If the metadata doesn't match what we're looking for on this
+            // thread, do nothing.
+            if (metaData.type !== 'data') return;
+
+            // Otherwise, accept the stream and handle it.
+            const stream = accept();
+
+            // Stream the data received from the main thread into
+            // a new file called data.json
+            const writeStream = createWriteStream('data.json');
+            stream.pipe(writeStream);
+
+            // Once the write stream has finished its work, notify
+            // the parent port that the service is ready to be closed.
+            writeStream.on('finish', () => parent.sendMessage('complete'));
+        });
+    },
+});
+```
+
+```TypeScript
+// index.ts 💡
+import { Messenger } from 'nanolith';
+import { receiverApi, senderApi } from './worker.js';
+
+const messenger = new Messenger('cool-channel');
+
+// Launch two services. One will act as the sender of the stream,
+// and the other will receive the stream.
+const sender = await senderApi.launchService({
+    messengers: [messenger],
+});
+const receiver = await receiverApi.launchService({
+    messengers: [messenger],
+});
+
+// Once we're notified to stop the services, close them.
+receiver.onMessage<string>(async (msg) => {
+    if (msg !== 'complete') return;
+    // If the message matches "complete", we are ready to close.
+    await Promise.all([sender.close(), receiver.close()]);
+});
+
+sender.call({ name: 'sendStream' });
 ```
 
 ## License
