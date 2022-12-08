@@ -27,8 +27,6 @@ import type { BaseWorkerData } from '../types/worker_data.js';
  *         await new Promise((resolve) => setTimeout(resolve, 5000));
  *         return x + y;
  *     }.
- * }, {
- *     identifier: 'mathService'
  * });
  */
 export async function define<Definitions extends TaskDefinitions>(

@@ -10,6 +10,8 @@ Multi-threaded nanoservices in no time with seamless TypeScript support.
     <img src="https://user-images.githubusercontent.com/87805115/199340985-d76cc3ea-6abb-4a4e-ac1b-a95fc693947f.png" width="550">
 </center>
 
+> You can now stream data between threads in Nanolith! See examples [here](#streaming-data-between-threads)!
+
 ## 📖 Table of Contents
 
 * [💭About](#about)
@@ -73,16 +75,18 @@ yarn add nanolith@next
 
 ## What's new?
 
-The newest stable version of Nanolith is `0.2.3` ✨
+The newest stable version of Nanolith is `0.2.4` ✨
 
 ### Features 🆕
 
-* `waitForMessage()` method on [`Messenger`](#using-messenger) and [`Service`](#using-a-service)
-* _Streaming_ data between threads! See examples [here](#streaming-data-between-threads)
+* Streaming data between the main thread and a service. See examples [here](#streaming-using-parent-in-a-service-worker)
+* [Streaming data between threads with `Messenger`](#streaming-with-messenger)
+* Replaced `offMessage()` with listener-remover functions returned from `onMessage()` calls. See this feature being used [here](#messaging-between-the-main-thread-and-a-service)
 
 ### Fixes & improvements 🛠️
 
-* `parent.waitForMessenger()` not working when registered in an `__initializeService()` hook call.
+* `MessengerTransferObject` issues within `__initializeService()` hook calls
+* Minor performance improvements to `Messenger`
 
 ## Defining a set of tasks
 
@@ -470,7 +474,7 @@ const service = await api.launchService();
 service.sendMessage('hi');
 
 // Handle messages received from the service worker
-const removeListener = ervice.onMessage<string>(function callback(data) {
+const removeListener = service.onMessage<string>((data) => {
     console.log(`received message from worker: ${data}`);
     // Once the message has been received, remove the listener
     removeListener();
@@ -490,7 +494,7 @@ import { define, parent } from 'nanolith';
 export const api = await define({
     __initializeService() {
         // Handle messages received from the main thread
-        const removeListener = parent.onMessage<number>(function callback(data) {
+        const removeListener = parent.onMessage<number>((data) => {
             console.log(data - 351);
             // Once the message has been received, remove the listener
             removeListener();
