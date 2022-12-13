@@ -45,9 +45,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         // Only attach one listener onto the worker instead of attaching a listener for each task called.
         const taskHandler = (body: WorkerBaseMessageBody & { key: string }) => {
             this.#callbacks.forEach(({ resolve, reject }, key) => {
-                // // Ignore all messages that aren't one of these two types.
-                // if (body.type !== WorkerMessageType.CallError && body.type !== WorkerMessageType.CallReturn) return;
-
                 // If the message is for a call with a different key, also ignore the message.
                 if (body.key !== key) return;
 
