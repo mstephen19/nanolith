@@ -23,9 +23,6 @@ export class WritableToPort<Target extends Messagable> extends Writable {
 
     constructor(target: Target, id: string, metaData = {} as Record<any, any>) {
         super();
-        // // We need to buffer chunks into memory until the target notifies
-        // // that it is ready to start receiving data.
-        // this.cork();
         this.#target = target;
         this.#id = id;
         this.#meta = metaData;
