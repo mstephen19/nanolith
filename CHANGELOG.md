@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `SharedMap` implementation (still badly needs a mutex of some sort)
+
 ### Changed
 
 - Add `timeoutSecs` parameter to `prepareWritableToPortStream()` to configure how many seconds to wait for the stream to be accepted before rejecting the promise.
