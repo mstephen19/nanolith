@@ -1,6 +1,6 @@
 {
     "name": "nanolith",
-    "version": "0.2.4",
+    "version": "0.2.5-beta1",
     "description": "Multi-threaded nanoservices in no time with seamless TypeScript support.",
     "main": "dist/index.js",
     "type": "module",
