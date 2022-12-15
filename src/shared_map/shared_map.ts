@@ -1,4 +1,4 @@
-import { createSharedArrayBuffer, encodeValue } from './utilities.js';
+import { createSharedArrayBuffer, encodeValue, isSharedArrayPair } from './utilities.js';
 import * as Keys from './keys.js';
 
 import type { Key, SharedArrayPair } from '../types/shared_map.js';
@@ -21,7 +21,14 @@ export class SharedMap<Data extends Record<string, any>> {
         });
     }
 
-    constructor(data: Data, multiplier = 10) {
+    constructor(data: Data, multiplier?: number);
+    constructor(pair: SharedArrayPair<Data>);
+    constructor(data: Data extends SharedArrayPair<infer Type> ? Type : Data, multiplier = 10) {
+        if (isSharedArrayPair(data)) {
+            this.#keys = data.keys;
+            this.#values = data.values;
+        }
+
         const entries = Object.entries(data);
 
         // Encode each value, then determine what its indexes will be based on a tracked
