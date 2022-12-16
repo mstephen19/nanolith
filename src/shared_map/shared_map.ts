@@ -1,8 +1,8 @@
-import { createSharedArrayBuffer, encodeValue, isSharedArrayPair } from './utilities.js';
+import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData } from './utilities.js';
 import * as Keys from './keys.js';
 import { BusyStatus } from '../types/shared_map.js';
 
-import type { Key, SharedArrayPair } from '../types/shared_map.js';
+import type { Key, SharedMapTransferData } from '../types/shared_map.js';
 import type { CleanKeyOf } from '../types/utilities.js';
 
 export class SharedMap<Data extends Record<string, any>> {
@@ -18,7 +18,7 @@ export class SharedMap<Data extends Record<string, any>> {
     #encoder = new TextEncoder();
     #decoder = new TextDecoder();
 
-    get pair(): SharedArrayPair<Data> {
+    get pair(): SharedMapTransferData<Data> {
         return Object.freeze({
             keys: this.#keys,
             values: this.#values,
@@ -27,9 +27,9 @@ export class SharedMap<Data extends Record<string, any>> {
     }
 
     constructor(data: Data, multiplier?: number);
-    constructor(pair: SharedArrayPair<Data>);
-    constructor(data: Data extends SharedArrayPair<infer Type> ? Type : Data, multiplier = 10) {
-        if (isSharedArrayPair(data)) {
+    constructor(pair: SharedMapTransferData<Data>);
+    constructor(data: Data extends SharedMapTransferData<infer Type> ? Type : Data, multiplier = 10) {
+        if (isSharedMapTransferData(data)) {
             this.#keys = data.keys;
             this.#values = data.values;
             this.#status = data.status;
@@ -111,7 +111,7 @@ export class SharedMap<Data extends Record<string, any>> {
         return data;
     }
 
-    get<KeyName extends CleanKeyOf<Data>>(name: KeyName) {
+    get<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
         return this.#run(() => {
             const decodedKeys = this.#decoder.decode(this.#keys);
             const match = Keys.matchKey(decodedKeys, name);
@@ -124,7 +124,7 @@ export class SharedMap<Data extends Record<string, any>> {
         });
     }
 
-    set<KeyName extends CleanKeyOf<Data>>(name: KeyName, value: Data[KeyName]) {
+    set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
         return this.#run(() => {
             const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
 

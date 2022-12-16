@@ -9,5 +9,5 @@ export { SharedMap } from './shared_map/index.js';
 export type { TaskDefinitions } from './types/definitions.js';
 export type { Nanolith } from './types/nanolith.js';
 export type { TaskWorkerOptions as LaunchTaskOptions, ServiceWorkerOptions as LaunchServiceOptions } from './types/workers.js';
-export type { SharedArrayPair } from './types/shared_map.js';
+export type { SharedMapTransferData } from './types/shared_map.js';
 export type { MessengerTransferData } from './types/messenger.js';
