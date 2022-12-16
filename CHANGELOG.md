@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Main file to export types `SharedArrayPair` and `MessengerTransferData`.
 - `SharedArrayPair` type name to `SharedMapTransferData`.
 - `Messenger.transfer()` to be a getter instead of a function.
+- Removed `Data` word from exports of `SharedMapTransferData` and `MessengerTransferData`.
 
 ### Added
 
