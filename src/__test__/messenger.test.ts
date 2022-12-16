@@ -21,7 +21,7 @@ describe('Messenger', () => {
         it('Should return a MessengerTransferData object', () => {
             const messenger = new Messenger();
 
-            expect(isMessengerTransferObject(messenger.transfer())).toBe(true);
+            expect(isMessengerTransferObject(messenger.transfer)).toBe(true);
         });
     });
 

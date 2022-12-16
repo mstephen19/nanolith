@@ -1,11 +1,8 @@
 import { SharedMap } from '../index.js';
+import { api } from './worker.js';
 
 const map = new SharedMap({ foo: 'xyz', fizz: 'y', buzz: 'z' });
 
-await map.set('foo', 'a');
-await map.set('fizz', 'b');
-await map.set('buzz', 'c');
+await api({ name: 'handleSharedMap', params: [map.transfer], reffed: true });
 
-console.log(await map.get('foo'));
-console.log(await map.get('fizz'));
 console.log(await map.get('buzz'));

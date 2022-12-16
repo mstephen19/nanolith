@@ -18,11 +18,11 @@ export class SharedMap<Data extends Record<string, any>> {
     #encoder = new TextEncoder();
     #decoder = new TextDecoder();
 
-    get pair(): SharedMapTransferData<Data> {
+    get transfer(): SharedMapTransferData<Data> {
         return Object.freeze({
-            keys: this.#keys,
-            values: this.#values,
-            status: this.#status,
+            __keys: this.#keys,
+            __values: this.#values,
+            __status: this.#status,
         });
     }
 
@@ -30,9 +30,10 @@ export class SharedMap<Data extends Record<string, any>> {
     constructor(pair: SharedMapTransferData<Data>);
     constructor(data: Data extends SharedMapTransferData<infer Type> ? Type : Data, multiplier = 10) {
         if (isSharedMapTransferData(data)) {
-            this.#keys = data.keys;
-            this.#values = data.values;
-            this.#status = data.status;
+            this.#keys = data.__keys;
+            this.#values = data.__values;
+            this.#status = data.__status;
+            return;
         }
 
         const entries = Object.entries(data);

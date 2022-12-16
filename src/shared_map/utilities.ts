@@ -9,8 +9,8 @@ export const encodeValue = (encoder: TextEncoder, data: any) => {
 };
 
 export const isSharedMapTransferData = (pair: any): pair is SharedMapTransferData => {
-    const hasKeys = 'keys' in pair && pair?.keys instanceof Uint8Array;
-    const hasValues = 'values' in pair && pair?.values instanceof Uint8Array;
-    const hasStatus = 'status' in pair && pair?.status instanceof Uint8Array;
+    const hasKeys = '__keys' in pair && pair?.__keys instanceof Uint8Array;
+    const hasValues = '__values' in pair && pair?.__values instanceof Uint8Array;
+    const hasStatus = '__status' in pair && pair?.__status instanceof Uint8Array;
     return hasKeys && hasValues && hasStatus;
 };
