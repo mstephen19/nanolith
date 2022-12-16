@@ -1,11 +1,11 @@
 import { SharedMap } from '../index.js';
 
-const map = new SharedMap({ foo: 'this is foo', fizz: 'this is fizz', buzz: 'this is buzz' });
+const map = new SharedMap({ foo: 'xyz', fizz: 'y', buzz: 'z' });
 
-map.set('foo', 'a');
-map.set('fizz', 'b');
-map.set('buzz', 'c');
+await map.set('foo', 'a');
+await map.set('fizz', 'b');
+await map.set('buzz', 'c');
 
-console.log(map.get('foo'));
-console.log(map.get('fizz'));
-console.log(map.get('buzz'));
+console.log(await map.get('foo'));
+console.log(await map.get('fizz'));
+console.log(await map.get('buzz'));

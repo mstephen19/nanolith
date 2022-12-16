@@ -11,5 +11,6 @@ export const encodeValue = (encoder: TextEncoder, data: any) => {
 export const isSharedArrayPair = (pair: any): pair is SharedArrayPair => {
     const hasKeys = 'keys' in pair && pair?.keys instanceof Uint8Array;
     const hasValues = 'values' in pair && pair?.values instanceof Uint8Array;
-    return hasKeys && hasValues;
+    const hasStatus = 'status' in pair && pair?.status instanceof Uint8Array;
+    return hasKeys && hasValues && hasStatus;
 };

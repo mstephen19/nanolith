@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Add `timeoutSecs` parameter to `prepareWritableToPortStream()` to configure how many seconds to wait for the stream to be accepted before rejecting the promise.
 - `TaskWorkerOptions` and `ServiceWorkerOptions` types to be exported as `LaunchTaskOptions` and `LaunchServiceOptions` instead.
+- Main file to export types `SharedArrayPair` and `MessengerTransferData`.
 
 ### Added
 

@@ -1,14 +1,18 @@
 import { createSharedArrayBuffer, encodeValue, isSharedArrayPair } from './utilities.js';
 import * as Keys from './keys.js';
+import { BusyStatus } from '../types/shared_map.js';
 
 import type { Key, SharedArrayPair } from '../types/shared_map.js';
-import { type CleanKeyOf } from '../types/utilities.js';
+import type { CleanKeyOf } from '../types/utilities.js';
 
 export class SharedMap<Data extends Record<string, any>> {
     // SharedArrayBuffer containing all keys in bytes
     #keys: Uint8Array;
     // SharedArrayBuffer containing all concatenated values in bytes
     #values: Uint8Array;
+    // A cheap "mutex" that is used to ensure only one operation occurs
+    // on the shared map at a single time
+    #status: Uint8Array;
     // Instantiate an encoder and decoder once to avoid the
     // need for constantly instantiating them.
     #encoder = new TextEncoder();
@@ -18,6 +22,7 @@ export class SharedMap<Data extends Record<string, any>> {
         return Object.freeze({
             keys: this.#keys,
             values: this.#values,
+            status: this.#status,
         });
     }
 
@@ -27,6 +32,7 @@ export class SharedMap<Data extends Record<string, any>> {
         if (isSharedArrayPair(data)) {
             this.#keys = data.keys;
             this.#values = data.values;
+            this.#status = data.status;
         }
 
         const entries = Object.entries(data);
@@ -62,6 +68,8 @@ export class SharedMap<Data extends Record<string, any>> {
         // Encode keys and create an array buffer for them, populating it.
         const encodedKeys = this.#encoder.encode(preppedKeys.join());
         this.#keys = createSharedArrayBuffer(encodedKeys.byteLength * multiplier);
+        // It is safe to use no sort of mutex at this stage, because the arrays are just being
+        // initialized and the constructor has not even returned yet
         this.#keys.set(encodedKeys);
 
         // Create an array buffer for values and
@@ -71,88 +79,122 @@ export class SharedMap<Data extends Record<string, any>> {
             offset += array.byteLength;
             return offset;
         }, 0);
+
+        // Initialize the status array buffer with the "Free" status
+        this.#status = createSharedArrayBuffer(1);
+        this.#status.set([BusyStatus.Free]);
+    }
+
+    async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
+        // First, wait for the status to be "Free"
+        await new Promise((resolve) => {
+            // If in free status, return out immediately
+            if (Atomics.load(this.#status, 0) === BusyStatus.Free) return resolve(true);
+
+            // Every second, check if the status is free
+            // ! IMPROVE THIS !
+            // ! This is a very cheap implementation and can be much improved
+            // ! with message passing using Messenger. It is not performance-friendly
+            const interval = setInterval(() => {
+                if (Atomics.load(this.#status, 0) !== BusyStatus.Free) return;
+                // If the status is free, resolve the promise and stop the interval.
+                resolve(true);
+                clearInterval(interval);
+            }, 1e3);
+        });
+
+        Atomics.store(this.#status, 0, BusyStatus.Busy);
+        const data = await workflow();
+        Atomics.store(this.#status, 0, BusyStatus.Free);
+
+        // Return out the return value, if any
+        return data;
     }
 
     get<KeyName extends CleanKeyOf<Data>>(name: KeyName) {
-        const decodedKeys = this.#decoder.decode(this.#keys);
-        const match = Keys.matchKey(decodedKeys, name);
-        if (!match) return null;
+        return this.#run(() => {
+            const decodedKeys = this.#decoder.decode(this.#keys);
+            const match = Keys.matchKey(decodedKeys, name);
+            if (!match) return null;
 
-        const { start, end } = Keys.parseKey(match as Key);
-        if (start === undefined || end === undefined) throw new Error('Failed to parse key');
+            const { start, end } = Keys.parseKey(match as Key);
+            if (start === undefined || end === undefined) throw new Error('Failed to parse key');
 
-        return this.#decoder.decode(this.#values.slice(start, end + 1));
+            return this.#decoder.decode(this.#values.slice(start, end + 1));
+        });
     }
 
     set<KeyName extends CleanKeyOf<Data>>(name: KeyName, value: Data[KeyName]) {
-        const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
+        return this.#run(() => {
+            const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
 
-        // Disallow the setting of keys that don't already exist
-        if (!Keys.createKeyRegex(name).test(decodedKeys)) {
-            throw new Error(`The key "${name}" doesn't exist on this SharedMap!`);
-        }
+            // Disallow the setting of keys that don't already exist
+            if (!Keys.createKeyRegex(name).test(decodedKeys)) {
+                throw new Error(`The key "${name}" doesn't exist on this SharedMap!`);
+            }
 
-        // The final index in the values array where there is data. Anything
-        // beyond this point is just x00
-        const finalPosition = decodedKeys.match(/\d+(?=\);($|\x00))/g)?.[0];
-        // The key
-        const match = Keys.matchKey(decodedKeys, name);
-        if (!match || !finalPosition) throw new Error('Failed to parse keys.');
+            // The final index in the values array where there is data. Anything
+            // beyond this point is just x00
+            const finalPosition = decodedKeys.match(/\d+(?=\);($|\x00))/g)?.[0];
+            // The key
+            const match = Keys.matchKey(decodedKeys, name);
+            if (!match || !finalPosition) throw new Error('Failed to parse keys.');
 
-        /* Update value */
-        const { start: valueStart, end: previousValueEnd } = Keys.parseKey(match);
-        const previousValueByteLength = previousValueEnd - valueStart + 1;
-        const encodedValue = this.#encoder.encode(value);
+            /* Update value */
+            const { start: valueStart, end: previousValueEnd } = Keys.parseKey(match);
+            const previousValueByteLength = previousValueEnd - valueStart + 1;
+            const encodedValue = this.#encoder.encode(value);
 
-        // If the byteLength of the data provided is the same as the byteLength of
-        // the data that already exists, we don't need to do any index shifting and
-        // can just replace the data without doing magic with keys.
-        if (previousValueByteLength === encodedValue.byteLength) {
+            // If the byteLength of the data provided is the same as the byteLength of
+            // the data that already exists, we don't need to do any index shifting and
+            // can just replace the data without doing magic with keys.
+            if (previousValueByteLength === encodedValue.byteLength) {
+                this.#values.set(encodedValue, valueStart);
+                return;
+            }
+
+            const valueEnd = valueStart + encodedValue.byteLength;
+
+            // If we aren't modifying the final value, rewrite the old data to the new offset so
+            // it's not nastily overwritten
+            if (previousValueEnd !== +finalPosition) {
+                const slice = this.#values.slice(previousValueEnd + 1, +finalPosition + 1);
+                this.#values.set(slice, valueEnd);
+            }
+
             this.#values.set(encodedValue, valueStart);
-            return;
-        }
 
-        const valueEnd = valueStart + encodedValue.byteLength;
+            /* Update keys */
+            const keysArray = decodedKeys.split(/(?<=;)/g) as Key[];
+            const targetKeyIndex = keysArray.findIndex((item) => Keys.createKeyRegex(name).test(item));
+            const newTargetKey = Keys.createKey({ name, start: valueStart, end: valueEnd - 1 });
 
-        // If we aren't modifying the final value, rewrite the old data to the new offset so
-        // it's not nastily overwritten
-        if (previousValueEnd !== +finalPosition) {
-            const slice = this.#values.slice(previousValueEnd + 1, +finalPosition + 1);
-            this.#values.set(slice, valueEnd);
-        }
+            // Replace the old targeted key with a new one updated with the new indexes
+            keysArray.splice(targetKeyIndex, 1, newTargetKey);
 
-        this.#values.set(encodedValue, valueStart);
+            // Each key after the target key must also be updated
+            for (let i = targetKeyIndex + 1; i < keysArray.length; i++) {
+                const { name, start: previousStart, end: previousEnd } = Keys.parseKey(keysArray[i]);
+                const byteLength = previousEnd - previousStart + 1;
 
-        /* Update keys */
-        const keysArray = decodedKeys.split(/(?<=;)/g) as Key[];
-        const targetKeyIndex = keysArray.findIndex((item) => Keys.createKeyRegex(name).test(item));
-        const newTargetKey = Keys.createKey({ name, start: valueStart, end: valueEnd - 1 });
+                // Calculate where the key should now start and where it should end
+                const start = previousStart - previousValueByteLength + encodedValue.byteLength;
+                const end = start + byteLength - 1;
 
-        // Replace the old targeted key with a new one updated with the new indexes
-        keysArray.splice(targetKeyIndex, 1, newTargetKey);
+                // Replace the old key with the updated one
+                keysArray.splice(i, 1, Keys.createKey({ name, start, end }));
+            }
 
-        // Each key after the target key must also be updated
-        for (let i = targetKeyIndex + 1; i < keysArray.length; i++) {
-            const { name, start: previousStart, end: previousEnd } = Keys.parseKey(keysArray[i]);
-            const byteLength = previousEnd - previousStart + 1;
+            let updatedKeys = keysArray.join('');
 
-            // Calculate where the key should now start and where it should end
-            const start = previousStart - previousValueByteLength + encodedValue.byteLength;
-            const end = start + byteLength - 1;
+            // We don't want garbage lingering data, so add "empty" bytes
+            // for any extra lingering positions in case the keys string is
+            // now shorter than what it was previously
+            if (updatedKeys.length < decodedKeys.length) {
+                updatedKeys += '\x00'.repeat(decodedKeys.length - updatedKeys.length);
+            }
 
-            // Replace the old key with the updated one
-            keysArray.splice(i, 1, Keys.createKey({ name, start, end }));
-        }
-
-        let updatedKeys = keysArray.join('');
-
-        // We don't want garbage lingering data, so add "empty" bytes
-        // for any extra lingering positions in case the keys string is
-        // now shorter than what it was previously
-        if (updatedKeys.length < decodedKeys.length) {
-            updatedKeys += '\x00'.repeat(decodedKeys.length - updatedKeys.length);
-        }
-
-        this.#keys.set(this.#encoder.encode(updatedKeys));
+            this.#keys.set(this.#encoder.encode(updatedKeys));
+        });
     }
 }
