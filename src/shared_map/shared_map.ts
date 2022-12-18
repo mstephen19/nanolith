@@ -1,6 +1,7 @@
 import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData, sleep } from './utilities.js';
 import * as Keys from './keys.js';
 import { BusyStatus } from '../types/shared_map.js';
+import { NULL_ENCODED } from './constants.js';
 
 import type { Key, SharedMapTransferData } from '../types/shared_map.js';
 import type { CleanKeyOf } from '../types/utilities.js';
@@ -43,9 +44,10 @@ export class SharedMap<Data extends Record<string, any>> {
         const { preppedKeys, preppedValues, totalLength } = entries.reduce(
             (result, [itemKey, itemValue]) => {
                 // Prepare the data by encoding it
-                const encodedData = encodeValue(this.#encoder, itemValue);
-                // Bugs occur when 0 byte strings are passed in. They need to be disallowed.
-                if (encodedData.byteLength <= 0) throw new Error('Cannot provide empty data to SharedMap!');
+                let encodedData = encodeValue(this.#encoder, itemValue);
+                // Bugs occur when 0 byte strings are passed in. Pass in null as the default instead.
+                // This handles the cases when empty strings are passed in.
+                if (encodedData.byteLength <= 0) encodedData = NULL_ENCODED;
 
                 const endIndex = encodedData.byteLength - 1 + result.totalLength;
 
@@ -95,7 +97,10 @@ export class SharedMap<Data extends Record<string, any>> {
     }
 
     async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
-        // Wait for the map to not be busy
+        // Wait for the map to not be busy.
+        // ! This method is absolutely not foolproof, but it will prevent most
+        // ! race conditions when not making too many queries on the map. This
+        // ! is simply preventative.
         await this.#wait();
 
         Atomics.store(this.#status, 0, BusyStatus.Busy);
@@ -106,6 +111,12 @@ export class SharedMap<Data extends Record<string, any>> {
         return data;
     }
 
+    /**
+     * Retrieve items on the {@link SharedMap}.
+     *
+     * @param name The name of the key to retrieve the corresponding value of
+     * @returns A string that can be converted back into the original data type
+     */
     get<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
         return this.#run(() => {
             const decodedKeys = this.#decoder.decode(this.#keys);
@@ -119,6 +130,12 @@ export class SharedMap<Data extends Record<string, any>> {
         });
     }
 
+    /**
+     *
+     * @param name The name of the key to set
+     * @param value
+     * @returns
+     */
     set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
         return this.#run(() => {
             const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
@@ -138,7 +155,9 @@ export class SharedMap<Data extends Record<string, any>> {
             /* Update value */
             const { start: valueStart, end: previousValueEnd } = Keys.parseKey(match);
             const previousValueByteLength = previousValueEnd - valueStart + 1;
-            const encodedValue = this.#encoder.encode(value);
+            let encodedValue = this.#encoder.encode(value);
+            // Handle when the user tries to pass in an empty string when setting a value
+            if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
 
             // If the byteLength of the data provided is the same as the byteLength of
             // the data that already exists, we don't need to do any index shifting and
