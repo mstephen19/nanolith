@@ -1,11 +1,16 @@
 import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData, sleep } from './utilities.js';
 import * as Keys from './keys.js';
-import { BusyStatus } from '../types/shared_map.js';
+import { BusyStatus, Bytes } from '../types/shared_map.js';
 import { NULL_ENCODED } from './constants.js';
 
-import type { Key, SharedMapTransferData } from '../types/shared_map.js';
+import type { Key, SharedMapTransferData, SharedMapOptions } from '../types/shared_map.js';
 import type { CleanKeyOf } from '../types/utilities.js';
 
+/**
+ * A highly approachable solution to sharing memory between multiple threads 💾
+ *
+ * 💥 **Note:** Does not act exactly the same way as the {@link Map} object!
+ */
 export class SharedMap<Data extends Record<string, any>> {
     // SharedArrayBuffer containing all keys in bytes
     #keys: Uint8Array;
@@ -19,6 +24,12 @@ export class SharedMap<Data extends Record<string, any>> {
     #encoder = new TextEncoder();
     #decoder = new TextDecoder();
 
+    /**
+     * An `enum` designed to help you when assigning a fixed byte size
+     * for the map's values.
+     */
+    static readonly option = Bytes;
+
     get transfer(): SharedMapTransferData<Data> {
         return Object.freeze({
             __keys: this.#keys,
@@ -27,9 +38,12 @@ export class SharedMap<Data extends Record<string, any>> {
         });
     }
 
-    constructor(data: Data, multiplier?: number);
+    constructor(data: Data, options?: SharedMapOptions);
     constructor(pair: SharedMapTransferData<Data>);
-    constructor(data: Data extends SharedMapTransferData<infer Type> ? Type : Data, multiplier = 10) {
+    constructor(
+        data: Data extends SharedMapTransferData<infer Type> ? Type : Data,
+        { bytes: bytesOption, multiplier = 10 } = {} as SharedMapOptions
+    ) {
         if (isSharedMapTransferData(data)) {
             this.#keys = data.__keys;
             this.#values = data.__values;
@@ -75,8 +89,12 @@ export class SharedMap<Data extends Record<string, any>> {
         // initialized and the constructor has not even returned yet
         this.#keys.set(encodedKeys);
 
+        if (bytesOption && bytesOption < totalLength) {
+            throw new Error(`${bytesOption} isn't enough bytes to store all values. Total byteLength of values is ${totalLength}.`);
+        }
+
         // Create an array buffer for values and
-        this.#values = createSharedArrayBuffer(totalLength * multiplier);
+        this.#values = createSharedArrayBuffer(bytesOption || totalLength * multiplier);
         preppedValues.reduce((offset, array) => {
             this.#values.set(array, offset);
             offset += array.byteLength;
@@ -131,10 +149,10 @@ export class SharedMap<Data extends Record<string, any>> {
     }
 
     /**
+     * Set new values for items on the {@link SharedMap}.
      *
-     * @param name The name of the key to set
-     * @param value
-     * @returns
+     * @param name The name of the key to set. The key **must** already exist on the map.
+     * @param value The new value for the key.
      */
     set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
         return this.#run(() => {

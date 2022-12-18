@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - `SharedMap` implementation
+- New `Bytes` enum export to help users with calculating sizes for their `SharedMap`s
 
 ### Changed
 
@@ -18,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `SharedArrayPair` type name to `SharedMapTransferData`.
 - `Messenger.transfer()` to be a getter instead of a function.
 - Removed `Data` word from exports of `SharedMapTransferData` and `MessengerTransferData`.
+- `pool.option` to be a static property.
+- Entirely removed the `__enqueue` method from the type for the main exported `pool`
 
 ### Added
 

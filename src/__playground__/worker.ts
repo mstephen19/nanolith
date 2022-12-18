@@ -5,8 +5,8 @@ export const api = await define({
     async handleSharedMap(pair: SharedMapTransfer<{ foo: string; fizz: string; buzz: string }>) {
         const map = new SharedMap(pair);
 
-        await map.set('buzz', 'xyzxyz');
+        await map.set('buzz', '');
 
-        console.log(await map.get('buzz'));
+        console.log(JSON.parse((await map.get('buzz'))!) === null);
     },
 });
