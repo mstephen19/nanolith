@@ -1,4 +1,4 @@
-import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData } from './utilities.js';
+import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData, sleep } from './utilities.js';
 import * as Keys from './keys.js';
 import { BusyStatus } from '../types/shared_map.js';
 
@@ -86,23 +86,17 @@ export class SharedMap<Data extends Record<string, any>> {
         this.#status.set([BusyStatus.Free]);
     }
 
-    async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
-        // First, wait for the status to be "Free"
-        await new Promise((resolve) => {
-            // If in free status, return out immediately
-            if (Atomics.load(this.#status, 0) === BusyStatus.Free) return resolve(true);
+    async #wait(): Promise<void> {
+        // Return once the status is Free
+        if (Atomics.load(this.#status, 0) === BusyStatus.Free) return;
+        // Otherwise, wait half a second and then check again
+        await sleep(500);
+        return this.#wait();
+    }
 
-            // Every second, check if the status is free
-            // ! IMPROVE THIS !
-            // ! This is a very cheap implementation and can be much improved
-            // ! with message passing using Messenger. It is not performance-friendly
-            const interval = setInterval(() => {
-                if (Atomics.load(this.#status, 0) !== BusyStatus.Free) return;
-                // If the status is free, resolve the promise and stop the interval.
-                resolve(true);
-                clearInterval(interval);
-            }, 1e3);
-        });
+    async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
+        // Wait for the map to not be busy
+        await this.#wait();
 
         Atomics.store(this.#status, 0, BusyStatus.Busy);
         const data = await workflow();

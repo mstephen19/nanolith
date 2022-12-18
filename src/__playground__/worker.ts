@@ -6,5 +6,7 @@ export const api = await define({
         const map = new SharedMap(pair);
 
         await map.set('buzz', 'xyzxyz');
+
+        console.log(await map.get('buzz'));
     },
 });

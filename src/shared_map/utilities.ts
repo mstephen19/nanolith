@@ -14,3 +14,5 @@ export const isSharedMapTransferData = (pair: any): pair is SharedMapTransferDat
     const hasStatus = '__status' in pair && pair?.__status instanceof Uint8Array;
     return hasKeys && hasValues && hasStatus;
 };
+
+export const sleep = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
