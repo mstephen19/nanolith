@@ -1,6 +1,8 @@
-import { ServiceCluster } from '../index.js';
+import { SharedMap } from '../index.js';
 import { api } from './worker.js';
 
-const cluster = new ServiceCluster(api);
+const map = new SharedMap({ foo: 'xyz', fizz: 'y', buzz: 'z' });
 
-const x = await cluster.launch(1);
+await api({ name: 'handleSharedMap', params: [map.transfer], reffed: true });
+
+console.log(await map.get('buzz'));

@@ -288,7 +288,7 @@ export class Messenger {
      *
      * @returns A {@link MessageTransferData} object
      */
-    transfer(): MessengerTransferData {
+    get transfer(): MessengerTransferData {
         return Object.freeze({
             __messengerID: this.#identifier,
         });

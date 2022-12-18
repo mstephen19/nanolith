@@ -19,7 +19,7 @@ export const cleanPoolConfig = <Options extends PoolItemConfig>({
         file,
         workerData: {
             ...workerData,
-            messengerTransfers: messengers.map((mess) => mess.transfer()),
+            messengerTransfers: messengers.map((mess) => mess.transfer),
             messengers: {},
         },
         priority,

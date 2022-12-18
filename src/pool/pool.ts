@@ -14,7 +14,7 @@ class Pool {
     /**
      * Easy access to the {@link ConcurrencyOption} `enum` right on `pool`.
      */
-    readonly option = ConcurrencyOption;
+    static readonly option = ConcurrencyOption;
 
     /**
      * The maximum concurrency of the {@link Pool}, which defaults to one thread per core

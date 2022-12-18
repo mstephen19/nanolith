@@ -293,7 +293,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     sendMessenger(messenger: Messenger) {
         this.#assertIsNotTerminated();
 
-        const transferData = messenger.transfer();
+        const transferData = messenger.transfer;
 
         const body: MainThreadMessengerTransferBody = {
             type: MainThreadMessageType.MessengerTransfer,
