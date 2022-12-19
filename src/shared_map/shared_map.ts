@@ -116,7 +116,7 @@ export class SharedMap<Data extends Record<string, any>> {
 
     async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
         // Wait for the map to not be busy.
-        // ! This method is absolutely not foolproof, but it will prevent most
+        // ! This method is absolutely not foolproof, but it will prevent some
         // ! race conditions when not making too many queries on the map. This
         // ! is simply preventative.
         await this.#wait();
