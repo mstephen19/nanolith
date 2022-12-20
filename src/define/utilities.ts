@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'url';
 import callsites from 'callsites';
 
-import type { TaskDefinitions } from '@typing/definitions';
+import type { TaskDefinitions } from '@typing/definitions.js';
 
 export const getCurrentFile = (index?: number) => {
     const fileName = callsites()[index ?? 2].getFileName()!;

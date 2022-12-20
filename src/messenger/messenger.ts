@@ -3,7 +3,7 @@ import { BroadcastChannel } from 'worker_threads';
 import { isMessengerTransferObject } from './utilities.js';
 import { MessengerMessageType } from '@constants/messenger.js';
 import { listenForStream, prepareWritableToPortStream } from '@streams';
-import { ListenForStreamMode, StreamMessageType } from '@constants/streams';
+import { ListenForStreamMode, StreamMessageType } from '@constants/streams.js';
 
 import type {
     MessengerTransferData,

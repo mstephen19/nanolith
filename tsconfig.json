@@ -1,11 +1,12 @@
 {
     "compilerOptions": {
+        "skipLibCheck": true,
         "strict": true,
         "declaration": true,
         "declarationMap": false,
         "sourceMap": false,
         "module": "ESNext",
-        "moduleResolution": "node",
+        "moduleResolution": "NodeNext",
         "target": "ESNext",
         "removeComments": false,
         "rootDir": "./src",
