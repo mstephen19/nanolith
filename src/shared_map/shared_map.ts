@@ -1,3 +1,4 @@
+import { randomUUID as v4 } from 'crypto';
 import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData, sleep } from './utilities.js';
 import * as Keys from './keys.js';
 import { BusyStatus, Bytes } from '@constants/shared_map.js';
@@ -19,13 +20,28 @@ export class SharedMap<Data extends Record<string, any>> {
     #keys: Uint8Array;
     // SharedArrayBuffer containing all concatenated values in bytes
     #values: Uint8Array;
-    // A cheap "mutex" that is used to ensure only one operation occurs
-    // on the shared map at a single time
-    #status: Uint8Array;
     // Instantiate an encoder and decoder once to avoid the
     // need for constantly instantiating them.
     #encoder = new TextEncoder();
     #decoder = new TextDecoder();
+    #key = v4();
+    #identifier: string;
+
+    /**
+     * Each {@link SharedMap} instance has a unique key that can be used
+     * to identify it.
+     */
+    get key() {
+        return this.#key;
+    }
+
+    /**
+     * A single ID assigned to the entire group of SharedMap instances using the
+     * allocated memory locations.
+     */
+    get identifier() {
+        return this.#identifier;
+    }
 
     /**
      * An `enum` designed to help you when assigning a fixed byte size
@@ -37,7 +53,7 @@ export class SharedMap<Data extends Record<string, any>> {
         return Object.freeze({
             __keys: this.#keys,
             __values: this.#values,
-            __status: this.#status,
+            __identifier: this.#identifier,
         });
     }
 
@@ -50,7 +66,7 @@ export class SharedMap<Data extends Record<string, any>> {
         if (isSharedMapTransferData(data)) {
             this.#keys = data.__keys;
             this.#values = data.__values;
-            this.#status = data.__status;
+            this.#identifier = data.__identifier;
             return;
         }
 
@@ -104,29 +120,28 @@ export class SharedMap<Data extends Record<string, any>> {
             return offset;
         }, 0);
 
-        // Initialize the status array buffer with the "Free" status
-        this.#status = createSharedArrayBuffer(1);
-        this.#status.set([BusyStatus.Free]);
+        // ? Now we can set up the queuing system
+        this.#identifier = v4();
     }
 
     async #wait(): Promise<void> {
-        // Return once the status is Free
-        if (Atomics.load(this.#status, 0) === BusyStatus.Free) return;
-        // Otherwise, wait half a second and then check again
-        await sleep(500);
-        return this.#wait();
+        // Generate an ID for the workflow
+        // Push the ID into the queue.
+        // Check the queue by requesting it. If the generated ID is the first one there,
+        // run the logic.
+        // Otherwise, wait for the event `ready_${id}` to be emitted. Then resolve the
+        // promise with the generated ID.
     }
 
     async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
-        // Wait for the map to not be busy.
-        // ! This method is absolutely not foolproof, but it will prevent some
-        // ! race conditions when not making too many queries on the map. This
-        // ! is simply preventative.
-        await this.#wait();
-
-        Atomics.store(this.#status, 0, BusyStatus.Busy);
+        // Generate a workflow ID and wait for our turn in the queue.
+        const id = await this.#wait();
+        // Run the workflow
         const data = await workflow();
-        Atomics.store(this.#status, 0, BusyStatus.Free);
+
+        // Once the workflow has finished, emit an event to the orchestrator requesting
+        // our item to be popped off the top of the queue. Then if there is another item in
+        // the queue, emit the `ready_${nextId}` event to let them know it's their turn.
 
         // Return out the return value, if any
         return data;

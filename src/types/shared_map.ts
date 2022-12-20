@@ -2,7 +2,7 @@
 export type SharedMapTransferData<Data = Record<string, any>> = {
     __keys: Uint8Array;
     __values: Uint8Array;
-    __status: Uint8Array;
+    __identifier: string;
 };
 
 export type KeyData = {
