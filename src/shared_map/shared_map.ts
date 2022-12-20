@@ -1,10 +1,11 @@
 import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData, sleep } from './utilities.js';
 import * as Keys from './keys.js';
 import { BusyStatus, Bytes } from '@constants/shared_map.js';
-import { NULL_ENCODED } from './constants.js';
 
 import type { Key, SharedMapTransferData, SharedMapOptions } from '@typing/shared_map.js';
 import type { CleanKeyOf } from '@typing/utilities.js';
+
+const NULL_ENCODED = encodeValue(new TextEncoder(), null);
 
 /**
  * A highly approachable solution to sharing memory between multiple threads 💾
