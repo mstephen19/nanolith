@@ -12,8 +12,3 @@ export enum Bytes {
      */
     megabyte = 1048576,
 }
-
-export const enum BusyStatus {
-    Free = 0,
-    Busy = 1,
-}

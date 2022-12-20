@@ -1,3 +1,5 @@
+import type { Awaitable } from './utilities.js';
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type SharedMapTransferData<Data = Record<string, any>> = {
     __keys: Uint8Array;
@@ -34,3 +36,17 @@ export type SharedMapOptions = {
      */
     bytes?: number;
 };
+
+export type EventMap = Record<string, (...args: any[]) => Awaitable<void>>;
+
+export type BroadcastChannelEmitterPostMessageBody<Events extends EventMap = EventMap, Key extends keyof Events = string> = {
+    name: Key;
+    value: Parameters<Events[Key]>;
+};
+
+export type SharedMapBroadcastChannelEvents = {
+    push_to_queue: (id: string) => void;
+    shift_from_queue: () => void;
+    get_queue: () => void;
+    receive_queue: (queue: string[]) => void;
+} & { [key: `ready_${string}`]: () => void };

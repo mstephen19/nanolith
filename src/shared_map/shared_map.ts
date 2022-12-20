@@ -1,15 +1,15 @@
 import { randomUUID as v4 } from 'crypto';
-import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData, sleep } from './utilities.js';
+import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData } from './utilities.js';
 import * as Keys from './keys.js';
-import { BusyStatus, Bytes } from '@constants/shared_map.js';
+import { Bytes } from '@constants/shared_map.js';
+import { BroadcastChannelEmitter } from './broadcast_channel_emitter.js';
 
-import type { Key, SharedMapTransferData, SharedMapOptions } from '@typing/shared_map.js';
+import type { Key, SharedMapTransferData, SharedMapOptions, SharedMapBroadcastChannelEvents } from '@typing/shared_map.js';
 import type { CleanKeyOf } from '@typing/utilities.js';
 
 const NULL_ENCODED = encodeValue(new TextEncoder(), null);
 
 /**
- * 💥 **Not stable!!** 💥
  *
  * A highly approachable solution to sharing memory between multiple threads 💾
  *
@@ -24,8 +24,12 @@ export class SharedMap<Data extends Record<string, any>> {
     // need for constantly instantiating them.
     #encoder = new TextEncoder();
     #decoder = new TextDecoder();
+    // Unique to each instance
     #key = v4();
+    // The identifier for the BroadcastChannel used for coordinating the queue
     #identifier: string;
+    #channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>;
+    #orchestratorChannel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents> | null = null;
 
     /**
      * Each {@link SharedMap} instance has a unique key that can be used
@@ -67,6 +71,7 @@ export class SharedMap<Data extends Record<string, any>> {
             this.#keys = data.__keys;
             this.#values = data.__values;
             this.#identifier = data.__identifier;
+            this.#channel = new BroadcastChannelEmitter(this.#identifier);
             return;
         }
 
@@ -120,28 +125,67 @@ export class SharedMap<Data extends Record<string, any>> {
             return offset;
         }, 0);
 
-        // ? Now we can set up the queuing system
+        // Now we can set up the orchestrator queuing system
         this.#identifier = v4();
+        // This is the channel that will be used for communicating with the orchestrator channel.
+        this.#channel = new BroadcastChannelEmitter(this.#identifier);
+
+        // The channel which controls the queue. Listens for events and reacts to them accordingly.
+        this.#orchestratorChannel = new BroadcastChannelEmitter(this.#identifier);
+        const queue: string[] = [];
+        this.#orchestratorChannel.on('push_to_queue', (id) => {
+            queue.push(id);
+            if (queue[0] === id) this.#orchestratorChannel?.send(`ready_${id}`);
+        });
+        this.#orchestratorChannel.on('shift_from_queue', () => void queue.shift());
+        this.#orchestratorChannel.on('get_queue', () => this.#orchestratorChannel!.send('receive_queue', queue));
     }
 
-    async #wait(): Promise<void> {
-        // Generate an ID for the workflow
-        // Push the ID into the queue.
-        // Check the queue by requesting it. If the generated ID is the first one there,
-        // run the logic.
-        // Otherwise, wait for the event `ready_${id}` to be emitted. Then resolve the
-        // promise with the generated ID.
+    #wait(): Promise<string> {
+        return new Promise((resolve) => {
+            // Generate an ID for the workflow
+            const id = v4();
+
+            // // Check the queue by requesting it. If the generated ID is the first one there,
+            // // resolve.
+            // const receiveQueueHandler = (queue: string[]) => {
+            //     if (queue[0] !== id) return;
+            //     // If the first item is us then let's resolve
+            //     resolve(id);
+            //     // And also clean up the listener
+            //     this.#channel.off('receive_queue', receiveQueueHandler);
+            // };
+            // this.#channel.on('receive_queue', receiveQueueHandler);
+
+            // Register the listener before even doing anything else just in case we're
+            // notified that it's our turn practically right after we push into the queue.
+            this.#channel.on(`ready_${id}`, () => {
+                console.log('ok');
+                resolve(id);
+            });
+
+            // Push the ID into the queue.
+            this.#channel.send('push_to_queue', id);
+
+            // // Get the queue, triggering the receiveQueueHandler. Emit this once from this
+            // // wait session, but it will be emitted more times by other calls of #wait.
+            // this.#channel.send('get_queue');
+        });
     }
 
     async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
         // Generate a workflow ID and wait for our turn in the queue.
-        const id = await this.#wait();
+        await this.#wait();
         // Run the workflow
         const data = await workflow();
-
         // Once the workflow has finished, emit an event to the orchestrator requesting
         // our item to be popped off the top of the queue. Then if there is another item in
         // the queue, emit the `ready_${nextId}` event to let them know it's their turn.
+        this.#channel.send('shift_from_queue');
+        this.#channel.once('receive_queue', (queue) => {
+            this.#channel.send(`ready_${queue[0]}`);
+        });
+        this.#channel.send('get_queue');
 
         // Return out the return value, if any
         return data;
