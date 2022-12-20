@@ -1,10 +1,8 @@
 {
     "name": "nanolith",
-    "version": "0.2.5-beta5",
+    "version": "0.2.5-beta7",
     "description": "Multi-threaded nanoservices in no time with seamless TypeScript support.",
-    "exports": {
-        ".": "./dist/index.js"
-    },
+    "exports": "./dist/index.js",
     "type": "module",
     "scripts": {
         "lint": "npx eslint \"src/**\"",
