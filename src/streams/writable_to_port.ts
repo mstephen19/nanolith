@@ -3,6 +3,10 @@ import { StreamMessageType } from '@constants/streams.js';
 
 import type { Messagable, StreamChunkMessageBody, StreamEndMessageBody } from '@typing/streams.js';
 
+/**
+ * A `Writable` stream that a `Readable` stream can pipe into in order to
+ * stream data between threads.
+ */
 export class WritableToPort<Target extends Messagable> extends Writable {
     // The unique ID for the data stream.
     #id: string;

@@ -19,4 +19,7 @@ export const assertCurrentFileNotEqual = (file: string) => {
     }
 };
 
+/**
+ * Automatically generate an identifier for a set of definitions based on its method keys.
+ */
 export const getAutoIdentifier = (definitions: TaskDefinitions) => Object.keys(definitions).join('&');
