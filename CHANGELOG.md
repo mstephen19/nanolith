@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Removed `Data` word from exports of `SharedMapTransferData` and `MessengerTransferData`.
 - `pool.option` to be a static property.
 - Moved constants that were in type files to their own dedicated files within the "constants" directory. Likely will do this with utilities in the future as well.
+- Switched tsconfig `moduleResolution` to NodeNext
 
 ## [0.2.4] - 2022-08-12
 
