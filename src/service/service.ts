@@ -1,6 +1,6 @@
 import { randomUUID as v4 } from 'crypto';
 import { TypedEmitter } from 'tiny-typed-emitter';
-import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
+import { listenForStream, prepareWritableToPortStream } from '@streams';
 import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 
 import type { Worker, TransferListItem } from 'worker_threads';
@@ -18,7 +18,7 @@ import type {
 } from '@typing/messages.js';
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '@typing/utilities.js';
 import type { ServiceCallOptions } from '@typing/workers.js';
-import type { Messenger } from '../messenger/messenger.js';
+import type { Messenger } from '@messenger';
 import type { OnStreamCallback } from '@typing/streams.js';
 
 type ServiceEvents = {

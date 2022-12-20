@@ -1,5 +1,5 @@
 import { ReadableFromPort } from './readable_from_port.js';
-import { StreamMessageType, ListenForStreamMode } from '@typing/streams.js';
+import { StreamMessageType, ListenForStreamMode } from '@constants/streams.js';
 
 import type { Messagable, StreamReadyMessageBody, StreamStartMessageBody } from '@typing/streams.js';
 import type { OnStreamCallback, ConfirmStreamCallback } from '@typing/streams.js';

@@ -1,5 +1,5 @@
 import type { TransferListItem } from 'worker_threads';
-import type { Messenger } from '../messenger/messenger.js';
+import type { Messenger } from '@messenger';
 import type { WorkerOptions } from './misc.js';
 import type { Awaitable } from './utilities.js';
 

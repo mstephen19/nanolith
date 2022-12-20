@@ -1,5 +1,5 @@
 import { workerData } from 'worker_threads';
-import { Messenger } from '../messenger/index.js';
+import { Messenger } from '@messenger';
 
 import type { MessengerTransferData } from '@typing/messenger.js';
 import type { BaseWorkerData } from '@typing/worker_data.js';

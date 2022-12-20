@@ -1,6 +1,6 @@
 import { randomUUID as v4 } from 'crypto';
 import { WritableToPort } from './writable_to_port.js';
-import { StreamMessageType } from '@typing/streams.js';
+import { StreamMessageType } from '@constants/streams.js';
 
 import type { Messagable, StreamReadyMessageBody, StreamStartMessageBody } from '@typing/streams.js';
 

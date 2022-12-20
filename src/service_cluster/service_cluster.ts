@@ -1,9 +1,9 @@
 import { randomUUID as v4 } from 'crypto';
-import { pool } from '../pool/index.js';
+import { pool } from '@pool';
 
 import type { TransferListItem } from 'worker_threads';
 import type { Nanolith } from '@typing/nanolith.js';
-import type { Service } from '../service/index.js';
+import type { Service } from '@service';
 import type { ServiceWorkerOptions } from '@typing/workers.js';
 import type { TaskDefinitions } from '@typing/definitions.js';
 

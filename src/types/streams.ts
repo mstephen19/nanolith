@@ -1,4 +1,5 @@
-import type { ReadableFromPort } from '../streams/index.js';
+import type { ReadableFromPort } from '@streams';
+import type { StreamMessageType } from '@constants/streams.js';
 import type { Awaitable } from './utilities.js';
 
 export type OnStreamCallback<Sender extends Messagable> = (stream: ReadableFromPort<Sender>) => Awaitable<void>;
@@ -15,18 +16,6 @@ export interface Messagable {
     on(event: 'message', callback: (value: any) => void): any;
     off(event: 'message', callback: (value: any) => void): any;
     postMessage(value: any): void;
-}
-
-export const enum StreamMessageType {
-    Ready = 'stream-ready-to-consume',
-    Start = 'stream-start',
-    End = 'stream-finished',
-    Chunk = 'stream-chunk',
-}
-
-export const enum ListenForStreamMode {
-    AcceptAll,
-    ConfirmFirst,
 }
 
 export type StreamBaseMessageBody<Type = StreamMessageType> = {

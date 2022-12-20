@@ -2,7 +2,6 @@ import { cpus } from 'os';
 import { concurrencyOptionMultipliers } from '@constants/pool.js';
 
 import type { ConcurrencyOption } from '@constants/pool.js';
-
 import type { PoolItemOptions, PoolItemConfig } from '@typing/pool.js';
 
 export const cleanPoolConfig = <Options extends PoolItemConfig>({

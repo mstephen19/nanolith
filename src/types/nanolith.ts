@@ -1,7 +1,7 @@
 import type { TaskDefinitions, Tasks } from './definitions.js';
 import type { CleanKeyOf, CleanReturnType } from './utilities.js';
 import type { TaskWorkerOptions, ServiceWorkerOptions } from './workers.js';
-import type { Service } from '../service/index.js';
+import type { Service } from '@service';
 
 /**
  * The API returned by the `define` function, which allows for the calling of task workers,

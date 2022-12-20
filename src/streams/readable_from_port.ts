@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { StreamMessageType } from '@typing/streams.js';
+import { StreamMessageType } from '@constants/streams.js';
 
 import type { Messagable, StreamChunkMessageBody, StreamBaseMessageBody, StreamEndMessageBody } from '@typing/streams.js';
 

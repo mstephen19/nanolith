@@ -37,7 +37,7 @@ export enum ConcurrencyOption {
     x10 = 'x10',
 }
 
-export const concurrencyOptionMultipliers: Record<ConcurrencyOption, number> = {
+export const concurrencyOptionMultipliers = {
     [ConcurrencyOption.Quarter]: 0.25,
     [ConcurrencyOption.Half]: 0.5,
     [ConcurrencyOption.Default]: 1,
@@ -47,4 +47,4 @@ export const concurrencyOptionMultipliers: Record<ConcurrencyOption, number> = {
     [ConcurrencyOption.x6]: 6,
     [ConcurrencyOption.x8]: 8,
     [ConcurrencyOption.x10]: 10,
-};
+} as const;

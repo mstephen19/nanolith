@@ -1,7 +1,7 @@
 import { parentPort, workerData } from 'worker_threads';
 import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
-import { assertIsNotMainThread } from '../utilities/index.js';
-import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
+import { assertIsNotMainThread } from '@utilities';
+import { listenForStream, prepareWritableToPortStream } from '@streams';
 
 import type { TransferListItem } from 'worker_threads';
 import type { Awaitable } from '@typing/utilities.js';

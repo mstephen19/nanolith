@@ -1,5 +1,5 @@
-import callsites from 'callsites';
 import { fileURLToPath } from 'url';
+import callsites from 'callsites';
 
 import type { TaskDefinitions } from '@typing/definitions';
 

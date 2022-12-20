@@ -1,4 +1,4 @@
-import { PoolItem, pool } from '../pool/index.js';
+import { PoolItem, pool } from '@pool';
 import { WorkerType } from '@constants/workers.js';
 import { WorkerMessageType } from '@constants/messages.js';
 

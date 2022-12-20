@@ -1,7 +1,6 @@
 import { isMainThread, workerData } from 'worker_threads';
-import { workerHandler } from '../handlers/index.js';
-import { runTaskWorker } from '../runners/index.js';
-import { runServiceWorker } from '../runners/index.js';
+import { workerHandler } from '@handlers';
+import { runTaskWorker, runServiceWorker } from '@runners';
 import { assertCurrentFileNotEqual, getCurrentFile, getAutoIdentifier } from './utilities.js';
 
 import type { DefineOptions, TaskDefinitions, Tasks } from '@typing/definitions.js';

@@ -1,7 +1,7 @@
 import { parentPort, workerData, threadId } from 'worker_threads';
 import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 import { applyMessengerTransferObjects } from './utilities.js';
-import { Messenger } from '../messenger/index.js';
+import { Messenger } from '@messenger';
 
 import type { TaskDefinitions } from '@typing/definitions.js';
 import type {
