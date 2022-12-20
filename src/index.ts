@@ -1,10 +1,10 @@
-export { pool } from './pool/index.js';
-export { define } from './define/index.js';
-export { parent } from './service/index.js';
+export { pool } from '@pool';
+export { define } from '@define';
+export { parent } from '@service';
+export { Messenger, messengers } from '@messenger';
+export { ServiceCluster } from '@service_cluster';
+export { SharedMap } from '@shared_map';
 export { ConcurrencyOption } from '@constants/pool.js';
-export { Messenger, messengers } from './messenger/index.js';
-export { ServiceCluster } from './service_cluster/index.js';
-export { SharedMap } from './shared_map/index.js';
 export { Bytes } from '@constants/shared_map.js';
 
 export type { TaskDefinitions } from '@typing/definitions.js';
