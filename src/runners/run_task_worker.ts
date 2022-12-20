@@ -1,14 +1,14 @@
 import { PoolItem, pool } from '../pool/index.js';
-import { WorkerType } from '../types/workers.js';
-import { WorkerMessageType } from '../types/messages.js';
+import { WorkerType } from '@typing/workers.js';
+import { WorkerMessageType } from '@typing/messages.js';
 
-import type { TaskWorkerOptions } from '../types/workers.js';
+import type { TaskWorkerOptions } from '@typing/workers.js';
 import type {
     WorkerBaseMessageBody,
     WorkerTaskReturnMessageBody,
     WorkerTaskErrorMessageBody,
     WorkerExceptionMessageBody,
-} from '../types/messages.js';
+} from '@typing/messages.js';
 
 export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, identifier: string, { name, params, ...rest }: Options) => {
     const item = new PoolItem({

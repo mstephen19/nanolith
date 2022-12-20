@@ -1,7 +1,7 @@
 import { Writable } from 'stream';
-import { StreamMessageType } from '../types/streams.js';
+import { StreamMessageType } from '@typing/streams.js';
 
-import type { Messagable, StreamChunkMessageBody, StreamEndMessageBody } from '../types/streams.js';
+import type { Messagable, StreamChunkMessageBody, StreamEndMessageBody } from '@typing/streams.js';
 
 export class WritableToPort<Target extends Messagable> extends Writable {
     // The unique ID for the data stream.

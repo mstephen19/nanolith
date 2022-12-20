@@ -11,7 +11,11 @@
         "rootDir": "./src",
         "outDir": "./dist",
         "pretty": false,
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": "src",
+        "paths": {
+            "@typing/*": ["types/*"]
+        }
     },
     "include": ["./src"],
     "exclude": ["./scripts"]

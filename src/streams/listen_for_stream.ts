@@ -1,8 +1,8 @@
 import { ReadableFromPort } from './readable_from_port.js';
-import { StreamMessageType, ListenForStreamMode } from '../types/streams.js';
+import { StreamMessageType, ListenForStreamMode } from '@typing/streams.js';
 
-import type { Messagable, StreamReadyMessageBody, StreamStartMessageBody } from '../types/streams.js';
-import type { OnStreamCallback, ConfirmStreamCallback } from '../types/streams.js';
+import type { Messagable, StreamReadyMessageBody, StreamStartMessageBody } from '@typing/streams.js';
+import type { OnStreamCallback, ConfirmStreamCallback } from '@typing/streams.js';
 
 export function listenForStream<Sender extends Messagable>(
     sender: Sender,

@@ -1,9 +1,9 @@
 import { concurrencyOptionMultipliers } from './constants.js';
 import { cpus } from 'os';
 
-import type { ConcurrencyOption } from '../types/pool.js';
+import type { ConcurrencyOption } from '@typing/pool.js';
 
-import type { PoolItemOptions, PoolItemConfig } from '../types/pool.js';
+import type { PoolItemOptions, PoolItemConfig } from '@typing/pool.js';
 
 export const cleanPoolConfig = <Options extends PoolItemConfig>({
     file,

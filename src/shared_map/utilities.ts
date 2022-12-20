@@ -1,4 +1,4 @@
-import type { SharedMapTransferData } from '../types/shared_map.js';
+import type { SharedMapTransferData } from '@typing/shared_map.js';
 
 export const createSharedArrayBuffer = (size: number) => {
     return new Uint8Array(new SharedArrayBuffer(size));

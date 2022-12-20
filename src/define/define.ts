@@ -4,11 +4,11 @@ import { runTaskWorker } from '../runners/index.js';
 import { runServiceWorker } from '../runners/index.js';
 import { assertCurrentFileNotEqual, getCurrentFile, getAutoIdentifier } from './utilities.js';
 
-import type { DefineOptions, TaskDefinitions, Tasks } from '../types/definitions.js';
-import type { Nanolith } from '../types/nanolith.js';
-import type { ServiceWorkerOptions, TaskWorkerOptions } from '../types/workers.js';
-import type { CleanKeyOf, CleanReturnType } from '../types/utilities.js';
-import type { BaseWorkerData } from '../types/worker_data.js';
+import type { DefineOptions, TaskDefinitions, Tasks } from '@typing/definitions.js';
+import type { Nanolith } from '@typing/nanolith.js';
+import type { ServiceWorkerOptions, TaskWorkerOptions } from '@typing/workers.js';
+import type { CleanKeyOf, CleanReturnType } from '@typing/utilities.js';
+import type { BaseWorkerData } from '@typing/worker_data.js';
 
 /**
  * It all starts here 😎

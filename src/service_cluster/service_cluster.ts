@@ -2,10 +2,10 @@ import { randomUUID as v4 } from 'crypto';
 import { pool } from '../pool/index.js';
 
 import type { TransferListItem } from 'worker_threads';
-import type { Nanolith } from '../types/nanolith.js';
+import type { Nanolith } from '@typing/nanolith.js';
 import type { Service } from '../service/index.js';
-import type { ServiceWorkerOptions } from '../types/workers.js';
-import type { TaskDefinitions } from '../types/definitions.js';
+import type { ServiceWorkerOptions } from '@typing/workers.js';
+import type { TaskDefinitions } from '@typing/definitions.js';
 
 type ServiceClusterMap<Definitions extends TaskDefinitions> = Map<
     string,

@@ -1,4 +1,4 @@
-import { ConcurrencyOption } from '../types/pool.js';
+import { ConcurrencyOption } from '@typing/pool.js';
 
 export const concurrencyOptionMultipliers: Record<ConcurrencyOption, number> = {
     [ConcurrencyOption.Quarter]: 0.25,

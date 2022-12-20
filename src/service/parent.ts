@@ -1,20 +1,20 @@
 import { parentPort, workerData } from 'worker_threads';
-import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
+import { MainThreadMessageType, WorkerMessageType } from '@typing/messages.js';
 import { assertIsNotMainThread } from '../utilities/index.js';
 import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
 
 import type { TransferListItem } from 'worker_threads';
-import type { Awaitable } from '../types/utilities.js';
+import type { Awaitable } from '@typing/utilities.js';
 import type {
     WorkerSendMessageBody,
     MainThreadBaseMessageBody,
     MainThreadSendMessageBody,
     MainThreadMessengerTransferBody,
-} from '../types/messages.js';
+} from '@typing/messages.js';
 import type { Messenger } from '../messenger/index.js';
-import type { BaseWorkerData } from '../types/worker_data.js';
-import type { RemoveListenerFunction } from '../types/messages.js';
-import type { OnStreamCallback } from '../types/streams.js';
+import type { BaseWorkerData } from '@typing/worker_data.js';
+import type { RemoveListenerFunction } from '@typing/messages.js';
+import type { OnStreamCallback } from '@typing/streams.js';
 
 /**
  *

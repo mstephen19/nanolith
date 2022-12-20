@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
-import { StreamMessageType } from '../types/streams.js';
+import { StreamMessageType } from '@typing/streams.js';
 
-import type { Messagable, StreamChunkMessageBody, StreamBaseMessageBody, StreamEndMessageBody } from '../types/streams.js';
+import type { Messagable, StreamChunkMessageBody, StreamBaseMessageBody, StreamEndMessageBody } from '@typing/streams.js';
 
 export class ReadableFromPort<Sender extends Messagable> extends Readable {
     #id: string;

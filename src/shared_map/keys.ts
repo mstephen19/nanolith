@@ -1,4 +1,4 @@
-import type { KeyData, Key } from '../types/shared_map.js';
+import type { KeyData, Key } from '@typing/shared_map.js';
 
 export const createKey = ({ name, start, end }: KeyData): Key => `${name}(${start},${end});`;
 
