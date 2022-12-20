@@ -1,7 +1,8 @@
 import { randomUUID as v4 } from 'crypto';
-import { isMessengerTransferObject } from './utilities.js';
 import { BroadcastChannel } from 'worker_threads';
-import { MessengerMessageType } from '@typing/messenger.js';
+
+import { isMessengerTransferObject } from './utilities.js';
+import { MessengerMessageType } from '@constants/messenger.js';
 import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
 import { ListenForStreamMode, StreamMessageType } from '@typing/streams';
 

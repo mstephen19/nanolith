@@ -1,7 +1,7 @@
-import { concurrencyOptionMultipliers } from './constants.js';
 import { cpus } from 'os';
+import { concurrencyOptionMultipliers } from '@constants/pool.js';
 
-import type { ConcurrencyOption } from '@typing/pool.js';
+import type { ConcurrencyOption } from '@constants/pool.js';
 
 import type { PoolItemOptions, PoolItemConfig } from '@typing/pool.js';
 

@@ -1,7 +1,7 @@
-import { MainThreadMessageType, WorkerMessageType } from '@typing/messages.js';
 import { randomUUID as v4 } from 'crypto';
-import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
 import { TypedEmitter } from 'tiny-typed-emitter';
+import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
+import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 
 import type { Worker, TransferListItem } from 'worker_threads';
 import type { TaskDefinitions, Tasks } from '@typing/definitions.js';

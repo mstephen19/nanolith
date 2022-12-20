@@ -1,6 +1,6 @@
 import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData, sleep } from './utilities.js';
 import * as Keys from './keys.js';
-import { BusyStatus, Bytes } from '@typing/shared_map.js';
+import { BusyStatus, Bytes } from '@constants/shared_map.js';
 import { NULL_ENCODED } from './constants.js';
 
 import type { Key, SharedMapTransferData, SharedMapOptions } from '@typing/shared_map.js';

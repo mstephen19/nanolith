@@ -1,5 +1,5 @@
 import { pool } from '../pool/index.js';
-import { ConcurrencyOption } from '@typing/pool.js';
+import { ConcurrencyOption } from '@constants/pool.js';
 import { cpus } from 'os';
 import { api } from './worker.js';
 

@@ -1,5 +1,5 @@
 import { parentPort, workerData } from 'worker_threads';
-import { MainThreadMessageType, WorkerMessageType } from '@typing/messages.js';
+import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 import { assertIsNotMainThread } from '../utilities/index.js';
 import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
 

@@ -1,7 +1,7 @@
 import { isMainThread, workerData } from 'worker_threads';
 import { taskWorkerHandler } from './task_handler.js';
 import { serviceWorkerHandler } from './service_handler.js';
-import { WorkerType } from '@typing/workers.js';
+import { WorkerType } from '@constants/workers.js';
 
 import type { TaskDefinitions } from '@typing/definitions.js';
 import type { BaseWorkerData } from '@typing/worker_data';

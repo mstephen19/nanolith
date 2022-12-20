@@ -1,7 +1,7 @@
 import { PoolItem, pool } from '../pool/index.js';
-import { WorkerType } from '@typing/workers.js';
+import { WorkerType } from '@constants/workers.js';
 import { Service } from '../service/index.js';
-import { WorkerMessageType } from '@typing/messages.js';
+import { WorkerMessageType } from '@constants/messages.js';
 
 import type { ServiceWorkerOptions } from '@typing/workers.js';
 import type { TaskDefinitions } from '@typing/definitions.js';

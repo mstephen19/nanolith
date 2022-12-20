@@ -13,26 +13,6 @@ export type KeyData = {
 
 export type Key = `${string}(${number},${number});`;
 
-export const enum BusyStatus {
-    Free = 0,
-    Busy = 1,
-}
-
-export enum Bytes {
-    /**
-     * **1b** - One byte.
-     */
-    byte = 1,
-    /**
-     * **1kb** - One kilobyte.
-     */
-    kilobyte = 1024,
-    /**
-     * **1mb** - One megabyte.
-     */
-    megabyte = 1048576,
-}
-
 export type SharedMapOptions = {
     /**
      * Used by `SharedMap` for two things:

@@ -14,7 +14,8 @@
         "allowSyntheticDefaultImports": true,
         "baseUrl": "src",
         "paths": {
-            "@typing/*": ["types/*"]
+            "@typing/*": ["types/*"],
+            "@constants/*": ["constants/*"]
         }
     },
     "include": ["./src"],

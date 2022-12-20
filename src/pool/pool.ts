@@ -1,7 +1,7 @@
 import { cpus } from 'os';
 import { Worker, SHARE_ENV, isMainThread } from 'worker_threads';
 import { generateConcurrencyValue } from './utilities.js';
-import { ConcurrencyOption } from '@typing/pool.js';
+import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
 
 /**

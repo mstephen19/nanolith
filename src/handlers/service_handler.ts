@@ -1,5 +1,5 @@
 import { parentPort, workerData, threadId } from 'worker_threads';
-import { MainThreadMessageType, WorkerMessageType } from '@typing/messages.js';
+import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 import { applyMessengerTransferObjects } from './utilities.js';
 import { Messenger } from '../messenger/index.js';
 

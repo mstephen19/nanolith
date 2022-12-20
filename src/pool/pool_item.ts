@@ -3,7 +3,7 @@ import { cleanPoolConfig } from './utilities.js';
 
 import type { Worker } from 'worker_threads';
 import type { PoolItemConfig, PoolItemOptions } from '@typing/pool.js';
-import type { WorkerType } from '@typing/workers.js';
+import type { WorkerType } from '@constants/workers.js';
 
 type PoolItemEvents = {
     created: (worker: Worker) => void;
