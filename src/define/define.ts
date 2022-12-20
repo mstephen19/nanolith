@@ -1,7 +1,7 @@
 import { isMainThread, workerData } from 'worker_threads';
 import { workerHandler } from '@handlers';
 import { runTaskWorker, runServiceWorker } from '@runners';
-import { assertCurrentFileNotEqual, getCurrentFile, getAutoIdentifier } from './utilities.js';
+import { assertCurrentFileNotEqual, getAutoIdentifier, getCurrentFile } from './utilities.js';
 
 import type { DefineOptions, TaskDefinitions, Tasks } from '@typing/definitions.js';
 import type { Nanolith } from '@typing/nanolith.js';
@@ -54,6 +54,7 @@ export async function define<Definitions extends TaskDefinitions>(
     }
 
     // Determine the file of the worker if it was not provided in the options.
+    // Use a dynamic import here to
     const file = fileFromOptions ?? getCurrentFile();
 
     return Object.freeze(
