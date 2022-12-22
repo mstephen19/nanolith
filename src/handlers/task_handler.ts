@@ -10,7 +10,7 @@ import type { TaskWorkerData } from '@typing/worker_data.js';
  * Handles only task workers.
  */
 export async function taskWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
-    process.on('uncaughtException', (err) => {
+    process.prependListener('uncaughtException', (err) => {
         const body: WorkerExceptionMessageBody = {
             type: WorkerMessageType.WorkerException,
             data: err,
