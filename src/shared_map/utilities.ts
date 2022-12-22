@@ -14,5 +14,3 @@ export const isSharedMapTransferData = (pair: any): pair is SharedMapTransferDat
     const hasStatus = '__identifier' in pair && typeof pair?.__identifier === 'string';
     return hasKeys && hasValues && hasStatus;
 };
-
-export const sleep = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));

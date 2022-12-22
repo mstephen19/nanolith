@@ -1,15 +1,16 @@
 import { randomUUID as v4 } from 'crypto';
-import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData, sleep } from './utilities.js';
+import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData } from './utilities.js';
 import * as Keys from './keys.js';
-import { BusyStatus, Bytes } from '@constants/shared_map.js';
+import { Bytes } from '@constants/shared_map.js';
+import { BroadcastChannelEmitter } from './broadcast_channel_emitter.js';
 
-import type { Key, SharedMapTransferData, SharedMapOptions } from '@typing/shared_map.js';
+import type { Key, SharedMapTransferData, SharedMapOptions, SharedMapBroadcastChannelEvents } from '@typing/shared_map.js';
 import type { CleanKeyOf } from '@typing/utilities.js';
 
 const NULL_ENCODED = encodeValue(new TextEncoder(), null);
 
 /**
- * 💥 **Not stable!!** 💥
+ * 👶 **BETA FEATURE** 👶
  *
  * A highly approachable solution to sharing memory between multiple threads 💾
  *
@@ -24,8 +25,15 @@ export class SharedMap<Data extends Record<string, any>> {
     // need for constantly instantiating them.
     #encoder = new TextEncoder();
     #decoder = new TextDecoder();
+    // Unique to each instance
     #key = v4();
+    // The identifier for the BroadcastChannel used for coordinating the queue
     #identifier: string;
+    // Used by all SharedMap instances (including the orchestrator) to communicate
+    // with the orchestrator channel. Orchestrator instance communicates with itself
+    #channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>;
+    #orchestratorChannel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents> | null = null;
+    #closed = false;
 
     /**
      * Each {@link SharedMap} instance has a unique key that can be used
@@ -50,6 +58,8 @@ export class SharedMap<Data extends Record<string, any>> {
     static readonly option = Bytes;
 
     get transfer(): SharedMapTransferData<Data> {
+        this.#assertNotClosed();
+
         return Object.freeze({
             __keys: this.#keys,
             __values: this.#values,
@@ -67,6 +77,7 @@ export class SharedMap<Data extends Record<string, any>> {
             this.#keys = data.__keys;
             this.#values = data.__values;
             this.#identifier = data.__identifier;
+            this.#channel = new BroadcastChannelEmitter(this.#identifier);
             return;
         }
 
@@ -120,17 +131,63 @@ export class SharedMap<Data extends Record<string, any>> {
             return offset;
         }, 0);
 
-        // ? Now we can set up the queuing system
+        // Now we can set up the orchestrator queuing system
         this.#identifier = v4();
+        // This is the channel that will be used for communicating with the orchestrator channel.
+        this.#channel = new BroadcastChannelEmitter(this.#identifier);
+
+        // The channel which controls the queue. Listens for events and reacts to them accordingly.
+        this.#orchestratorChannel = new BroadcastChannelEmitter(this.#identifier);
+        const queue: string[] = [];
+
+        this.#orchestratorChannel.on('push_to_queue', (id) => {
+            queue.push(id);
+            // If we push to the back of the queue but are first in line, we are ready to go.
+            if (queue[0] === id) this.#orchestratorChannel?.send(`ready_${id}`);
+        });
+
+        this.#orchestratorChannel.on('remove_from_queue', (id) => {
+            // Find the index of the ID in the queue
+            const index = queue.indexOf(id);
+            // Remove the ID from the queue
+            if (index !== -1) queue.splice(index, 1);
+
+            // If there is a first item in the queue, notify them that
+            if (queue[0]) this.#orchestratorChannel!.send(`ready_${queue[0]}`);
+        });
     }
 
-    async #wait(): Promise<void> {
-        // Generate an ID for the workflow
-        // Push the ID into the queue.
-        // Check the queue by requesting it. If the generated ID is the first one there,
-        // run the logic.
-        // Otherwise, wait for the event `ready_${id}` to be emitted. Then resolve the
-        // promise with the generated ID.
+    /**
+     * Closes the {@link SharedMap}'s underlying {@link BroadcastChannel} instance(s). If this instance is the
+     * orchestrator instance, no other `SharedMap` instances using its transfer object will work anymore.
+     */
+    close() {
+        this.#channel.close();
+        // If this SharedMap is the orchestrator, close the orchestrator channel as well
+        if (this.#orchestratorChannel) {
+            this.#orchestratorChannel.close();
+            this.#closed = true;
+        }
+    }
+
+    #assertNotClosed() {
+        if (!this.#closed) return;
+        throw new Error('Cannot perform actions on a closed SharedMap instance!');
+    }
+
+    #wait(): Promise<string> {
+        return new Promise((resolve) => {
+            // Generate an ID for the workflow
+            const id = v4();
+
+            // Wait for a notification that we are ready to run the task
+            this.#channel.on(`ready_${id}`, () => {
+                resolve(id);
+            });
+
+            // Push the ID into the queue. Let the queue handle the rest.
+            this.#channel.send('push_to_queue', id);
+        });
     }
 
     async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
@@ -138,10 +195,10 @@ export class SharedMap<Data extends Record<string, any>> {
         const id = await this.#wait();
         // Run the workflow
         const data = await workflow();
-
         // Once the workflow has finished, emit an event to the orchestrator requesting
         // our item to be popped off the top of the queue. Then if there is another item in
         // the queue, emit the `ready_${nextId}` event to let them know it's their turn.
+        this.#channel.send('remove_from_queue', id);
 
         // Return out the return value, if any
         return data;
@@ -154,6 +211,8 @@ export class SharedMap<Data extends Record<string, any>> {
      * @returns A string that can be converted back into the original data type
      */
     get<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
+        this.#assertNotClosed();
+
         return this.#run(() => {
             const decodedKeys = this.#decoder.decode(this.#keys);
             const match = Keys.matchKey(decodedKeys, name);
@@ -173,6 +232,8 @@ export class SharedMap<Data extends Record<string, any>> {
      * @param value The new value for the key.
      */
     set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
+        this.#assertNotClosed();
+
         return this.#run(() => {
             const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
 
@@ -191,7 +252,7 @@ export class SharedMap<Data extends Record<string, any>> {
             /* Update value */
             const { start: valueStart, end: previousValueEnd } = Keys.parseKey(match);
             const previousValueByteLength = previousValueEnd - valueStart + 1;
-            let encodedValue = this.#encoder.encode(value);
+            let encodedValue = encodeValue(this.#encoder, value);
             // Handle when the user tries to pass in an empty string when setting a value
             if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
 
