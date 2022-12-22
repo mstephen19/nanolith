@@ -1,7 +1,7 @@
 import { cpus } from 'os';
 import { Worker, SHARE_ENV, isMainThread } from 'worker_threads';
 import { generateConcurrencyValue } from './utilities.js';
-import { ConcurrencyOption } from '../types/pool.js';
+import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
 
 /**
@@ -14,7 +14,7 @@ class Pool {
     /**
      * Easy access to the {@link ConcurrencyOption} `enum` right on `pool`.
      */
-    readonly option = ConcurrencyOption;
+    static readonly option = ConcurrencyOption;
 
     /**
      * The maximum concurrency of the {@link Pool}, which defaults to one thread per core

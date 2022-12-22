@@ -1,9 +1,9 @@
 import { randomUUID as v4 } from 'crypto';
-import { isMessengerTransferObject } from './utilities.js';
 import { BroadcastChannel } from 'worker_threads';
-import { MessengerMessageType } from '../types/messenger.js';
-import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
-import { ListenForStreamMode, StreamMessageType } from '../types/streams';
+import { isMessengerTransferObject } from './utilities.js';
+import { MessengerMessageType } from '@constants/messenger.js';
+import { listenForStream, prepareWritableToPortStream } from '@streams';
+import { ListenForStreamMode, StreamMessageType } from '@constants/streams.js';
 
 import type {
     MessengerTransferData,
@@ -11,11 +11,11 @@ import type {
     MessengerCloseMessageBody,
     MessengerBaseMessageBody,
     MessengerStreamMessageBody,
-} from '../types/messenger.js';
-import type { Awaitable } from '../types/utilities.js';
-import type { Messagable, StreamBaseMessageBody } from '../types/streams.js';
-import type { ConfirmStreamCallback } from '../types/streams.js';
-import type { RemoveListenerFunction } from '../types/messages.js';
+} from '@typing/messenger.js';
+import type { Awaitable } from '@typing/utilities.js';
+import type { Messagable, StreamBaseMessageBody } from '@typing/streams.js';
+import type { ConfirmStreamCallback } from '@typing/streams.js';
+import type { RemoveListenerFunction } from '@typing/messages.js';
 
 /**
  * Communicate like a boss 🗣️
@@ -288,7 +288,7 @@ export class Messenger {
      *
      * @returns A {@link MessageTransferData} object
      */
-    transfer(): MessengerTransferData {
+    get transfer(): MessengerTransferData {
         return Object.freeze({
             __messengerID: this.#identifier,
         });

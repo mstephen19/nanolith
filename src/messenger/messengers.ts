@@ -1,10 +1,10 @@
 /* eslint-disable indent */
 import { workerData } from 'worker_threads';
-import { parent } from '../service/index.js';
-import { assertIsNotMainThread } from '../utilities/index.js';
+import { parent } from '@service';
+import { assertIsNotMainThread } from '@utilities';
 
 import type { Messenger } from './messenger.js';
-import type { BaseWorkerData } from '../types/worker_data.js';
+import type { BaseWorkerData } from '@typing/worker_data.js';
 
 /**
  * For use only within workers.

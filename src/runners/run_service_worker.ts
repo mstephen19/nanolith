@@ -1,11 +1,11 @@
-import { PoolItem, pool } from '../pool/index.js';
-import { WorkerType } from '../types/workers.js';
-import { Service } from '../service/index.js';
-import { WorkerMessageType } from '../types/messages.js';
+import { PoolItem, pool } from '@pool';
+import { WorkerType } from '@constants/workers.js';
+import { Service } from '@service';
+import { WorkerMessageType } from '@constants/messages.js';
 
-import type { ServiceWorkerOptions } from '../types/workers.js';
-import type { TaskDefinitions } from '../types/definitions.js';
-import type { WorkerBaseMessageBody, WorkerExceptionMessageBody } from '../types/messages.js';
+import type { ServiceWorkerOptions } from '@typing/workers.js';
+import type { TaskDefinitions } from '@typing/definitions.js';
+import type { WorkerBaseMessageBody, WorkerExceptionMessageBody } from '@typing/messages.js';
 
 export const runServiceWorker = async <Definitions extends TaskDefinitions, Options extends ServiceWorkerOptions>(
     file: string,

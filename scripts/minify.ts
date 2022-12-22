@@ -39,6 +39,10 @@ const minifyAll = async (directory: string) => {
     const promises = items.map((item) => {
         return (async () => {
             if (item.type === 'file') {
+                // If the file is just some empty export crap, delete it.
+                const contents = Buffer.from(await fs.readFile(item.path)).toString('utf-8');
+                if (/^export\s?{};$/.test(contents.trim())) return fs.unlink(item.path);
+
                 const minified = await minify(item.path);
                 await fs.writeFile(item.path, minified);
                 return;

@@ -1,9 +1,8 @@
-import { concurrencyOptionMultipliers } from './constants.js';
 import { cpus } from 'os';
+import { concurrencyOptionMultipliers } from '@constants/pool.js';
 
-import type { ConcurrencyOption } from '../types/pool.js';
-
-import type { PoolItemOptions, PoolItemConfig } from '../types/pool.js';
+import type { ConcurrencyOption } from '@constants/pool.js';
+import type { PoolItemOptions, PoolItemConfig } from '@typing/pool.js';
 
 export const cleanPoolConfig = <Options extends PoolItemConfig>({
     file,
@@ -19,7 +18,7 @@ export const cleanPoolConfig = <Options extends PoolItemConfig>({
         file,
         workerData: {
             ...workerData,
-            messengerTransfers: messengers.map((mess) => mess.transfer()),
+            messengerTransfers: messengers.map((mess) => mess.transfer),
             messengers: {},
         },
         priority,

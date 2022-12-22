@@ -1,8 +1,4 @@
-export const enum MessengerMessageType {
-    Message = 'message',
-    Close = 'close',
-    StreamMessage = 'stream-message',
-}
+import type { MessengerMessageType } from '@constants/messenger.js';
 
 export type MessengerBaseMessageBody<Type = MessengerMessageType> = {
     type: Type;

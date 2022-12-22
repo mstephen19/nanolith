@@ -1,6 +1,6 @@
-import type { Messenger } from '../messenger/index.js';
+import type { Messenger } from '@messenger';
 import type { MessengerTransferData } from './messenger.js';
-import type { WorkerType } from './workers.js';
+import type { WorkerType } from '@constants/workers.js';
 
 /**
  * The `workerData` which will be sent along in every single worker.

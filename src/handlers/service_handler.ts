@@ -1,9 +1,9 @@
 import { parentPort, workerData, threadId } from 'worker_threads';
-import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
+import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 import { applyMessengerTransferObjects } from './utilities.js';
-import { Messenger } from '../messenger/index.js';
+import { Messenger } from '@messenger';
 
-import type { TaskDefinitions } from '../types/definitions.js';
+import type { TaskDefinitions } from '@typing/definitions.js';
 import type {
     MainThreadBaseMessageBody,
     WorkerCallReturnMessageBody,
@@ -13,8 +13,8 @@ import type {
     WorkerMessengerTransferSuccessBody,
     WorkerExceptionMessageBody,
     WorkerInitializedMessageBody,
-} from '../types/messages.js';
-import type { ServiceWorkerData } from '../types/worker_data.js';
+} from '@typing/messages.js';
+import type { ServiceWorkerData } from '@typing/worker_data.js';
 
 /**
  * Handles only service workers.

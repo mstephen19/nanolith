@@ -1,17 +1,33 @@
 {
     "compilerOptions": {
+        "skipLibCheck": true,
         "strict": true,
         "declaration": true,
         "declarationMap": false,
         "sourceMap": false,
         "module": "ESNext",
-        "moduleResolution": "node",
+        "moduleResolution": "NodeNext",
         "target": "ESNext",
         "removeComments": false,
         "rootDir": "./src",
         "outDir": "./dist",
         "pretty": false,
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": "src",
+        "paths": {
+            "@typing/*": ["types/*"],
+            "@constants/*": ["constants/*"],
+            "@define": ["define/index.js"],
+            "@handlers": ["handlers/index.js"],
+            "@messenger": ["messenger/index.js"],
+            "@pool": ["pool/index.js"],
+            "@runners": ["runners/index.js"],
+            "@service": ["service/index.js"],
+            "@service_cluster": ["service_cluster/index.js"],
+            "@shared_map": ["shared_map/index.js"],
+            "@streams": ["streams/index.js"],
+            "@utilities": ["utilities/index.js"]
+        }
     },
     "include": ["./src"],
     "exclude": ["./scripts"]

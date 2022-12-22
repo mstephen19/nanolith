@@ -1,8 +1,12 @@
 import { Readable } from 'stream';
-import { StreamMessageType } from '../types/streams.js';
+import { StreamMessageType } from '@constants/streams.js';
 
-import type { Messagable, StreamChunkMessageBody, StreamBaseMessageBody, StreamEndMessageBody } from '../types/streams.js';
+import type { Messagable, StreamChunkMessageBody, StreamBaseMessageBody, StreamEndMessageBody } from '@typing/streams.js';
 
+/**
+ * A `Readable` stream that allows for reading and handling data streamed
+ * from another thread.
+ */
 export class ReadableFromPort<Sender extends Messagable> extends Readable {
     #id: string;
     #sender: Sender;

@@ -1,6 +1,7 @@
-import type { WorkerOptions } from './config.js';
+import type { WorkerOptions } from './misc.js';
 import type { MessengerTransferData } from './messenger.js';
-import type { BaseWorkerOptions, WorkerType } from './workers.js';
+import type { BaseWorkerOptions } from './workers.js';
+import type { WorkerType } from '@constants/workers.js';
 
 export type BasePoolItemConfig = {
     file: string;
@@ -39,42 +40,3 @@ export type PoolItemOptions = {
     priority: boolean;
     reffed: boolean;
 } & BasePoolItemConfig;
-
-export enum ConcurrencyOption {
-    /**
-     * One thread per four cores.
-     */
-    Quarter = 'Quarter',
-    /**
-     * One thread per two cores.
-     */
-    Half = 'Half',
-    /**
-     * Default concurrency. One thread per core (`x1`).
-     */
-    Default = 'x1',
-    /**
-     * One thread per core.
-     */
-    x1 = 'x1',
-    /**
-     * Two threads per core.
-     */
-    x2 = 'x2',
-    /**
-     * Four threads per core.
-     */
-    x4 = 'x4',
-    /**
-     * Six threads per core.
-     */
-    x6 = 'x6',
-    /**
-     * Eight threads per core.
-     */
-    x8 = 'x8',
-    /**
-     * Ten threads per core.
-     */
-    x10 = 'x10',
-}

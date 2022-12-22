@@ -1,13 +1,14 @@
 {
     "name": "nanolith",
-    "version": "0.2.4",
+    "version": "0.2.5-beta10",
     "description": "Multi-threaded nanoservices in no time with seamless TypeScript support.",
-    "main": "dist/index.js",
+    "main": "./dist/index.js",
+    "exports": "./dist/index.js",
     "type": "module",
     "scripts": {
         "lint": "npx eslint \"src/**\"",
         "minify": "ts-node-esm -T scripts/minify.ts",
-        "build": "npm run lint && tsc && npm run minify && echo \"build succeeded\"",
+        "build": "npm run lint && tsc && tsc-alias && npm run minify && echo \"build succeeded\"",
         "test": "npm run build && echo \"running tests\" && NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
         "play": "npm run build && echo \"running playground\" && node ./dist/__playground__/index.js"
     },
@@ -46,7 +47,10 @@
         "eslint": "^8.24.0",
         "jest": "^29.1.2",
         "minify": "^9.1.0",
-        "ts-node": "^10.9.1"
+        "module-alias": "^2.2.2",
+        "ts-node": "^10.9.1",
+        "tsc-alias": "^1.8.2",
+        "tsconfig-paths": "^4.1.1"
     },
     "dependencies": {
         "callsites": "^4.0.0",

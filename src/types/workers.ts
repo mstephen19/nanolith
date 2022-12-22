@@ -1,15 +1,7 @@
 import type { TransferListItem } from 'worker_threads';
-import type { Messenger } from '../messenger/messenger.js';
-import type { WorkerOptions } from './config.js';
+import type { Messenger } from '@messenger';
+import type { WorkerOptions } from './misc.js';
 import type { Awaitable } from './utilities.js';
-
-/**
- * The types of workers supported by the library.
- */
-export const enum WorkerType {
-    Task,
-    Service,
-}
 
 /**
  * The base options for calling a task. These are the options for calling a task within

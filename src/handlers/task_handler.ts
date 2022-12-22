@@ -1,10 +1,10 @@
 import { workerData, parentPort, threadId } from 'worker_threads';
-import { WorkerMessageType } from '../types/messages.js';
+import { WorkerMessageType } from '@constants/messages.js';
 import { applyMessengerTransferObjects } from './utilities.js';
 
-import type { TaskDefinitions } from '../types/definitions.js';
-import type { WorkerTaskReturnMessageBody, WorkerTaskErrorMessageBody, WorkerExceptionMessageBody } from '../types/messages.js';
-import type { TaskWorkerData } from '../types/worker_data.js';
+import type { TaskDefinitions } from '@typing/definitions.js';
+import type { WorkerTaskReturnMessageBody, WorkerTaskErrorMessageBody, WorkerExceptionMessageBody } from '@typing/messages.js';
+import type { TaskWorkerData } from '@typing/worker_data.js';
 
 /**
  * Handles only task workers.

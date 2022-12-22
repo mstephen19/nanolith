@@ -1,10 +1,10 @@
-import { MainThreadMessageType, WorkerMessageType } from '../types/messages.js';
 import { randomUUID as v4 } from 'crypto';
-import { listenForStream, prepareWritableToPortStream } from '../streams/index.js';
 import { TypedEmitter } from 'tiny-typed-emitter';
+import { listenForStream, prepareWritableToPortStream } from '@streams';
+import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 
 import type { Worker, TransferListItem } from 'worker_threads';
-import type { TaskDefinitions, Tasks } from '../types/definitions.js';
+import type { TaskDefinitions, Tasks } from '@typing/definitions.js';
 import type {
     MainThreadCallMessageBody,
     WorkerBaseMessageBody,
@@ -15,11 +15,11 @@ import type {
     MainThreadMessengerTransferBody,
     WorkerMessengerTransferSuccessBody,
     RemoveListenerFunction,
-} from '../types/messages.js';
-import type { Awaitable, CleanKeyOf, CleanReturnType } from '../types/utilities.js';
-import type { ServiceCallOptions } from '../types/workers.js';
-import type { Messenger } from '../messenger/messenger.js';
-import type { OnStreamCallback } from '../types/streams.js';
+} from '@typing/messages.js';
+import type { Awaitable, CleanKeyOf, CleanReturnType } from '@typing/utilities.js';
+import type { ServiceCallOptions } from '@typing/workers.js';
+import type { Messenger } from '@messenger';
+import type { OnStreamCallback } from '@typing/streams.js';
 
 type ServiceEvents = {
     /**
@@ -45,8 +45,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         // Only attach one listener onto the worker instead of attaching a listener for each task called.
         const taskHandler = (body: WorkerBaseMessageBody & { key: string }) => {
             this.#callbacks.forEach(({ resolve, reject }, key) => {
-                // Ignore all messages that aren't one of these two types.
-                if (body.type !== WorkerMessageType.CallError && body.type !== WorkerMessageType.CallReturn) return;
                 // If the message is for a call with a different key, also ignore the message.
                 if (body.key !== key) return;
 
@@ -68,7 +66,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         this.#worker.on('message', taskHandler);
 
         // Exit handler
-        const terminationHandler = () => {
+        this.#worker.once('exit', () => {
             this.#terminated = true;
             // Early cleanup of the callbacks map
             this.#callbacks.clear();
@@ -76,9 +74,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
             this.emit('terminated');
             // Clean up task handler listener
             worker.off('message', taskHandler);
-        };
-
-        this.#worker.once('exit', terminationHandler);
+        });
     }
 
     /**
@@ -297,7 +293,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     sendMessenger(messenger: Messenger) {
         this.#assertIsNotTerminated();
 
-        const transferData = messenger.transfer();
+        const transferData = messenger.transfer;
 
         const body: MainThreadMessengerTransferBody = {
             type: MainThreadMessageType.MessengerTransfer,

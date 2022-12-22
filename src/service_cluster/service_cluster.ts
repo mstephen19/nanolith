@@ -1,10 +1,11 @@
 import { randomUUID as v4 } from 'crypto';
-import { pool } from '../pool/index.js';
+import { pool } from '@pool';
 
-import type { Nanolith } from '../types/nanolith.js';
-import type { Service } from '../service/index.js';
-import type { ServiceWorkerOptions } from '../types/workers.js';
-import type { TaskDefinitions } from '../types/definitions.js';
+import type { TransferListItem } from 'worker_threads';
+import type { Nanolith } from '@typing/nanolith.js';
+import type { Service } from '@service';
+import type { ServiceWorkerOptions } from '@typing/workers.js';
+import type { TaskDefinitions } from '@typing/definitions.js';
 
 type ServiceClusterMap<Definitions extends TaskDefinitions> = Map<
     string,
@@ -16,7 +17,7 @@ type ServiceClusterMap<Definitions extends TaskDefinitions> = Map<
 
 /**
  * A lightweight API for managing multiple services using the same set
- * of task definitions.
+ * of task definitions and the same launch options.
  */
 export class ServiceCluster<Definitions extends TaskDefinitions> {
     #nanolith: Nanolith<Definitions>;
@@ -98,7 +99,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     }
 
     /**
-     * Add an already running service to to the cluster.
+     * Add an already running service to the cluster.
      *
      * @param service An already running {@link Service}
      *
@@ -162,6 +163,24 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
             if (curr.service.activeCalls < acc.service.activeCalls) return curr;
             return acc;
         }, values[0]).service;
+    }
+
+    /**
+     * Send a single message to all services on the cluster.
+     *
+     * @param data The data to send to the service.
+     * @param transferList An optional array of {@link TransferListItem}s. See the
+     * [Node.js documentation](https://nodejs.org/api/worker_threads.html#workerpostmessagevalue-transferlist) for more information.
+     *
+     * @example
+     * await cluster.launch(4);
+     * // All four services launched will be sent the message of "foo"
+     * cluster.notifyAll('foo');
+     */
+    notifyAll<Data = any>(data: Data, transferList?: readonly TransferListItem[]) {
+        this.#serviceMap.forEach(({ service }) => {
+            service.sendMessage(data, transferList);
+        });
     }
 
     /**
