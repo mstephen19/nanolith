@@ -10,6 +10,7 @@ import type { CleanKeyOf } from '@typing/utilities.js';
 const NULL_ENCODED = encodeValue(new TextEncoder(), null);
 
 /**
+ * 👶 **BETA FEATURE** 👶
  *
  * A highly approachable solution to sharing memory between multiple threads 💾
  *
@@ -31,8 +32,8 @@ export class SharedMap<Data extends Record<string, any>> {
     // Used by all SharedMap instances (including the orchestrator) to communicate
     // with the orchestrator channel. Orchestrator instance communicates with itself
     #channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>;
-    //
     #orchestratorChannel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents> | null = null;
+    #closed = false;
 
     /**
      * Each {@link SharedMap} instance has a unique key that can be used
@@ -57,6 +58,8 @@ export class SharedMap<Data extends Record<string, any>> {
     static readonly option = Bytes;
 
     get transfer(): SharedMapTransferData<Data> {
+        this.#assertNotClosed();
+
         return Object.freeze({
             __keys: this.#keys,
             __values: this.#values,
@@ -154,10 +157,22 @@ export class SharedMap<Data extends Record<string, any>> {
         });
     }
 
+    /**
+     * Closes the {@link SharedMap}'s underlying {@link BroadcastChannel} instance(s). If this instance is the
+     * orchestrator instance, no other `SharedMap` instances using its transfer object will work anymore.
+     */
     close() {
         this.#channel.close();
         // If this SharedMap is the orchestrator, close the orchestrator channel as well
-        this.#orchestratorChannel?.close();
+        if (this.#orchestratorChannel) {
+            this.#orchestratorChannel.close();
+            this.#closed = true;
+        }
+    }
+
+    #assertNotClosed() {
+        if (!this.#closed) return;
+        throw new Error('Cannot perform actions on a closed SharedMap instance!');
     }
 
     #wait(): Promise<string> {
@@ -196,6 +211,8 @@ export class SharedMap<Data extends Record<string, any>> {
      * @returns A string that can be converted back into the original data type
      */
     get<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
+        this.#assertNotClosed();
+
         return this.#run(() => {
             const decodedKeys = this.#decoder.decode(this.#keys);
             const match = Keys.matchKey(decodedKeys, name);
@@ -215,6 +232,8 @@ export class SharedMap<Data extends Record<string, any>> {
      * @param value The new value for the key.
      */
     set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
+        this.#assertNotClosed();
+
         return this.#run(() => {
             const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
 
