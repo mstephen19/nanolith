@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Path aliases for all main features (for easy importing/exporting).
 - Support for `NodeNext` module resolution.
 - "LICENSE" file containing MIT license.
+- Docs for `SharedMap`.
 
 ### Changed
 

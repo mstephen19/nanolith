@@ -84,14 +84,17 @@ The newest stable version of Nanolith is `0.2.4` ✨
 
 ### Features 🆕
 
-* Streaming data between the main thread and a service. See examples [here](#streaming-using-parent-in-a-service-worker)
-* [Streaming data between threads with `Messenger`](#streaming-with-messenger)
-* Replaced `offMessage()` with listener-remover functions returned from `onMessage()` calls. See this feature being used [here](#messaging-between-the-main-thread-and-a-service)
+* [`SharedMap`](#using-sharedmap) API for [sharing memory](#sharing-memory) between threads.
+* `notifyAll()` method to [`ServiceCluster`](#using-servicecluster) for sending a message to all services on the cluster.
+* Support for `NodeNext` module resolution.
 
 ### Fixes & improvements 🛠️
 
-* `MessengerTransferObject` issues within `__initializeService()` hook calls
-* Minor performance improvements to `Messenger`
+* Add a timeout of 15 seconds to allow a stream to be accepted before the promise is rejected with `createStream()` on [`Messenger`](#using-messenger).
+* Change `TaskWorkerOptions` and `ServiceWorkerOptions` types to be exported as `LaunchTaskOptions` and `LaunchServiceOptions` instead.
+* Export `SharedArrayPair`, `MessengerTransfer`, and `SharedMapTransfer` types.
+* Switch [`messenger.transfer()`](#using-messenger) to be a getter property instead of a method.
+* Change [`pool.option`](#using-pool) to be a static property.
 
 ## Defining a set of tasks
 
@@ -404,6 +407,8 @@ The global `pool` instance has various properties and methods that can be access
 
 When you have multiple services using the same set of task definitions, it is difficult to manually allocate tasks to each of them. For example, if you have 3 services running that all have access to the `formatVideo()` function, you would ideally like to run the next call for `formatVideo()` on the service that is currently the least busy.
 
+> **Tip:** When using `ServiceCluster`, you can think of the main thread as an orchestrator, and all of the services under the cluster as the "workers".
+
 Rather than you needing to do any guesswork or complex message passing between services to determine which one is the least busy, the `ServiceCluster` API is low-cost option that can do all of this for you.
 
 ```TypeScript
@@ -460,6 +465,7 @@ Each `ServiceCluster` instance has access to a few methods and properties.
 | `use()` | Method | Returns the `Service` instance on the cluster that is currently the least active. If no services are active on the cluster, an error will be thrown. |
 | `closeAll()` | Method | Runs the `close()` method on all `Service` instances on the cluster. |
 | `closeAllIdle()` | Method | Runs the `close()` method on all `Service` instances on the cluster which are currently not running any tasks. |
+| `notifyAll()` | Method | Send a single message to all services on the cluster. |
 
 ## Communicating between threads
 
