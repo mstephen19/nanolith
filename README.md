@@ -80,7 +80,7 @@ yarn add nanolith@next
 
 ## What's new?
 
-The newest stable version of Nanolith is `0.3.0` ✨
+The newest stable version of Nanolith is `0.2.5` ✨
 
 ### Features 🆕
 
