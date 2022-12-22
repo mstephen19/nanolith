@@ -46,7 +46,5 @@ export type BroadcastChannelEmitterPostMessageBody<Events extends EventMap = Eve
 
 export type SharedMapBroadcastChannelEvents = {
     push_to_queue: (id: string) => void;
-    shift_from_queue: () => void;
-    get_queue: () => void;
-    receive_queue: (queue: string[]) => void;
+    remove_from_queue: (id: string) => void;
 } & { [key: `ready_${string}`]: () => void };

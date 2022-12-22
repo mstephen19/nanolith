@@ -28,7 +28,10 @@ export class SharedMap<Data extends Record<string, any>> {
     #key = v4();
     // The identifier for the BroadcastChannel used for coordinating the queue
     #identifier: string;
+    // Used by all SharedMap instances (including the orchestrator) to communicate
+    // with the orchestrator channel. Orchestrator instance communicates with itself
     #channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>;
+    //
     #orchestratorChannel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents> | null = null;
 
     /**
@@ -133,12 +136,28 @@ export class SharedMap<Data extends Record<string, any>> {
         // The channel which controls the queue. Listens for events and reacts to them accordingly.
         this.#orchestratorChannel = new BroadcastChannelEmitter(this.#identifier);
         const queue: string[] = [];
+
         this.#orchestratorChannel.on('push_to_queue', (id) => {
             queue.push(id);
+            // If we push to the back of the queue but are first in line, we are ready to go.
             if (queue[0] === id) this.#orchestratorChannel?.send(`ready_${id}`);
         });
-        this.#orchestratorChannel.on('shift_from_queue', () => void queue.shift());
-        this.#orchestratorChannel.on('get_queue', () => this.#orchestratorChannel!.send('receive_queue', queue));
+
+        this.#orchestratorChannel.on('remove_from_queue', (id) => {
+            // Find the index of the ID in the queue
+            const index = queue.indexOf(id);
+            // Remove the ID from the queue
+            if (index !== -1) queue.splice(index, 1);
+
+            // If there is a first item in the queue, notify them that
+            if (queue[0]) this.#orchestratorChannel!.send(`ready_${queue[0]}`);
+        });
+    }
+
+    close() {
+        this.#channel.close();
+        // If this SharedMap is the orchestrator, close the orchestrator channel as well
+        this.#orchestratorChannel?.close();
     }
 
     #wait(): Promise<string> {
@@ -146,46 +165,25 @@ export class SharedMap<Data extends Record<string, any>> {
             // Generate an ID for the workflow
             const id = v4();
 
-            // // Check the queue by requesting it. If the generated ID is the first one there,
-            // // resolve.
-            // const receiveQueueHandler = (queue: string[]) => {
-            //     if (queue[0] !== id) return;
-            //     // If the first item is us then let's resolve
-            //     resolve(id);
-            //     // And also clean up the listener
-            //     this.#channel.off('receive_queue', receiveQueueHandler);
-            // };
-            // this.#channel.on('receive_queue', receiveQueueHandler);
-
-            // Register the listener before even doing anything else just in case we're
-            // notified that it's our turn practically right after we push into the queue.
+            // Wait for a notification that we are ready to run the task
             this.#channel.on(`ready_${id}`, () => {
-                console.log('ok');
                 resolve(id);
             });
 
-            // Push the ID into the queue.
+            // Push the ID into the queue. Let the queue handle the rest.
             this.#channel.send('push_to_queue', id);
-
-            // // Get the queue, triggering the receiveQueueHandler. Emit this once from this
-            // // wait session, but it will be emitted more times by other calls of #wait.
-            // this.#channel.send('get_queue');
         });
     }
 
     async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
         // Generate a workflow ID and wait for our turn in the queue.
-        await this.#wait();
+        const id = await this.#wait();
         // Run the workflow
         const data = await workflow();
         // Once the workflow has finished, emit an event to the orchestrator requesting
         // our item to be popped off the top of the queue. Then if there is another item in
         // the queue, emit the `ready_${nextId}` event to let them know it's their turn.
-        this.#channel.send('shift_from_queue');
-        this.#channel.once('receive_queue', (queue) => {
-            this.#channel.send(`ready_${queue[0]}`);
-        });
-        this.#channel.send('get_queue');
+        this.#channel.send('remove_from_queue', id);
 
         // Return out the return value, if any
         return data;
@@ -235,7 +233,7 @@ export class SharedMap<Data extends Record<string, any>> {
             /* Update value */
             const { start: valueStart, end: previousValueEnd } = Keys.parseKey(match);
             const previousValueByteLength = previousValueEnd - valueStart + 1;
-            let encodedValue = this.#encoder.encode(value);
+            let encodedValue = encodeValue(this.#encoder, value);
             // Handle when the user tries to pass in an empty string when setting a value
             if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
 

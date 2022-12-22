@@ -32,4 +32,8 @@ export class BroadcastChannelEmitter<Events extends EventMap> extends TypedEmitt
 
         this.#channel.postMessage(body);
     }
+
+    close() {
+        this.#channel.close();
+    }
 }
