@@ -39,7 +39,7 @@ export class SharedMap<Data extends Record<string, any>> {
      * Each {@link SharedMap} instance has a unique key that can be used
      * to identify it.
      */
-    get key() {
+    get uniqueKey() {
         return this.#key;
     }
 
@@ -47,7 +47,7 @@ export class SharedMap<Data extends Record<string, any>> {
      * A single ID assigned to the entire group of SharedMap instances using the
      * allocated memory locations.
      */
-    get identifier() {
+    get ID() {
         return this.#identifier;
     }
 
@@ -226,7 +226,7 @@ export class SharedMap<Data extends Record<string, any>> {
     }
 
     /**
-     * Set new values for items on the {@link SharedMap}.
+     * Set new values for existing items on the {@link SharedMap}.
      *
      * @param name The name of the key to set. The key **must** already exist on the map.
      * @param value The new value for the key.

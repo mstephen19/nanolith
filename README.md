@@ -39,6 +39,9 @@ Multi-threaded nanoservices in no time with seamless TypeScript support.
   * [📩Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
   * [Streaming data between threads](#streaming-data-between-threads)
     * [Streaming using `parent` in a service worker](#streaming-using-parent-in-a-service-worker)
+    * [Streaming with `Messenger`](#streaming-with-messenger)
+  * [Sharing Memory](#sharing-memory)
+    * [Using `SharedMap`](#using-sharedmap)
 * [Examples](#examples)
   * ["Promisify-ing" a for-loop](#promisify-ing-a-for-loop)
   * [Streaming fetched data to a service](#streaming-fetched-data-to-a-service)
@@ -584,10 +587,10 @@ Each `Messenger` instance has access to a various methods and properties.
 |-|-|-|
 | `ID` | Property | The unique identifier that is shared across all messenger instances using the two ports originally created when instantiating the first `Messenger`. |
 | `uniqueKey` | Property | Each `Messenger` instance is assigned a unique key that allows it to internally ignore messages on the `BroadcastChannel` which were sent by itself. |
+| `transfer` | Property | Turns the `Messenger` instance into an object that can be sent to and from workers. |
 | `onMessage()` | Method | Listen for messages coming to the `Messenger`. Returns a function that will remove the listener when called. |
 | `waitForMessage()` | Method | Wait for a specific message on the `Messenger`. |
 | `sendMessage()` | Method | Send a messenger to be received by any other `Messenger` instances with the same identifier. |
-| `transfer()` | Method | Turns the `Messenger` instance into an object that can be sent to and from workers. |
 | [`createStream()`](#streaming-with-messenger) | Method | Create a {@link Writable} instance that can be piped into in order to stream data to other `Messenger`s on the channel. The messengers can listen for incoming streams with the `messenger.onStream()` listener. |
 | [`onStream()`](#streaming-with-messenger) | Method | Receive data streams on the `Messenger`. |
 | `setRef()` | Method | By default, the `BroadcastChannel` is unreffed. Call this function to change that. When `true`, [`ref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelref) will be called. When `false`, [`unref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelunref) will be called. |
@@ -795,6 +798,100 @@ const myStream = new Readable({
 // Send the stream over the channel
 myStream.pipe(await messenger.createStream({ name: 'foo' }));
 ```
+
+## Sharing memory
+
+In JavaScript, sharing memory is quite a challenge. For example, when you send an object from one thread to another using, for example, the [`Messenger`](#using-messenger) API, what is actually happening is that a clone of that object is made. Therefore, both threads access different points in memory and are unable to modify the object in a "global" sense. Nanolith introduces `SharedMap` to solve this problem.
+
+`SharedMap` has a familiar feel to the native JavaScript [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) API, but don't be fooled - it is quite different.
+
+```TypeScript
+import { SharedMap } from 'nanolith';
+
+// Create some shared memory space based on an object.
+const map = new SharedMap({ foo: 'bar' });
+
+// Retrieve a value
+console.log(await map.get('foo')); // -> bar
+
+await map.set('foo', 'fizz buzz');
+
+console.log(await map.get('foo')); // -> fizz buzz
+
+// Closes the underlying BroadcastChannel associated with
+// the instance, allowing the process to exit.
+map.close();
+```
+
+The above example isn't anything too special, so let's take a look at a slightly more complex use-case with multi-threading.
+
+```TypeScript
+// worker.ts 💼
+import { define, SharedMap } from 'nanolith';
+import type { SharedMapTransfer } from 'nanolith';
+
+export default await define({
+    // Expect to receive a transfer object for a SharedMap with a property
+    // of "foo" which is a string.
+    async myHandler(transfer: SharedMapTransfer<{ foo: string }>) {
+        // Wrap the transfer object in a SharedMap instance so it can be
+        // interacted with.
+        const map = new SharedMap(transfer);
+
+        // Log out the current value of "foo".
+        console.log(await map.get('foo'));
+
+        // Set a new value for "foo". This change can be seen on all threads.
+        await map.set('foo', 'set in the worker');
+
+        // Close the instance, allowing the task to finish.
+        map.close();
+    },
+});
+```
+
+```TypeScript
+// index.ts 💡
+import { SharedMap } from '@nanolith';
+import api from './worker.js';
+
+// Create some shared memory space based on an object.
+const map = new SharedMap({ foo: 'bar' });
+
+await map.set('foo', 'fizz buzz');
+
+// This can be expected to console log "fizz buzz", then set the
+// new value of foo to equal the string "set in the worker".
+await api({ name: 'myHandler', params: [map.transfer] /* <- Transfer the map's data to the worker */ });
+
+console.log(await map.get('foo')); // -> set in the worker
+
+// Closes the underlying BroadcastChannel associated with
+// the instance, allowing the process to exit.
+map.close();
+```
+
+The output of the code above is as follows:
+
+```text
+fizz buzz
+set in the worker
+```
+
+Despite the value of **foo** being set to **set in the worker** within the worker, these changes are reflected back on the main thread, and on any other threads with access to the transfer object for this `SharedMap` instance.
+
+### Using `SharedMap`
+
+> **Warning:** This feature is still in _beta_. `SharedMap` cannot currently handle extreme high concurrencies of operations where new values are set based on previous values. Most other high-concurrency operations are safe, however.
+
+| Name | Type | Description |
+|-|-|-|
+| `ID` | Property | The unique identifier that is shared across all `SharedMap` instances using the two byte arrays originally created when instantiating the first `SharedMap`. |
+| `uniqueKey` | Property | Each `SharedMap` instance is assigned a unique key to help distinguish it from other instances using the two byte arrays. |
+| `transfer` | Property | Turns the `SharedMap` instance into an object that can be sent to and from workers. |
+| `close()` | Method | Closes the map's underlying `BroadcastChannel` instance(s). If the instance the method is being called on is the orchestrator instance, no other instances using its transfer object will work anymore. |
+| `get()` | Method | Retrieve values on the map. |
+| `set()` | Method | Set new values for existing items on the map. |
 
 ## Examples
 

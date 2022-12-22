@@ -26,7 +26,8 @@
             "@service_cluster": ["service_cluster/index.js"],
             "@shared_map": ["shared_map/index.js"],
             "@streams": ["streams/index.js"],
-            "@utilities": ["utilities/index.js"]
+            "@utilities": ["utilities/index.js"],
+            "@nanolith": ["index.js"]
         }
     },
     "include": ["./src"],
