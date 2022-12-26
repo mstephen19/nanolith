@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `__afterTask` hook being called after the returned value was posted back to the main thread instead of before.
 - Weird exclusion of `HookDefinitions` keys in `Tasks` type.
 
+### Added
+
+- Functionality for setting new keys on `SharedMap` instances rather than throwing an error.
+
 ## [0.2.5] - 2022-24-12
 
 ### Added
