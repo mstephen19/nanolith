@@ -53,7 +53,7 @@ export type TaskDefinitions = Record<string, TaskFunction> & HookDefinitions;
 /**
  * A collection of task functions, excluding the `__initializeService` function if present.
  */
-export type Tasks<Definitions extends TaskDefinitions> = Except<Definitions, '__initializeService' | '__beforeTask' | '__afterTask'>;
+export type Tasks<Definitions extends TaskDefinitions> = Except<Definitions, keyof HookDefinitions>;
 
 export type DefineOptions = {
     /**
