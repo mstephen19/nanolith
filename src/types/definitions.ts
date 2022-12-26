@@ -57,13 +57,14 @@ export type Tasks<Definitions extends TaskDefinitions> = Except<Definitions, key
 
 export type DefineOptions = {
     /**
-     * If `define`'s default file location detection is not working correctly,
+     * If `define()`'s default file location detection is not working correctly,
      * the true file location for the set of definitions can be provided here.
      */
     file?: string;
     /**
      * A unique identifier that can be used when creating multiple sets of definitions
-     * in the same file to avoid nasty clashing.
+     * in the same file to avoid nasty clashing. Overrides the identifier created by
+     * Nanolith.
      */
     identifier?: string;
     /**

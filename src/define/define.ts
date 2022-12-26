@@ -2,11 +2,12 @@ import { isMainThread, workerData } from 'worker_threads';
 import { workerHandler } from '@handlers';
 import { runTaskWorker, runServiceWorker } from '@runners';
 import { assertCurrentFileNotEqual, getAutoIdentifier, getCurrentFile } from './utilities.js';
+import { ServiceCluster } from '@service_cluster';
 
 import type { DefineOptions, TaskDefinitions, Tasks } from '@typing/definitions.js';
 import type { Nanolith } from '@typing/nanolith.js';
 import type { ServiceWorkerOptions, TaskWorkerOptions } from '@typing/workers.js';
-import type { CleanKeyOf, CleanReturnType } from '@typing/utilities.js';
+import type { CleanKeyOf, CleanReturnType, PositiveWholeNumber } from '@typing/utilities.js';
 import type { BaseWorkerData } from '@typing/worker_data.js';
 
 /**
@@ -68,7 +69,18 @@ export async function define<Definitions extends TaskDefinitions>(
                     if (safeMode) assertCurrentFileNotEqual(file);
                     return runServiceWorker<Definitions, Options>(file, identifierToUse, options);
                 }),
+                clusterize: Object.freeze(async function <Count extends number, Options extends ServiceWorkerOptions>(
+                    this: Nanolith<Definitions>,
+                    count = 1 as PositiveWholeNumber<Count>,
+                    options = {} as Options
+                ) {
+                    if (safeMode) assertCurrentFileNotEqual(file);
+                    const cluster = new ServiceCluster(this);
+                    await cluster.launch(count, options);
+                    return cluster;
+                }),
                 file,
+                identifier: identifierToUse,
             }
         )
     );

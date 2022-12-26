@@ -6,6 +6,7 @@ import type { Nanolith } from '@typing/nanolith.js';
 import type { Service } from '@service';
 import type { ServiceWorkerOptions } from '@typing/workers.js';
 import type { TaskDefinitions } from '@typing/definitions.js';
+import type { PositiveWholeNumber } from '@typing/utilities.js';
 
 type ServiceClusterMap<Definitions extends TaskDefinitions> = Map<
     string,
@@ -57,6 +58,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * Launch a new service on the provided {@link Nanolith} API, and automatically manage it
      * with the `ServiceCluster`.
      *
+     * @param count The number of services to launch on the cluster.
      * @param options A {@link ServiceWorkerOptions} object
      * @returns A promise of a {@link Service} instance. The promise resolves once the worker is online.
      *
@@ -69,12 +71,20 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * // Launch 2 services on the cluster
      * await cluster.launch(2, { priority: true });
      */
-    async launch<Options extends ServiceWorkerOptions>(count?: 1, options?: Options): Promise<Service<Definitions> | undefined>;
-    async launch<Options extends ServiceWorkerOptions>(
-        count: Exclude<number, 1 | 2>,
+    // async launch<Count extends number, Options extends ServiceWorkerOptions>(count?: 1, options?: Options): Promise<Service<Definitions> | undefined>;
+    // async launch<Count extends number, Options extends ServiceWorkerOptions>(
+    //     count: Exclude<number, 1 | 2>,
+    //     options?: Options
+    // ): Promise<(Service<Definitions> | undefined)[]>;
+    async launch<Count extends 1 | undefined, Options extends ServiceWorkerOptions>(
+        count?: Count,
+        options?: Options
+    ): Promise<Service<Definitions> | undefined>;
+    async launch<Count extends number, Options extends ServiceWorkerOptions>(
+        count: PositiveWholeNumber<Count>,
         options?: Options
     ): Promise<(Service<Definitions> | undefined)[]>;
-    async launch<Options extends ServiceWorkerOptions>(count?: number, options = {} as Options) {
+    async launch<Count extends number, Options extends ServiceWorkerOptions>(count?: PositiveWholeNumber<Count>, options = {} as Options) {
         // Don't allow more services to be added if it exceeds the pool's `maxConcurrency`
         if (!count || count === 1) return this.#launchService(options);
 

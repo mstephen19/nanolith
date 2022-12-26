@@ -1,19 +1,22 @@
-import api from './worker.js';
-import { SharedMap } from '@nanolith';
+// 💡 index.ts
+// Importing the Nanolith API we created in worker.ts
+import { worker } from './worker.js';
 
-const map = new SharedMap({ count: 0 });
+// Launch 6 services at the same time.
+const cluster = await worker.clusterize(6);
 
-const promise = api({ name: 'handler', params: [map.transfer] });
-const promise2 = api({ name: 'handler', params: [map.transfer] });
-const promise3 = api({ name: 'handler', params: [map.transfer] });
-const promise4 = api({ name: 'handler', params: [map.transfer] });
+// Use the least busy service on the cluster.
+// This is the service that is currently running
+// the least amount of task calls.
+const service = cluster.use();
 
-for (let i = 1; i <= 1000; i++) {
-    await map.set('count', (prev) => +prev + 1);
-}
+// Call the task on the service as you normally would.
+const result = await service.call({
+    name: 'subtract',
+    params: [10, 5],
+});
 
-await Promise.all([promise, promise2, promise3, promise4]);
+console.log(result);
 
-console.log(await map.get('count'));
-
-map.close();
+// Close all services on the cluster.
+await cluster.closeAll();

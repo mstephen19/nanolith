@@ -1,116 +1,84 @@
 # Nanolith
 
-Multi-threaded nanoservices in no time with seamless TypeScript support.
+Multithreading in minutes. _(More intuitive and feature-rich than [piscina](https://www.npmjs.com/package/piscina)!)_
 
-[![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) ![ts](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label) [![install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
+[![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)](https://www.typescriptlang.org/) [![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![Install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
 
-![npm](https://img.shields.io/npm/v/nanolith?color=blue&style=for-the-badge) ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/nanolith?style=for-the-badge) ![npm](https://img.shields.io/npm/dw/nanolith?color=violet&style=for-the-badge) ![npm bundle size](https://img.shields.io/bundlephobia/min/nanolith?color=lightgreen&style=for-the-badge) ![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=red&style=for-the-badge)
+[![Version](https://img.shields.io/npm/v/nanolith?color=blue)](https://github.com/mstephen19/nanolith/releases) ![Weekly downloads](https://img.shields.io/npm/dw/nanolith?color=violet) ![Libraries.io dependency status](https://img.shields.io/librariesio/release/npm/nanolith) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=red)](https://github.com/mstephen19/nanolith/issues)
 
 <center>
     <img src="https://user-images.githubusercontent.com/87805115/199340985-d76cc3ea-6abb-4a4e-ac1b-a95fc693947f.png" width="550">
 </center>
 
-> You can now stream data between threads in Nanolith! See examples [here](#streaming-data-between-threads)!
+## ❔ About
 
-## 📖 Table of Contents
+✨**Nanolith**✨ is a performant, reliable, easy-to-use, and well-documented multithreading library. It serves to not only build upon, but entirely replace the _(deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
 
-* [💭About](#about)
-* [Installation](#installation)
-* [What's new❔](#whats-new)
-* [Defining a set of tasks](#defining-a-set-of-tasks)
-  * [🦄Creating multiple sets of definitions in the same file with `identifier`s](#creating-multiple-sets-of-definitions-in-the-same-file-with-identifiers)
-  * [🪝Hooks](#hooks)
-  * [💩Dealing with "Cannot find module" with the `file` option](#dealing-with-cannot-find-module-with-the-file-option)
-* [Running a task](#running-a-task)
-  * [⚙️Configuring a task](#configuring-a-task)
-  * [Using the before and after task hooks](#using-the-before-and-after-task-hooks)
-* [Launching a service](#launching-a-service)
-  * [⚙️Configuring a service](#configuring-a-service)
-  * [🧑‍💻Using a service](#using-a-service)
-  * [Using the service initializer hook](#using-the-service-initializer-hook)
-* [Managing concurrency](#managing-concurrency)
-  * [🏊Using `pool`](#using-pool)
-* [Creating a service cluster](#creating-a-service-cluster)
-  * [🧑‍💻Using `ServiceCluster`](#using-servicecluster)
-* [Communicating between threads](#communicating-between-threads)
-  * [📨Messaging between the main thread and a service](#messaging-between-the-main-thread-and-a-service)
-  * [📨Sending & receiving messages between tasks/services and the main thread](#sending--receiving-messages-between-tasksservices-and-the-main-thread)
-  * [✉️Using `Messenger`](#using-messenger)
-  * [📩Dynamically sending messengers to services](#dynamically-sending-messengers-to-services)
-  * [Streaming data between threads](#streaming-data-between-threads)
-    * [Streaming using `parent` in a service worker](#streaming-using-parent-in-a-service-worker)
-    * [Streaming with `Messenger`](#streaming-with-messenger)
-  * [Sharing Memory](#sharing-memory)
-    * [Using `SharedMap`](#using-sharedmap)
-* [Examples](#examples)
-  * ["Promisify-ing" a for-loop](#promisify-ing-a-for-loop)
-  * [Streaming fetched data to a service](#streaming-fetched-data-to-a-service)
-  * [Streaming data between two services](#streaming-data-between-two-services)
-* [License](#license)
+There have always been three main goals for Nanolith:
 
-## About
+1. Performance 🏃
+2. Ease-of-use 😇
+3. Seamless TypeScript support 😎
 
-What's ✨**Nanolith**✨? Nanolith is a performant, reliable, and super simple-to-use multi-threading library with great documentation and seamless TypeScript support. It serves to entirely replace the _(now deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
+### So what can you do with it?
 
-Nanolith was designed with simplicity and performance in mind - it has just two main APIs. The **Nanolith API** can be used to call one-off [task workers](#running-a-task), and directly on that API, the [`launchService()`](#launching-a-service) function can be called to launch a long-running **Service** worker which has access to your task function [definitions](#defining-a-set-of-tasks) and will only finish once it's been told to `close()`. When you launch a service, you are immediately able to [communicate](#messaging-between-the-main-thread-and-a-service) back and forth between the worker and the main thread.
+Here's a quick rundown of everything you can do in Nanolith:
 
-Enough talk though, let's look at how this thing works.
+- Offload expensive tasks to separate threads.
+- Spawn up separate-threaded "nanoservices" that can run any tasks you want.
+- Communicate back and forth between threads by sending messages.
+- Stream data between threads with the already familiar [`node:stream`](https://nodejs.org/api/stream.html) API.
+- Share memory between threads using the familiar-feeling `SharedMap` class.
 
-## Installation
+## 📖 Table of contents
+
+- [❔ About](#about-❔)
+- [💾 Installation](#💾-installation)
+- [📝 Defining your tasks](#📝-defining-your-tasks)
+  - [`define()` options](#define-options)
+- [👷 Running a task](#👷-running-a-task)
+  - [Task function options](#task-function-options)
+- [🎩 Understanding services](#🎩-understanding-services)
+  - [`launchService()` options]()
+- [🎬 Coordinating services](#🎬-coordinating-services)
+- [🪝 Hooks](#🪝-hooks)
+- [🚨 Managing concurrency](#🚨-managing-concurrency)
+- [📨 Communicating between threads](#📨-communicating-between-threads)
+- [📡 Streaming data between threads](#📡-streaming-data-between-threads)
+- [💾 Sharing memory between threads](#💾-sharing-memory-between-threads)
+- [🧑‍🏫 Examples](#🧑‍🏫-examples)
+- [📜 License](#license-📜)
+
+## 💾 Installation
 
 The latest version can be installed via any package manager of your choice.
 
 ```shell
 npm install nanolith@latest
-```
-
-```shell
+# or
 yarn add nanolith@latest
 ```
 
-Beta versions are released under the "next" tag, and can be installed like this:
+Beta versions are released under the **next** tag and can be installed like this:
 
 ```shell
 npm install nanolith@next
-```
-
-```shell
+# or
 yarn add nanolith@next
 ```
 
-## What's new?
+## 📝 Defining your tasks
 
-The newest stable version of Nanolith is `0.2.5` ✨
-
-### Features 🆕
-
-* [`SharedMap`](#using-sharedmap) API for [sharing memory](#sharing-memory) between threads.
-* `notifyAll()` method to [`ServiceCluster`](#using-servicecluster) for sending a message to all services on the cluster.
-* Support for `NodeNext` module resolution.
-
-### Fixes & improvements 🛠️
-
-* Add a timeout of 15 seconds to allow a stream to be accepted before the promise is rejected with `createStream()` on [`Messenger`](#using-messenger).
-* Change `TaskWorkerOptions` and `ServiceWorkerOptions` types to be exported as `LaunchTaskOptions` and `LaunchServiceOptions` instead.
-* Export `SharedArrayPair`, `MessengerTransfer`, and `SharedMapTransfer` types.
-* Switch [`messenger.transfer()`](#using-messenger) to be a getter property instead of a method.
-* Change [`pool.option`](#using-pool) to be a static property.
-
-## Defining a set of tasks
-
-No matter what your use-case of Nanolith is, you will always start with the `define()` function. This function takes an object containing (sync or async) task definitions, and returns an object representing the **Nanolith API**, which can be used to access Nanolith's main functionalities.
-
-To get started, **create a separate file dedicated to task definitions** and export a variable pointing to the awaited value of the `define()` function containing your definitions 🗒️ It is **absolutely key** to ensure that you don't have any other function calls within this file.
+A **task** is any function that **you** define which is accessible by Nanolith's APIs. Tasks can be defined using the `define()` function in a separate file dedicated to definitions.
 
 ```TypeScript
 // worker.ts 💼
 import { define } from 'nanolith';
 
-const subtract = (x: number, y: number) => x - y;
-
-// Exporting the variable is not a requirement, but is necessary in order to
-// have access to the API later on.
-export const api = await define({
+// Exporting the variable is not a requirement, but it is
+// necessary to somehow export the resolved value of the
+// function in order to have access to it later on.
+export const worker = await define({
     add(x: number, y: number) {
         return x + y;
     },
@@ -118,252 +86,194 @@ export const api = await define({
         await new Promise((resolve) => setTimeout(resolve, 5e3))
         return x + y;
     },
-    // Functions don't have to be directly defined within the object parameter,
-    // they can be defined elsewhere outside of "define", or even imported from
-    // a different file.
-    subtract,
-});
-```
-
-The `add()`, `waitThenAdd()`, and `subtract()` functions are now ready to be run on a separate thread.
-
-> **Important:** In these docs, we'll be using the word "task" a lot. A "task" can be defined as any function that has been provided to the `define()` function and is ready to be called and run on a separate thread.
-
-### Creating multiple sets of definitions in the same file with `identifier`s
-
-Because Nanolith runs workers directly within the same file you created your task definitions, it will generate a unique `identifier` for each set of definitions. This identifier is quite basic, and is only based on the names of the functions you passed in.
-
-_In cases where this is not enough_, you need to provide any second or third sets of definitions which are created in the same file with a **constant** and **unique** `identifier` so Nanolith knows which code to run within the worker ✏️ This information can be provided in the options parameter of the `define()` function.
-
-```TypeScript
-// worker.ts 💼
-import { define } from 'nanolith';
-
-const subtract = (x: number, y: number) => x - y;
-
-// The identifier for this set of definitions will be automatically
-// generated by Nanolith
-export const api = await define({
-    something(x: number, y: number) {
-        return x + y;
-    },
-    async foo(x: number, y: number) {
-        await new Promise((resolve) => setTimeout(resolve, 5e3))
-        return x + y;
-    },
+    // Functions don't have to be directly defined within the
+    // object, they can be defined elsewhere outside, or even
+    // imported from a totally different module.
     subtract,
 });
 
-// The automatically generated identifier will not help us here,
-// because this set of definitions contains functions of the same
-// names and in the same exact order. Therefore, we need to manually
-// set our own unique identifier.
-export const logger = await define({
-    something: () => console.log('hello'),
-    async foo() {
-        return 'foo';
-    }
-    // The identifier for this set will be "logger"
-}, { identifier: 'logger' });
+function subtract(x: number, y: number) {
+    return x - y;
+};
 ```
 
-Please note that when manually assigning an identifier, it **must always stay the same**. You cannot, for example, do something like this:
+By passing functions into `define()`, you immediately turn them into multithreadable **tasks**. No further configuration is required.
+
+### `define()` options
+
+As seen above, the first argument to `define()` is an object containing your functions. The second parameter is an object accepting the following _(optional)_ configurations:
+
+| Name | Type | About |
+|-|-|-|
+| `file` | **string** | If `define()`'s file location detection is not working correctly, the true file location for the set of definitions can be provided here. |
+| `identifier` | **string** | A unique identifier for the set of definitions. Overrides the auto-identifier generated by Nanolith. |
+| `safeMode` | **boolean** | Whether or not to prevent the usage of the returned **Nanolith** API from within the same file where their definitions were created. Defaults to `true`. |
+
+## 👷 Running a task
+
+After [defining](#📝-defining-your-tasks) a set of tasks, you can import them and call them anywhere by directly using the **Nanolith** API resolved by the `define()` function. The only difference is that instead of being called on the main thread, a new thread will be created for the task and it will be run there.
 
 ```TypeScript
-// WRONG! WRONG! WRONG!
-import { define } from 'nanolith';
-import { v4 } from 'uuid';
+// 💡 index.ts
+// Importing the Nanolith API we created in worker.ts
+import { worker } from './worker.js';
 
-export const logger = await define({
-    sayHello: () => console.log('hello'),
-    // The below code is wrong
-    // and will result in errors!
-}, { identifier: v4() });
-// WRONG! WRONG! WRONG!
-```
-
-These identifiers are only used internally by Nanolith, so they can be absolutely anything; however, you might want to make your identifiers recognizable purely for documentation purposes (ex. "image_processing", "general_utils", "data_parsing").
-
-### Hooks
-
-You may run into situations where you want to run a certain piece of logic before/after each task is called, or before a service is launched. There are five hooks which are available for use when creating a set of definitions that provide this functionality 🪝
-
-These hooks have specific names, and are functions that take one parameter (the worker's `threadID`) and return nothing.
-
-| Name | Functionality |
-|-|-|
-| `__initializeService()` | A function which will be automatically called once when a service for the set of definitions is launched. If asynchronous, it will be awaited. Note that the `launchService()` function's promise resolves only after this function has completed. |
-| `__beforeTask()` | A function which will be automatically called before each task function is run. Not supported with services. |
-| `__afterTask()` | A function which will be automatically called after each task function is run. Not supported with services. |
-| `__beforeServiceTask()` | A function which will automatically called before a task is run within a service. |
-| `__afterServiceTask()` | A function which will automatically called after a task is run within a service. |
-
-### Dealing with "Cannot find module" with the `file` option
-
-Though it shouldn't happen, in some strange cases there is a chance that an error like this will occur when the Nanolith `pool` instance tries to spawn a worker 💩:
-
-```text
-Error: Cannot find module '/some/path/to/some/file.js'
-```
-
-If this occurs, it means that Nanolith failed to correctly determine the location of the file in which you called `define()`. Correct this error by providing the proper path under the `file` option.
-
-```TypeScript
-// worker.ts 💼
-import { define } from 'nanolith';
-
-const subtract = (x: number, y: number) => x - y;
-
-export const api = await define({
-    add(x: number, y: number) {
-        return x + y;
-    },
-    async waitThenAdd(x: number, y: number) {
-        await new Promise((resolve) => setTimeout(resolve, 5e3))
-        return x + y;
-    },
-    subtract,
-}, { file: '/correct/path/to/some/file.js' });
-```
-
-## Running a task
-
-Tasks are one-off workers that are spawned, run the specified task function, then are immediately terminated automatically. The return value of the task function is available back on the main thread when using the Nanolith API.
-
-> **Note:** All tasks are async, regardless of whether or not the defined task function is async. This is because, behind the scenes, the task runner must wait for its turn in the [`pool`](#using-pool)'s queue, then for the `Worker` to be created, and finally for your task function to finish executing before returning its value back to you on the main thread.
-
-Considering the task definitions from the section above, this is how the `add()` task would be called to be run on a separate thread.
-
-```TypeScript
-// index.ts 💡
-import { api } from './worker.js';
-
-// This spawns a new task worker, runs the "add" function, sends the
-// return value back to the main thread, then terminates the worker.
-const sum = await api({
+// Run the "add" function on a separate thread and wait
+// for it to complete before moving forward.
+const result = await worker({
+    // Provide the name of the task.
     name: 'add',
-    params: [4, 5],
-})
-
-// This also spawns a new worker and runs the same workflow as
-// described above
-const sum2 = await api({
-    name: 'add',
-    params: [10, 6],
-})
-
-console.log(sum) // -> 9
-console.log(sum2) // -> 16
-```
-
-That's it! Simply call the **Nanolith API** directly providing the name of the task along with the parameters (if any) to pass to the task function, and the function will be run on a separate thread. Any errors thrown by the function can be safely handled by using a [`try...catch`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch) block.
-
-> **Important**: Tasks (and [services](#launching-a-service)) cannot by default be called/launched from within the same file as where their tasks were `define`d. When this is attempted, an error will be thrown. To disable this behavior, set the `safeMode` option in the `define()` function to `false` _(not recommended)_.
-
-### Configuring a task
-
-When running a task, there are more configurations available other than the `name` and `params` of the task function.
-
-| Option | Type | Default | Description |
-|-|-|-|-|
-| `name` | string | - | The name of the task function to run. |
-| `params` | array | `[]` | The parameters to pass to the task function. |
-| `priority` | boolean | `false` | Whether or not to push the worker to the front of the [`pool`](#using-pool)'s queue and treat it as a priority worker. |
-| `reffed` | boolean | `true` | When `true`, [`worker.ref()`](https://nodejs.org/api/worker_threads.html#workerref) will be called. When `false`, [`worker.unref()`](https://nodejs.org/api/worker_threads.html#workerunref) will be called. |
-| `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the [`Worker`](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) constructor. |
-| `messengers` | Messenger[] | `[]` | An array of [`Messenger`](#using-messenger) objects to expose to the task's worker. |
-
-### Using the before and after task hooks
-
-When calling tasks, you might want to run the same piece of logic before or after each task (or both). Luckily, rather than copying and pasting the same logic into each task function in your set of definitions, you can use the `__beforeTask` and `afterTask` [hooks](#hooks) on your set of definitions.
-
-## Launching a service
-
-Services differ from tasks, as they are not one-off workers. They are long-running workers that will continue running until they are `close()`d. A service has access to all of the task functions in the set of definitions it is using 🎩
-
-```TypeScript
-// index.ts 💡
-import { api } from './worker.js';
-
-// Spawns a service worker and waits for it to go
-// "online" before resolving
-const service = await api.launchService({
-    // Provide an exception handler to know when an uncaught exception
-    // is thrown by the underlying worker, and handle it as needed.
-    // If this is not provided, uncaught exceptions will go unseen.
-    exceptionHandler: ({ error }) => {
-        console.error('oops!', error.message);
-    }
+    // Provide the parameters of the function.
+    params: [2, 3],
 });
 
-// Runs the "add" function in the worker created by the
-// "launchService" function
-const sum = await service.call({
-    name: 'add',
-    params: [4, 5],
-})
+// The result is sent back to the main thread
+// and resolved by the task function call.
+console.log(result); // -> 5
+```
 
-// Also runs the "add" function in the worker created by
-// the "launchService" function
-const sum2 = await service.call({
-    name: 'add',
-    params: [10, 6],
-})
+The new thread's process is shut down after the task finishes.
 
-console.log(sum) // -> 9
-console.log(sum2) // -> 16
+> **📝 Note:** Notice that even with the synchronous `add()` function, it is now asynchronous when being multithreaded.
 
-// Terminates the worker
+### Task function options
+
+`name` and `params` are amongst many of the possible options that can be passed in when running a task:
+
+| Name | Type | About |
+|-|-|-|
+| `name` | **string** | The name of the task to call. Must be present on the set of definitions. |
+| `params` | **any[]** | The arguments for the task in array form. |
+| `priority` | **boolean** | Whether or not to treat the task's worker as priority over others when being queued into the `pool`. |
+| `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
+| `messengers` | [**Messenger**](#📨-communicating-between-threads)**[]** | The `Messenger`s that should be accessible to the task. |
+| `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
+
+## 🎩 Understanding services
+
+**Services** are Nanolith's flagship feature. Running a task on a service works similarly to [running a task](#👷-running-a-task) normally; however, the key difference is that the thread only shuts down when you tell it to. This means that you can run multiple tasks on the same thread rather than spawning up a new one for each call.
+
+Considering the definitions we created [here](#📝-defining-your-tasks), here is how a service would be launched and a task would be called on it.
+
+```TypeScript
+// 💡 index.ts
+// Importing the Nanolith API we created in worker.ts
+import { worker } from './worker.js';
+
+// Spawn up a new thread that has access to all of
+// our tasks.
+const service = await worker.launchService();
+
+// Command the service thread to run the "add" function.
+const result = await service.call({
+    name: 'waitThenAdd',
+    params: [2, 3],
+});
+
+// We can run service.call() as many times as we want, and
+// all those tasks will be called on the same thread...
+
+// Similarly to regular task calls, the return value
+// is sent back to the main thread and resolve by the call.
+console.log(result);
+
+// Shut down the second thread.
 await service.close();
 ```
 
-### Configuring a service
+### `launchService()` options
 
-Similar to running a task, various options are available when configuring a service. The `launchService()` function accepts all of the following options.
+The configurations for `Nanolith.launchService()` are nearly identical to the [task function options](#task-function-options) with the addition of `exceptionHandler`:
 
-| Option | Type | Default | Description |
-|-|-|-|-|
-| `exceptionHandler` | Function | - | An optional but recommended option that allows for the catching of uncaught exceptions within the service. |
-| `priority` | boolean | `false` | Whether or not to push the worker to the front of the [`pool`](#using-pool)'s queue and treat it as a priority worker. |
-| `reffed` | boolean | `true` | When `true`, [`worker.ref()`](https://nodejs.org/api/worker_threads.html#workerref) will be called. When `false`, [`worker.unref()`](https://nodejs.org/api/worker_threads.html#workerunref) will be called. |
-| `options` | [WorkerOptions](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) | `{}` | An object containing _most_ of the options available on the [`Worker`](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) constructor. |
-| `messengers` | Messenger[] | `[]` | An array of [`Messenger`](#using-messenger) objects to expose to the service worker. |
-
-### Using the service initializer hook
-
-There may be times when you want to have a task function be automatically called right when the service goes online. This is called a **service initializer** [hook](#hooks), and it can be used to register listeners on the `parent` or on a `Messenger` instance, or to do any other internal configuration of the service before any tasks can be called on it.
-
-To create a service initializer function, simply name one of your task definitions `__initializeService` and define your initialization logic there. The function will be run immediately after the service goes online, and the `launchService()` function will only resolve after the initialization function has completed its work.
-
-### Using a service
-
-The main method on launched services that you'll be using is `.call()`; however, there are many more properties and methods available.
-
-| Name | Type | Description |
+| Name | Type | About |
 |-|-|-|
-| `threadID` | Property | The thread ID of the underlying [`Worker`](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) for the `Service` instance. |
-| `closed` | Property | Whether or not the underlying `Worker` has exited its process. This will be `true` after calling `await service.close()`|
-| `activeCalls` | Property | The number of currently active calls on the service. |
-| `worker` | Property | Returns the raw underlying `Worker` instance being used by the service.. |
-| `call()` | Method | Call a task to be run within the service worker. |
-| `close()` | Method | Terminates the worker, ending its process and marking the `Service` instance as `closed`. |
-| `sendMessage()` | Method | Send a message to the service worker. |
-| `onMessage()` | Method | Receive messages from the service worker. Returns a function that will remove the listener when called. |
-| `waitForMessage()` | Method | Wait for specific messages coming from the service worker. |
-| [`sendMessenger()`](#dynamically-sending-messengers-to-services) | Method | Dynamically send a [`Messenger`](#using-messenger) object to the service worker. |
-| [`onStream()`](#streaming-using-parent-in-a-service-worker) | Method | Receive data streams from the service worker. |
-| [`createStream()`](#streaming-using-parent-in-a-service-worker) | Method | Create a `Writable` instance that can be piped into in order to stream data to the service worker. The service worker can listen for incoming streams with the `parent.onStream()` listener. |
+| `exceptionHandler` | **function** | An optional but _highly recommended_ option that allows you to catch uncaught exceptions within the service. |
+| `priority` | **boolean** | Whether or not to treat the service's worker as priority over others when being queued into the `pool`. |
+| `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
+| `messengers` | [**Messenger**](#📨-communicating-between-threads)**[]** | The `Messenger`s that should be accessible to the service. |
+| `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
-## Managing concurrency
+<!-- todo: Go over all methods & properties available on Service -->
 
-To keep things safe and efficient, Nanolith automatically manages the creation of task and service workers with a single instance of the internal `Pool` class. The `pool` has a queue with a maximum size, and is enqueued into any time you [run a task](#running-a-task) or [launch a service](#launching-a-service). It has been implemented to prevent too many workers from running at once. This basically means that if, for example, the pool's concurrency is configured to 12 and you are running 12 services but then try to launch another one, that service will wait for one of the already running services to shut down before launching.
+## 🎬 Coordinating services
 
-> **Tip:** By default, workers are added to the back of the queue; however, it is possible to mark a worker "cut in line" by marking it as `priority` in the options [for calling a task](#configuring-a-task) or [for launching a service](#configuring-a-service).
+In a scalable application utilizing multiple identical [services](#launchservice-options), it is possible to optimize them by treating the main thread as an orchestrator and managing the workloads on each service. Nanolith's `ServiceCluster` automatically does this for you.
 
-The concurrency of the `pool` is by default equal to _the number of cores on the machine currently running the process_; however, it can be changed by using the `.setConcurrency()` method and `ConcurrencyOption`.
+```TypeScript
+// 💡 index.ts
+// Importing the Nanolith API we created in worker.ts
+import { worker } from './worker.js';
+
+// Launch 6 identical services at the same time.
+// Returns a "ServiceCluster" instance.
+const cluster = await worker.clusterize(6, {
+    // These options will be applied to all of the 6
+    // services being launched.
+    exceptionHandler({ error, terminate }) {
+        console.error(error);
+    },
+    priority: true;
+});
+
+// Use the least busy service on the cluster.
+// This is the service that is currently running
+// the least amount of task calls.
+const service = cluster.use();
+
+// Call the task on the service as you normally would.
+const result = await service.call({
+    name: 'subtract',
+    params: [10, 5],
+});
+
+console.log(result);
+
+// Close all services on the cluster.
+await cluster.closeAll();
+```
+
+For simplicity of the above example, we are only running a single task. However, `ServiceCluster` can be used to run a large amount of heavy operations in true parallel on multiple services.
+
+<!-- todo: Go over all methods & properties available on ServiceCluster -->
+
+## 🪝 Hooks
+
+For a bit of finer control over your services and tasks, three hooks are available and can be provided directly to [`define()`](#📝-defining-your-tasks).
+
+```TypeScript
+// worker.ts 💼
+import { define } from 'nanolith';
+
+export const worker = await define({
+    // Runs before a service is launched and before the
+    // "launchService" function resolves its promise.
+    __initializeService(threadId) {
+        console.log(`Initializing service on thread: ${threadId}`);
+    },
+    // Runs before a task is called.
+    __beforeTask({ name, inService }) {
+        console.log(`Running task ${name}.`);
+        // You have access to "inService", which tells you if the
+        // task will run standalone, or within a service.
+        console.log(`${inService ? 'Is' : 'Is not'} in a service.`);
+    },
+    // Runs after a task is called.
+    __afterTask({ name, inService }) {
+        console.log(`Finished task ${name}`);
+    },
+    // Define your tasks here...
+});
+```
+
+These hooks run on the same thread as their service/task.
+
+## 🚨 Managing concurrency
+
+Nanolith automatically manages the concurrency your services and task calls with the internal `pool` class. By default, the maximum concurrency is one thread per core on the machine. This is a safe value to go with; however, the `maxConcurrency` can be modified up using one of the set `ConcurrencyOption`s.
 
 ```TypeScript
 // index.ts 💡
+// Importing the pool
 import { pool, ConcurrencyOption } from 'nanolith';
 
 // One thread per four cores.
@@ -383,698 +293,26 @@ pool.setConcurrency(ConcurrencyOption.x6);
 // Eight threads per core.
 pool.setConcurrency(ConcurrencyOption.x8);
 // Ten threads per core.
+// Warning: This is overkill.
 pool.setConcurrency(ConcurrencyOption.x10);
 ```
 
-The recommended values are `x1` or `x2`; however, the other options are there if a higher concurrency is necessary.
+<!-- todo: go over the various other properties and methods on the pool -->
 
-### Using `pool`
+## 📨 Communicating between threads
 
-The global `pool` instance has various properties and methods that can be accessed.
+## 📡 Streaming data between threads
 
-| Name | Type | Description |
-|-|-|-|
-| `option` | Property | A direct reference to the `ConcurrencyOption` enum. |
-| `maxConcurrency` | Property | The currency maximum concurrency of the pool. Can be changed with `setConcurrency()` |
-| `maxed` | Property | Whether or not the pool has reached its max concurrency. |
-| `queueLength` | Property | The current number of item in the pool's queue. |
-| `activeCount` | Property | The current number of workers that are running under the pool. |
-| `idle` | Property | A boolean defining whether or not the pool is currently doing nothing. |
-| `next` | Property | Returns the internal `PoolItemOptions` for the next worker in the queue to be run. |
-| `setConcurrency()` | Method | Modify the concurrency of the pool. Use this wisely. |
+<!-- Discuss using the streaming API on parent, Messenger, or Service -->
 
-## Creating a service cluster
+## 💾 Sharing memory between threads
 
-When you have multiple services using the same set of task definitions, it is difficult to manually allocate tasks to each of them. For example, if you have 3 services running that all have access to the `formatVideo()` function, you would ideally like to run the next call for `formatVideo()` on the service that is currently the least busy.
+<!-- SharedMap -->
+<!-- Doing highly concurrent parallel operations with SharedMap -->
 
-> **Tip:** When using `ServiceCluster`, you can think of the main thread as an orchestrator, and all of the services under the cluster as the "workers".
+## 🧑‍🏫 Examples
 
-Rather than you needing to do any guesswork or complex message passing between services to determine which one is the least busy, the `ServiceCluster` API is low-cost option that can do all of this for you.
-
-```TypeScript
-// index.ts 💡
-import { ServiceCluster } from 'nanolith';
-import { api } from './worker.js';
-
-const cluster = new ServiceCluster(api);
-
-// Launch three services that will be managed by the cluster
-await cluster.launch(3, {
-    // All three services will be launched using these options
-    exceptionHandler: (error) => {
-        console.error(error);
-    },
-});
-
-// The ".use()" method returns the least busy service out of all
-// the services.
-const promise1 = cluster.use().call({
-    name: 'waitThenAdd',
-    params: [4, 3]
-})
-
-// This call will run on a different service from the first one,
-// because the first one has one active call, while the others
-// have zero.
-const promise2 = cluster.use().call({
-    name: 'waitThenAdd',
-    params: [4, 5]
-})
-
-const [sum1, sum2] = await Promise.all([promise1, promise2]);
-
-console.log(sum1) // -> 7
-console.log(sum2) // -> 9
-
-// Close all services attached to the cluster.
-await cluster.closeAll();
-```
-
-### Using `ServiceCluster`
-
-Each `ServiceCluster` instance has access to a few methods and properties.
-
-| Name | Type | Description |
-|-|-|-|
-| `activeServices` | Property | The number of currently running services on the cluster. |
-| `activeServiceCalls` | Property | The number of currently active task calls on all services on the cluster. |
-| `currentServices` | Property | An array of objects for each active service on the cluster. Each object contains the `service`, its current `active` count, and its unique `identifier`. |
-| `launchService()` | Method **Deprecated** | Launch a new service on the provided **Nanolith API** and automatically manage it with the `ServiceCluster`. |
-| `launch()` | Method | Launch a number of new services on the provided **Nanolith API** and automatically manage them with the `ServiceCluster` instance. Accepts a number and `service.launchService()` options as its arguments. |
-| `addService()` | Method | Add an already running service to to the cluster. |
-| `use()` | Method | Returns the `Service` instance on the cluster that is currently the least active. If no services are active on the cluster, an error will be thrown. |
-| `closeAll()` | Method | Runs the `close()` method on all `Service` instances on the cluster. |
-| `closeAllIdle()` | Method | Runs the `close()` method on all `Service` instances on the cluster which are currently not running any tasks. |
-| `notifyAll()` | Method | Send a single message to all services on the cluster. |
-
-## Communicating between threads
-
-In **Nanolith** there are two ways to communicate with workers.
-
-### Messaging between the main thread and a service
-
-On the [`Service`](#using-a-service) object, there are many methods present which allow for sending and receiving messages to the service worker. These methods are `service.sendMessage()` and `service.onMessage()`.
-
-```TypeScript
-// index.ts 💡
-import { api } from './worker.js';
-
-const service = await api.launchService();
-
-// Send a message to the service worker
-service.sendMessage('hi');
-
-// Handle messages received from the service worker
-const removeListener = service.onMessage<string>((data) => {
-    console.log(`received message from worker: ${data}`);
-    // Once the message has been received, remove the listener
-    removeListener();
-});
-
-await service.close();
-```
-
-That covers it on the main thread.
-
-Within workers, the global `parent` object can be used to send and receive messages to a `Service` instance back on the main thread. `parent` has the same exact functionalities, along with the additional `parent.waitForMessage()`.
-
-```TypeScript
-// worker.ts 💼
-import { define, parent } from 'nanolith';
-
-export const api = await define({
-    __initializeService() {
-        // Handle messages received from the main thread
-        const removeListener = parent.onMessage<number>((data) => {
-            console.log(data - 351);
-            // Once the message has been received, remove the listener
-            removeListener();
-        });
-    },
-    async sendSomething() {
-        // Wait for a message to be received from the main thread. Once
-        // the condition returns with "true", the promise resolves with
-        // the received data.
-        await parent.waitForMessage<number>((data) => data === 1337);
-        // Send a message to the main thread
-        parent.sendMessage(420);
-    },
-});
-```
-
-> When using services, it is recommended to register listeners on `parent` within the [`__initializeService()` hook](#using-the-service-initializer-hook) to avoid the need to manually call a custom task which registers listeners.
-
-### Sending & receiving messages between tasks/services and the main thread
-
-More complex use cases may demand that communication can happen not only between the main thread and services, but between all threads.
-
-> If your use case does not demand the need to communicate to multiple workers from the same thread, or to communicate between/amongst workers, you do not need to use the `Messenger` API.
-
-The `Messenger` class fills the gap for this use case by utilizing an underlying [`BroadcastChannel`](https://nodejs.org/api/worker_threads.html#new-broadcastchannelname). A messenger can be created by calling the `Messenger` constructor and providing a unique but reproducible name.
-
-```TypeScript
-// index.ts 💡
-import { Messenger } from 'nanolith';
-
-const messenger = new Messenger('foo-bar');
-```
-
-After the messenger has been created, it can be passed into a task worker or service worker within their initialization options.
-
-```TypeScript
-// index.ts 💡
-import { Messenger } from 'nanolith';
-import { api } from './worker.js';
-
-const messenger = new Messenger('foo-bar');
-
-// Attaching a messenger to a service worker
-const service = await api.launchService({
-    messengers: [messenger],
-});
-
-// Attaching a messenger to a task worker
-await api({
-    name: 'foo',
-    messengers: [messenger],
-});
-
-await service.close();
-```
-
-> You can attach as many messengers as you want to workers; however, ensure that they all have different names to avoid issues!
-
-Similar to [`parent`](#sending--receiving-messages-between-tasksservices-and-the-main-thread), there is a specialized global object for using messengers within workers called `messengers`. It has only two functions, `messengers.seek()` and `messengers.use()`.
-
-```TypeScript
-// worker.ts 💼
-import { define, messengers } from 'nanolith';
-
-export const api = await define({
-    async sendSomething() {
-        // We now have access to the Messenger object we
-        // created and attached to the worker through this
-        // variable. It can be used to send and receive
-        // messages on the underlying BroadcastChannel.
-        const messenger = await messengers.use('foo-bar');
-
-        // View all messengers currently attached to the
-        // worker as an object.
-        console.log(messengers.seek());
-    },
-});
-```
-
-### Using `Messenger`
-
-Each `Messenger` instance has access to a various methods and properties.
-
-| Name | Type | Description |
-|-|-|-|
-| `ID` | Property | The unique identifier that is shared across all messenger instances using the two ports originally created when instantiating the first `Messenger`. |
-| `uniqueKey` | Property | Each `Messenger` instance is assigned a unique key that allows it to internally ignore messages on the `BroadcastChannel` which were sent by itself. |
-| `transfer` | Property | Turns the `Messenger` instance into an object that can be sent to and from workers. |
-| `onMessage()` | Method | Listen for messages coming to the `Messenger`. Returns a function that will remove the listener when called. |
-| `waitForMessage()` | Method | Wait for a specific message on the `Messenger`. |
-| `sendMessage()` | Method | Send a messenger to be received by any other `Messenger` instances with the same identifier. |
-| [`createStream()`](#streaming-with-messenger) | Method | Create a {@link Writable} instance that can be piped into in order to stream data to other `Messenger`s on the channel. The messengers can listen for incoming streams with the `messenger.onStream()` listener. |
-| [`onStream()`](#streaming-with-messenger) | Method | Receive data streams on the `Messenger`. |
-| `setRef()` | Method | By default, the `BroadcastChannel` is unreffed. Call this function to change that. When `true`, [`ref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelref) will be called. When `false`, [`unref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelunref) will be called. |
-| `close()` | Method | Closes the underlying `BroadcastChannel` connection that is being used. Does not close all `BroadcastChannel`s on all Messenger objects |
-| `closeAll()` | Method | Closes **all** underlying `BroadcastChannel` connections on all `Messenger` objects that are currently active for the corresponding identifier. |
-
-### Dynamically sending messengers to services
-
-If you didn't provide your `Messenger` instance in the `messengers` array option when launching your service (as seen in the example [here](#sending--receiving-messages-between-tasksservices-and-the-main-thread)), you can still attach them dynamically with the `service.sendMessenger()` method.
-
-```TypeScript
-// index.ts 💡
-import { Messenger } from 'nanolith';
-import { api } from './worker.js';
-
-const service = await api.launchService();
-
-// Creating the messenger after launching the service
-const messenger = new Messenger('hello');
-
-// The promise resolves once the service worker has
-// notified the Messenger instance that it has
-// successfully received the messenger.
-await service.sendMessenger(messenger);
-
-messenger.sendMessage('hello from main thread!');
-
-await service.close();
-```
-
-### Streaming data between threads
-
-Sending data between services and the main thread using methods like [`service.sendMessage()`](#using-a-service), [`parent.sendMessage()`](#messaging-between-the-main-thread-and-a-service), or the [`Messenger`](#using-messenger) API is efficient and intuitive; however, there may be cases where you need to send much larger pieces of data to a service, or from a service to the main thread. In Node.js, we usually use the [`Readable` and `Writable` APIs](https://nodejs.org/api/stream.html) to do this in chunks.
-
-<!-- > **Note:** When streaming between [`Messenger`](#using-messenger) instances, instances that have no `.onStream()` listener registered will not receive streams at all (to avoid obvious memory issues). -->
-
-#### Streaming using `parent` in a service worker
-
-Both the `parent` object and all [`Service`](#using-a-service) instances have access to the `createStream()` and `onStream()` functions, which intuitively do exactly what they describe.
-
-When handling incoming streams from the main thread, this logic can be placed within the [`__initializeService` hook](#hooks):
-
-```TypeScript
-// worker.ts 💼
-import { define, parent } from 'nanolith';
-
-export const api = await define({
-    __initializeService() {
-        parent.onStream((stream) => {
-            // Only handle streams where an object with a name
-            // of "foo" has been attached to it.
-            if (stream.metaData.name !== 'foo') return;
-
-            stream.on('data', (data) => {
-                console.log('received in worker', data);
-            });
-        });
-    },
-});
-```
-
-On the main thread, we simply need to create a stream to the service worker with the `createStream()` method, then pipe our stream into it.
-
-```TypeScript
-// index.ts 💡
-import { Readable } from 'stream';
-import { api } from './worker.js';
-
-const data = ['hello', 'world', 'foo', 'bar'];
-
-const myStream = new Readable({
-    read() {
-        this.push(data.shift() ?? null);
-    },
-});
-
-const service = await api.launchService();
-
-// Simply pipe right into the stream resolved by ".createStream()"
-myStream.pipe(await service.createStream({ name: 'foo' }));
-```
-
-The console output of the code above looks like this:
-
-```text
-received in worker <Buffer 68 65 6c 6c 6f>
-received in worker <Buffer 77 6f 72 6c 64>
-received in worker <Buffer 66 6f 6f>
-received in worker <Buffer 62 61 72>
-```
-
-Streams can be send over the main thread from a service by simply reversing the roles:
-
-```TypeScript
-// worker.ts 💼
-import { Readable } from 'stream';
-import { define, parent } from 'nanolith';
-
-export const api = await define({
-    async sendStream() {
-        const data = ['hello', 'world', 'foo', 'bar'];
-
-        const myStream = new Readable({
-            read() {
-                this.push(data.shift() ?? null);
-            },
-        });
-
-        // Simply pipe right into the stream resolved by ".createStream()"
-        myStream.pipe(await parent.createStream({ name: 'foo' }));
-    },
-});
-```
-
-```TypeScript
-// index.ts 💡
-import { api } from './worker.js';
-
-const service = await api.launchService();
-
-service.onStream((stream) => {
-    // Only handle streams where an object with a name
-    // of "foo" has been attached to it.
-    if (stream.metaData.name !== 'foo') return;
-
-    stream.on('data', (data) => {
-        console.log('received on main thread', data);
-    });
-});
-
-// Call the task that creates and starts the stream
-await service.call({ name: 'sendStream' });
-```
-
-The output of this code is almost exactly the same as the previous example; however, the logs occur on the main thread rather than within the service worker thread.
-
-> **Important:** The `.onStream()` listener must be registered before the stream is received by the sender. Otherwise, the event will be received. That means that it must be called within `__initializeService()`, or in a task that occurs prior to the stream being sent.
-
-#### Streaming with `Messenger`
-
-Streaming data between threads with the `Messenger` API is similar to with `Service` and `parent`; however, because there can be multiple recipients rather than the just one, the `.onStream()` method boasts a slightly different functionality.
-
-```TypeScript
-// worker.ts 💼
-import { threadId } from 'worker_threads';
-import { define, messengers } from 'nanolith';
-
-export const api = await define({
-    async __initializeService() {
-        const messenger = await messengers.use('channel');
-
-        // In the .onStream callback, rather than having access to the stream
-        // right away, it is only created after we call the "accept()" function.
-        // The metadata sent along with the stream is also available in the
-        // callback function.
-        messenger.onStream(({ metaData, accept }) => {
-            // Ignore the stream if the thread ID is 1
-            if (threadId === 1) return;
-
-            // Otherwise, accept it and start receiving the data
-            const stream = accept();
-
-            stream.on('data', (data) => {
-                console.log(data);
-            });
-        });
-    },
-});
-```
-
-```TypeScript
-// index.ts 💡
-import { Readable } from 'stream';
-import { Messenger } from 'nanolith';
-import { api } from './worker.js';
-
-const messenger = new Messenger('channel');
-
-// Launch two services
-await api.launchService({
-    messengers: [messenger],
-});
-
-await api.launchService({
-    messengers: [messenger],
-});
-
-// At this point, there are three Messenger instances
-// connected to our channel named "channel"
-
-// Create a basic stream
-const arr = ['hello', 'world', 'foo', 'bar'];
-const myStream = new Readable({
-    read() {
-        if (!arr.length) this.push(null);
-
-        this.push(arr.splice(0, 1)[0]);
-    },
-});
-
-// Send the stream over the channel
-myStream.pipe(await messenger.createStream({ name: 'foo' }));
-```
-
-## Sharing memory
-
-In JavaScript, sharing memory is quite a challenge. For example, when you send an object from one thread to another using, for example, the [`Messenger`](#using-messenger) API, what is actually happening is that a clone of that object is made. Therefore, both threads access different points in memory and are unable to modify the object in a "global" sense. Nanolith introduces `SharedMap` to solve this problem.
-
-`SharedMap` has a familiar feel to the native JavaScript [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) API, but don't be fooled - it is quite different.
-
-```TypeScript
-import { SharedMap } from 'nanolith';
-
-// Create some shared memory space based on an object.
-const map = new SharedMap({ foo: 'bar' });
-
-// Retrieve a value
-console.log(await map.get('foo')); // -> bar
-
-await map.set('foo', 'fizz buzz');
-
-console.log(await map.get('foo')); // -> fizz buzz
-
-// Closes the underlying BroadcastChannel associated with
-// the instance, allowing the process to exit.
-map.close();
-```
-
-The above example isn't anything too special, so let's take a look at a slightly more complex use-case with multi-threading.
-
-```TypeScript
-// worker.ts 💼
-import { define, SharedMap } from 'nanolith';
-import type { SharedMapTransfer } from 'nanolith';
-
-export default await define({
-    // Expect to receive a transfer object for a SharedMap with a property
-    // of "foo" which is a string.
-    async myHandler(transfer: SharedMapTransfer<{ foo: string }>) {
-        // Wrap the transfer object in a SharedMap instance so it can be
-        // interacted with.
-        const map = new SharedMap(transfer);
-
-        // Log out the current value of "foo".
-        console.log(await map.get('foo'));
-
-        // Set a new value for "foo". This change can be seen on all threads.
-        await map.set('foo', 'set in the worker');
-
-        // Close the instance, allowing the task to finish.
-        map.close();
-    },
-});
-```
-
-```TypeScript
-// index.ts 💡
-import { SharedMap } from '@nanolith';
-import api from './worker.js';
-
-// Create some shared memory space based on an object.
-const map = new SharedMap({ foo: 'bar' });
-
-await map.set('foo', 'fizz buzz');
-
-// This can be expected to console log "fizz buzz", then set the
-// new value of foo to equal the string "set in the worker".
-await api({ name: 'myHandler', params: [map.transfer] /* <- Transfer the map's data to the worker */ });
-
-console.log(await map.get('foo')); // -> set in the worker
-
-// Closes the underlying BroadcastChannel associated with
-// the instance, allowing the process to exit.
-map.close();
-```
-
-The output of the code above is as follows:
-
-```text
-fizz buzz
-set in the worker
-```
-
-Despite the value of **foo** being set to **set in the worker** within the worker, these changes are reflected back on the main thread, and on any other threads with access to the transfer object for this `SharedMap` instance.
-
-### Using `SharedMap`
-
-> **Warning:** This feature is still in _beta_. `SharedMap` cannot currently handle extreme high concurrencies of operations where new values are set based on previous values. Most other high-concurrency operations are safe, however.
-
-| Name | Type | Description |
-|-|-|-|
-| `ID` | Property | The unique identifier that is shared across all `SharedMap` instances using the two byte arrays originally created when instantiating the first `SharedMap`. |
-| `uniqueKey` | Property | Each `SharedMap` instance is assigned a unique key to help distinguish it from other instances using the two byte arrays. |
-| `transfer` | Property | Turns the `SharedMap` instance into an object that can be sent to and from workers. |
-| `close()` | Method | Closes the map's underlying `BroadcastChannel` instance(s). If the instance the method is being called on is the orchestrator instance, no other instances using its transfer object will work anymore. |
-| `get()` | Method | Retrieve values on the map. |
-| `set()` | Method | Set new values for existing items on the map. |
-
-## Examples
-
-Here are a few fun examples where Nanolith is used.
-
-### "Promisify-ing" a for-loop
-
-Classic example. Let's "promisify" a for-loop with **Nanolith**!
-
-```TypeScript
-// worker.ts 💼
-import { define } from 'nanolith';
-
-export const worker = await define({
-    // Note that these "task functions" can be either async or sync - doesn't matter.
-    bigForLoop: (msg: string) => {
-        for (const _ of Array(900000000).keys()) {
-        }
-        return msg;
-    },
-});
-```
-
-Notice that there's no bloat. Just keys and values (the "task functions").
-
-In our index file (or wherever else), we can simply import the `worker` variable and call it. This `worker` variable is our **Nanolith** API.
-
-```TypeScript
-// index.ts 💡
-import { worker } from './worker.js';
-
-// This will spin up a worker and run our bigForLoop function
-// inside of it. Once the function returns, the promise will
-// resolve with the return value and the worker's process will
-// be exited.
-const promise = worker({
-    name: 'bigForLoop',
-    params: ['test'],
-});
-
-console.log('hello world');
-
-const result = await promise;
-
-console.log(result);
-```
-
-The result of this code, despite the large loop being called prior to the logging of "hello world", outputs this:
-
-```text
-hello world
-test
-```
-
-### Streaming fetched data to a service
-
-```TypeScript
-// worker.ts 💼
-import { define, parent } from 'nanolith';
-import { createWriteStream } from 'fs';
-
-export const api = await define({
-    __initializeService() {
-        parent.onStream((stream) => {
-            // Stream the data received from the main thread into
-            // a new file called data.json
-            const writeStream = createWriteStream('data.json');
-            stream.pipe(writeStream);
-
-            // Once the write stream has finished its work, notify
-            // the parent port that the service is ready to be closed.
-            writeStream.on('finish', () => parent.sendMessage('complete'));
-        });
-    },
-});
-```
-
-```TypeScript
-// index.ts 💡
-import axios from 'axios';
-import { api } from './worker.js';
-
-import type { Readable } from 'stream';
-
-// First, launch a service on the set of definitions
-const service = await api.launchService();
-
-// Once we're notified to stop the service, close it.
-service.onMessage<string>(async (msg) => {
-    if (msg === 'complete') await service.close();
-});
-
-// Fetch a stream of data
-const { data: stream } = await axios.get<Readable>('https://jsonplaceholder.typicode.com/todos', {
-    responseType: 'stream',
-});
-
-// Create a new stream on the service and pipe the fetched
-// stream into the newly created stream.
-stream.pipe(await service.createStream());
-```
-
-### Streaming data between two services
-
-```TypeScript
-// worker.ts 💼
-import { define, messengers, parent } from 'nanolith';
-import { createWriteStream } from 'fs';
-import axios from 'axios';
-
-import type { Readable } from 'stream';
-
-export const senderApi = await define({
-    // A task which sends a data stream on the "cool-channel" messenger channel.
-    async sendStream() {
-        // Grab hold of the attached messenger
-        const messenger = await messengers.use('cool-channel');
-
-        // Fetch a stream of data
-        const { data: stream } = await axios.get<Readable>('https://jsonplaceholder.typicode.com/todos', {
-            responseType: 'stream',
-        });
-
-        // Create a new stream on the service and pipe the fetched
-        // stream into the newly created stream.
-        stream.pipe(await messenger.createStream({ type: 'data' }));
-    },
-});
-
-export const receiverApi = await define({
-    async __initializeService() {
-        const messenger = await messengers.use('cool-channel');
-
-        messenger.onStream(({ metaData, accept }) => {
-            // If the metadata doesn't match what we're looking for on this
-            // thread, do nothing.
-            if (metaData.type !== 'data') return;
-
-            // Otherwise, accept the stream and handle it.
-            const stream = accept();
-
-            // Stream the data received from the main thread into
-            // a new file called data.json
-            const writeStream = createWriteStream('data.json');
-            stream.pipe(writeStream);
-
-            // Once the write stream has finished its work, notify
-            // the parent port that the service is ready to be closed.
-            writeStream.on('finish', () => parent.sendMessage('complete'));
-        });
-    },
-});
-```
-
-```TypeScript
-// index.ts 💡
-import { Messenger } from 'nanolith';
-import { receiverApi, senderApi } from './worker.js';
-
-const messenger = new Messenger('cool-channel');
-
-// Launch two services. One will act as the sender of the stream,
-// and the other will receive the stream.
-const sender = await senderApi.launchService({
-    messengers: [messenger],
-});
-const receiver = await receiverApi.launchService({
-    messengers: [messenger],
-});
-
-// Once we're notified to stop the services, close them.
-receiver.onMessage<string>(async (msg) => {
-    if (msg !== 'complete') return;
-    // If the message matches "complete", we are ready to close.
-    await Promise.all([sender.close(), receiver.close()]);
-});
-
-sender.call({ name: 'sendStream' });
-```
-
-## License
+## 📜 License
 
 The MIT License (MIT)
 
