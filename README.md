@@ -669,9 +669,7 @@ const data = ['hello', 'world', 'foo', 'bar'];
 
 const myStream = new Readable({
     read() {
-        if (!data.length) return this.push(null);
-
-        this.push(data.splice(0, 1)[0]);
+        this.push(data.shift() ?? null);
     },
 });
 
@@ -703,9 +701,7 @@ export const api = await define({
 
         const myStream = new Readable({
             read() {
-                if (!data.length) return this.push(null);
-
-                this.push(data.splice(0, 1)[0]);
+                this.push(data.shift() ?? null);
             },
         });
 

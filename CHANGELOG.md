@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Removed
+
+- `__beforeServiceTask` and `__afterServiceTask` hooks in favor of universal `__beforeTask` and `__afterTask` hooks with new context.
+
+### Changed
+
+- README streaming examples to use `.shift()` instead of `.splice()`.
+- Context of `TaskHook`s to contain the name of the task being called and whether or not it's being called within a service.
+
+### Fixed
+
 ## [0.2.5] - 2022-24-12
 
 ### Added
