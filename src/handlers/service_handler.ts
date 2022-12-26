@@ -45,9 +45,11 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
                         throw new Error(`A task with the name ${name} doesn't exist!`);
                     }
 
-                    await definitions['__beforeServiceTask']?.(threadId);
+                    await definitions['__beforeTask']?.({ name, inService: false });
 
                     const data = await definitions[name](...params);
+
+                    await definitions['__afterTask']?.({ name, inService: false });
 
                     const response: WorkerCallReturnMessageBody = {
                         type: WorkerMessageType.CallReturn,
@@ -56,8 +58,6 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
                     };
 
                     parentPort!.postMessage(response);
-
-                    await definitions['__afterServiceTask']?.(threadId);
                     break;
                 }
                 case MainThreadMessageType.MessengerTransfer: {

@@ -6,7 +6,22 @@ import type { Awaitable, Except } from './utilities.js';
  */
 export type TaskFunction = (...args: any[]) => Awaitable<any>;
 
-export type Hook = (threadID: number) => Awaitable<void>;
+export type InitializeServiceHook = (threadID: number) => Awaitable<void>;
+
+export type TaskHookContext<Keys = string> = {
+    /**
+     * The name of the task being called.
+     */
+    name: Keys;
+    /**
+     * Whether or not the task is being run in a service.
+     * If `true`, it's being called within a service.
+     * If `false`, it's being called in a standalone one-time worker.
+     */
+    inService: boolean;
+};
+
+export type TaskHook = (context: TaskHookContext) => Awaitable<void>;
 
 export type HookDefinitions = {
     /**
@@ -19,31 +34,15 @@ export type HookDefinitions = {
      *
      * Not supported with regular task calls. Use `__beforeTask` instead.
      */
-    __initializeService?: Hook;
+    __initializeService?: InitializeServiceHook;
     /**
      * A function which will be automatically called before each task function is run.
-     *
-     * Not supported with services. Use `__beforeServiceTaskCall` instead.
      */
-    __beforeTask?: Hook;
+    __beforeTask?: TaskHook;
     /**
      * A function which will be automatically called after each task function is run.
-     *
-     * Not supported with services. Use `__afterServiceTaskCall` instead.
      */
-    __afterTask?: Hook;
-    /**
-     * A function which will automatically called before a task is run within a service.
-     *
-     * Only for usage with services. For regular tasks, use `__beforeTask` instead.
-     */
-    __beforeServiceTask?: Hook;
-    /**
-     * A function which will automatically called after a task is run within a service.
-     *
-     * Only for usage with services. For regular tasks, use `__afterTask` instead.
-     */
-    __afterServiceTask?: Hook;
+    __afterTask?: TaskHook;
 };
 
 /**
@@ -54,7 +53,7 @@ export type TaskDefinitions = Record<string, TaskFunction> & HookDefinitions;
 /**
  * A collection of task functions, excluding the `__initializeService` function if present.
  */
-export type Tasks<Definitions extends TaskDefinitions> = Except<Definitions, '__initializeService' | '__beforeTask' | '__afterTask'>;
+export type Tasks<Definitions extends TaskDefinitions> = Except<Definitions, keyof HookDefinitions>;
 
 export type DefineOptions = {
     /**
