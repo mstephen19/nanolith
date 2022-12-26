@@ -1,5 +1,5 @@
 import { threadId } from 'worker_threads';
-import { define, mainThread, messengers } from '../index.js';
+import { define, MainThread, MessengerList } from '../index.js';
 
 import type { TaskDefinitions } from '../index.js';
 import { createDataStream } from './consts.js';
@@ -12,18 +12,18 @@ export const definitions = {
         throw new Error('test');
     },
     registerListenerOnParent: () => {
-        mainThread.onMessage(() => {
-            mainThread.sendMessage('message received');
+        MainThread.onMessage(() => {
+            MainThread.sendMessage('message received');
         });
     },
     registerAngryListenerOnParent: () => {
-        mainThread.onMessage(() => {
+        MainThread.onMessage(() => {
             throw new Error('angry worker');
         });
     },
     waitABit: () => new Promise((resolve) => setTimeout(resolve, 2e3)),
     sendMessageToParent: () => {
-        mainThread.sendMessage('data');
+        MainThread.sendMessage('data');
     },
 };
 
@@ -43,21 +43,21 @@ export const dummy = await define({}, { file: 'foo', identifier: 'foo' });
 export const messengerTester = await define(
     {
         registerListener: async () => {
-            const messenger = await messengers.use('testing');
+            const messenger = await MessengerList.use('testing');
 
             messenger.onMessage(() => {
                 messenger.sendMessage('hi from worker');
             });
         },
         registerListener2: async () => {
-            const messenger = await messengers.use('testing');
+            const messenger = await MessengerList.use('testing');
 
             messenger.onMessage(() => {
-                mainThread.sendMessage('received a message');
+                MainThread.sendMessage('received a message');
             });
         },
         sendMessage: async () => {
-            const messenger = await messengers.use('testing');
+            const messenger = await MessengerList.use('testing');
             messenger.sendMessage('foo');
         },
     },
@@ -79,8 +79,8 @@ export const clusterTester = await define(clusterTesterDefinitions, { identifier
 export const testServiceInitializer = await define(
     {
         __initializeService: () => {
-            mainThread.onMessage(() => {
-                mainThread.sendMessage('test test');
+            MainThread.onMessage(() => {
+                MainThread.sendMessage('test test');
             });
         },
     },
@@ -101,14 +101,14 @@ export const hookTester = await define(
 
 export const streamDefinitions = {
     receiveStream() {
-        mainThread.onStream((stream) => {
+        MainThread.onStream((stream) => {
             if (stream.metaData.id !== 'test') return;
 
-            mainThread.sendMessage('stream received!');
+            MainThread.sendMessage('stream received!');
         });
     },
     receiveStreamData() {
-        mainThread.onStream((stream) => {
+        MainThread.onStream((stream) => {
             if (stream.metaData.id !== 'test') return;
 
             const arr: string[] = [];
@@ -118,13 +118,13 @@ export const streamDefinitions = {
             });
 
             stream.on('end', () => {
-                mainThread.sendMessage(arr.join(''));
+                MainThread.sendMessage(arr.join(''));
             });
         });
     },
     async sendStream() {
         const stream = createDataStream();
-        stream.pipe(await mainThread.createStream({ id: 'test' }));
+        stream.pipe(await MainThread.createStream({ id: 'test' }));
     },
 };
 
