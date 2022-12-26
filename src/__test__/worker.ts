@@ -1,5 +1,5 @@
 import { threadId } from 'worker_threads';
-import { define, parent, messengers } from '../index.js';
+import { define, mainThread, messengers } from '../index.js';
 
 import type { TaskDefinitions } from '../index.js';
 import { createDataStream } from './consts.js';
@@ -12,18 +12,18 @@ export const definitions = {
         throw new Error('test');
     },
     registerListenerOnParent: () => {
-        parent.onMessage(() => {
-            parent.sendMessage('message received');
+        mainThread.onMessage(() => {
+            mainThread.sendMessage('message received');
         });
     },
     registerAngryListenerOnParent: () => {
-        parent.onMessage(() => {
+        mainThread.onMessage(() => {
             throw new Error('angry worker');
         });
     },
     waitABit: () => new Promise((resolve) => setTimeout(resolve, 2e3)),
     sendMessageToParent: () => {
-        parent.sendMessage('data');
+        mainThread.sendMessage('data');
     },
 };
 
@@ -53,7 +53,7 @@ export const messengerTester = await define(
             const messenger = await messengers.use('testing');
 
             messenger.onMessage(() => {
-                parent.sendMessage('received a message');
+                mainThread.sendMessage('received a message');
             });
         },
         sendMessage: async () => {
@@ -79,8 +79,8 @@ export const clusterTester = await define(clusterTesterDefinitions, { identifier
 export const testServiceInitializer = await define(
     {
         __initializeService: () => {
-            parent.onMessage(() => {
-                parent.sendMessage('test test');
+            mainThread.onMessage(() => {
+                mainThread.sendMessage('test test');
             });
         },
     },
@@ -101,14 +101,14 @@ export const hookTester = await define(
 
 export const streamDefinitions = {
     receiveStream() {
-        parent.onStream((stream) => {
+        mainThread.onStream((stream) => {
             if (stream.metaData.id !== 'test') return;
 
-            parent.sendMessage('stream received!');
+            mainThread.sendMessage('stream received!');
         });
     },
     receiveStreamData() {
-        parent.onStream((stream) => {
+        mainThread.onStream((stream) => {
             if (stream.metaData.id !== 'test') return;
 
             const arr: string[] = [];
@@ -118,13 +118,13 @@ export const streamDefinitions = {
             });
 
             stream.on('end', () => {
-                parent.sendMessage(arr.join(''));
+                mainThread.sendMessage(arr.join(''));
             });
         });
     },
     async sendStream() {
         const stream = createDataStream();
-        stream.pipe(await parent.createStream({ id: 'test' }));
+        stream.pipe(await mainThread.createStream({ id: 'test' }));
     },
 };
 

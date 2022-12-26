@@ -1,6 +1,6 @@
 /* eslint-disable indent */
 import { workerData } from 'worker_threads';
-import { parent } from '@service';
+import { MainThread } from '@service';
 import { assertIsNotMainThread } from '@utilities';
 
 import type { Messenger } from './messenger.js';
@@ -15,12 +15,12 @@ import type { BaseWorkerData } from '@typing/worker_data.js';
  * This function will throw an error if a `Messenger` instance with the specified name was never sent to the worker.
  *
  * @example
- * const messenger = await messages.use('foo');
+ * const messenger = await MessengerList.use('foo');
  *
  * messenger.onMessage<string>((data) => console.log(data, 'received!'));
  */
 async function use(name: string) {
-    assertIsNotMainThread('messages.use');
+    assertIsNotMainThread('MessengerList.use');
 
     const { messengers } = workerData as BaseWorkerData;
 
@@ -30,7 +30,7 @@ async function use(name: string) {
                   reject(new Error(`Timed out after waiting 10 seconds to receive a messenger named ${name}`));
               }, 10e3);
 
-              const removeListener = parent.onMessengerReceived((messenger: Messenger) => {
+              const removeListener = MainThread.onMessengerReceived((messenger: Messenger) => {
                   if (messenger.ID !== name) return;
                   resolve(messenger);
                   clearTimeout(timeout);
@@ -50,24 +50,26 @@ async function use(name: string) {
  * @returns An object containing `Messenger`s organized based on their names.
  *
  * @example
- * const messengers = messages.seek();
- * console.log(messengers); // -> { foo: Messenger, bar: Messenger }
- * console.log(messengers.foo.uniqueKey);
+ * const map = MessengerList.seek();
+ * console.log(map); // -> { foo: Messenger, bar: Messenger }
+ * console.log(map.foo.uniqueKey);
  */
-function seek() {
-    assertIsNotMainThread('messages.seek');
+function list() {
+    assertIsNotMainThread('MessengerList.seek');
 
     const { messengers } = workerData as BaseWorkerData;
     return messengers;
 }
 
 /**
- *
  * An object containing functions to be used within workers when interacting with {@link Messenger}s.
  *
  * @example
- * const messenger = await messengers.use('foo');
+ * const messenger = await MessengerList.use('foo');
  *
  * messenger.onMessage<string>((data) => console.log(data, 'received!'));
  */
-export const messengers = Object.freeze({ use, seek });
+export const MessengerList = {
+    list,
+    use,
+};

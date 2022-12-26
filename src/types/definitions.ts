@@ -1,4 +1,15 @@
-import type { Awaitable, Except } from './utilities.js';
+import type { Awaitable, Except, Tuple } from './utilities.js';
+
+type AcceptableValue = string | number | null | undefined | symbol | boolean | void | AcceptableValue[];
+
+interface AcceptableObject {
+    [key: string | number | symbol]: AcceptableObject | AcceptableValue;
+}
+
+/**
+ * A union of all the data types that can be sent across threads.
+ */
+export type Acceptable = AcceptableValue | AcceptableObject;
 
 /**
  * A function that can be used in the `define` function when defining

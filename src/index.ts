@@ -1,7 +1,7 @@
 export { pool } from '@pool';
 export { define } from '@define';
-export { parent } from '@service';
-export { Messenger, messengers } from '@messenger';
+export { MainThread } from '@service';
+export { Messenger, MessengerList } from '@messenger';
 export { ServiceCluster } from '@service_cluster';
 export { SharedMap } from '@shared_map';
 export { ConcurrencyOption } from '@constants/pool.js';

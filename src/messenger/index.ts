@@ -1,3 +1,3 @@
 export { Messenger } from './messenger.js';
 export { isMessengerTransferObject } from './utilities.js';
-export { messengers } from './messengers.js';
+export { MessengerList } from './MessengerList.js';
