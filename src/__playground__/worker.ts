@@ -2,9 +2,11 @@ import { SharedMap, define } from '@nanolith';
 import type { SharedMapTransfer } from '@nanolith';
 
 export default await define({
-    handler: async (transfer: SharedMapTransfer<Record<string, string>>) => {
+    handler: async (transfer: SharedMapTransfer<{ count: number }>) => {
         const map = new SharedMap(transfer);
 
-        await map.set('fuck', 'TESTING');
+        for (let i = 1; i <= 1000; i++) {
+            await map.set('count', (prev) => +prev + 1);
+        }
     },
 });

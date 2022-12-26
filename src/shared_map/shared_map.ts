@@ -4,7 +4,13 @@ import * as Keys from './keys.js';
 import { Bytes } from '@constants/shared_map.js';
 import { BroadcastChannelEmitter } from './broadcast_channel_emitter.js';
 
-import type { Key, SharedMapTransferData, SharedMapOptions, SharedMapBroadcastChannelEvents } from '@typing/shared_map.js';
+import type {
+    Key,
+    SharedMapTransferData,
+    SharedMapOptions,
+    SharedMapBroadcastChannelEvents,
+    SetWithPreviousHandler,
+} from '@typing/shared_map.js';
 import type { CleanKeyOf } from '@typing/utilities.js';
 
 const NULL_ENCODED = encodeValue(new TextEncoder(), null);
@@ -202,6 +208,17 @@ export class SharedMap<Data extends Record<string, any>> {
         return data;
     }
 
+    #get<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
+        const decodedKeys = this.#decoder.decode(this.#keys);
+        const match = Keys.matchKey(decodedKeys, name);
+        if (!match) return null;
+
+        const { start, end } = Keys.parseKey(match as Key);
+        if (start === undefined || end === undefined) throw new Error('Failed to parse key');
+
+        return this.#decoder.decode(this.#values.slice(start, end + 1));
+    }
+
     /**
      * Retrieve items on the {@link SharedMap}.
      *
@@ -212,15 +229,90 @@ export class SharedMap<Data extends Record<string, any>> {
         this.#assertNotClosed();
 
         return this.#run(() => {
-            const decodedKeys = this.#decoder.decode(this.#keys);
-            const match = Keys.matchKey(decodedKeys, name);
-            if (!match) return null;
-
-            const { start, end } = Keys.parseKey(match as Key);
-            if (start === undefined || end === undefined) throw new Error('Failed to parse key');
-
-            return this.#decoder.decode(this.#values.slice(start, end + 1));
+            return this.#get(name);
         });
+    }
+
+    #set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
+        const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
+
+        // The final index in the values array where there is data. Anything
+        // beyond this point is just x00
+        const finalPosition = decodedKeys.match(/\d+(?=\);($|\x00))/g)?.[0];
+        if (!finalPosition) throw new Error('Failed to parse keys.');
+
+        let encodedValue = encodeValue(this.#encoder, value);
+        // Handle when the user tries to pass in an empty string when setting a value
+        if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
+
+        // If the key already exists, run a new set of logic.
+        if (!Keys.createKeyRegex(name).test(decodedKeys)) {
+            const start = +finalPosition + 1;
+            const end = start + encodedValue.byteLength - 1;
+            const newKey = Keys.createKey({ name, start, end });
+            this.#keys.set(this.#encoder.encode(decodedKeys.concat(newKey)));
+            this.#values.set(encodedValue, start);
+            return;
+        }
+
+        // The key we are trying to change.
+        const match = Keys.matchKey(decodedKeys, name);
+        if (!match) throw new Error('Failed to parse keys.');
+
+        /* Update value */
+        const { start: valueStart, end: previousValueEnd } = Keys.parseKey(match);
+        const previousValueByteLength = previousValueEnd - valueStart + 1;
+
+        // If the byteLength of the data provided is the same as the byteLength of
+        // the data that already exists, we don't need to do any index shifting and
+        // can just replace the data without doing magic with keys.
+        if (previousValueByteLength === encodedValue.byteLength) {
+            this.#values.set(encodedValue, valueStart);
+            return;
+        }
+
+        const valueEnd = valueStart + encodedValue.byteLength;
+
+        // If we aren't modifying the final value, rewrite the old data to the new offset so
+        // it's not nastily overwritten
+        if (previousValueEnd !== +finalPosition) {
+            const slice = this.#values.slice(previousValueEnd + 1, +finalPosition + 1);
+            this.#values.set(slice, valueEnd);
+        }
+
+        this.#values.set(encodedValue, valueStart);
+
+        /* Update keys */
+        const keysArray = decodedKeys.split(/(?<=;)/g) as Key[];
+        const targetKeyIndex = keysArray.findIndex((item) => Keys.createKeyRegex(name).test(item));
+        const newTargetKey = Keys.createKey({ name, start: valueStart, end: valueEnd - 1 });
+
+        // Replace the old targeted key with a new one updated with the new indexes
+        keysArray.splice(targetKeyIndex, 1, newTargetKey);
+
+        // Each key after the target key must also be updated
+        for (let i = targetKeyIndex + 1; i < keysArray.length; i++) {
+            const { name, start: previousStart, end: previousEnd } = Keys.parseKey(keysArray[i]);
+            const byteLength = previousEnd - previousStart + 1;
+
+            // Calculate where the key should now start and where it should end
+            const start = previousStart - previousValueByteLength + encodedValue.byteLength;
+            const end = start + byteLength - 1;
+
+            // Replace the old key with the updated one
+            keysArray.splice(i, 1, Keys.createKey({ name, start, end }));
+        }
+
+        let updatedKeys = keysArray.join('');
+
+        // We don't want garbage lingering data, so add "empty" bytes
+        // for any extra lingering positions in case the keys string is
+        // now shorter than what it was previously
+        if (updatedKeys.length < decodedKeys.length) {
+            updatedKeys += '\x00'.repeat(decodedKeys.length - updatedKeys.length);
+        }
+
+        this.#keys.set(this.#encoder.encode(updatedKeys));
     }
 
     /**
@@ -229,89 +321,25 @@ export class SharedMap<Data extends Record<string, any>> {
      * @param name The name of the key to set. The key **must** already exist on the map.
      * @param value The new value for the key.
      */
+    set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(
+        name: KeyName,
+        handler: SetWithPreviousHandler<Data[KeyName]>
+    ): Promise<void>;
+    set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(
+        name: KeyName,
+        value: Data[KeyName] | SetWithPreviousHandler<Data[KeyName]>
+    ): Promise<void>;
     set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
         this.#assertNotClosed();
 
-        return this.#run(() => {
-            const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
+        return this.#run(async () => {
+            // If the value isn't a function, set the value straight.
+            if (typeof value !== 'function') return this.#set(name, value);
 
-            // The final index in the values array where there is data. Anything
-            // beyond this point is just x00
-            const finalPosition = decodedKeys.match(/\d+(?=\);($|\x00))/g)?.[0];
-            if (!finalPosition) throw new Error('Failed to parse keys.');
-
-            let encodedValue = encodeValue(this.#encoder, value);
-            // Handle when the user tries to pass in an empty string when setting a value
-            if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
-
-            // If the key already exists, run a new set of logic.
-            if (!Keys.createKeyRegex(name).test(decodedKeys)) {
-                const start = +finalPosition + 1;
-                const end = start + encodedValue.byteLength - 1;
-                const newKey = Keys.createKey({ name, start, end });
-                this.#keys.set(this.#encoder.encode(decodedKeys.concat(newKey)));
-                this.#values.set(encodedValue, start);
-                return;
-            }
-
-            // The key we are trying to change.
-            const match = Keys.matchKey(decodedKeys, name);
-            if (!match) throw new Error('Failed to parse keys.');
-
-            /* Update value */
-            const { start: valueStart, end: previousValueEnd } = Keys.parseKey(match);
-            const previousValueByteLength = previousValueEnd - valueStart + 1;
-
-            // If the byteLength of the data provided is the same as the byteLength of
-            // the data that already exists, we don't need to do any index shifting and
-            // can just replace the data without doing magic with keys.
-            if (previousValueByteLength === encodedValue.byteLength) {
-                this.#values.set(encodedValue, valueStart);
-                return;
-            }
-
-            const valueEnd = valueStart + encodedValue.byteLength;
-
-            // If we aren't modifying the final value, rewrite the old data to the new offset so
-            // it's not nastily overwritten
-            if (previousValueEnd !== +finalPosition) {
-                const slice = this.#values.slice(previousValueEnd + 1, +finalPosition + 1);
-                this.#values.set(slice, valueEnd);
-            }
-
-            this.#values.set(encodedValue, valueStart);
-
-            /* Update keys */
-            const keysArray = decodedKeys.split(/(?<=;)/g) as Key[];
-            const targetKeyIndex = keysArray.findIndex((item) => Keys.createKeyRegex(name).test(item));
-            const newTargetKey = Keys.createKey({ name, start: valueStart, end: valueEnd - 1 });
-
-            // Replace the old targeted key with a new one updated with the new indexes
-            keysArray.splice(targetKeyIndex, 1, newTargetKey);
-
-            // Each key after the target key must also be updated
-            for (let i = targetKeyIndex + 1; i < keysArray.length; i++) {
-                const { name, start: previousStart, end: previousEnd } = Keys.parseKey(keysArray[i]);
-                const byteLength = previousEnd - previousStart + 1;
-
-                // Calculate where the key should now start and where it should end
-                const start = previousStart - previousValueByteLength + encodedValue.byteLength;
-                const end = start + byteLength - 1;
-
-                // Replace the old key with the updated one
-                keysArray.splice(i, 1, Keys.createKey({ name, start, end }));
-            }
-
-            let updatedKeys = keysArray.join('');
-
-            // We don't want garbage lingering data, so add "empty" bytes
-            // for any extra lingering positions in case the keys string is
-            // now shorter than what it was previously
-            if (updatedKeys.length < decodedKeys.length) {
-                updatedKeys += '\x00'.repeat(decodedKeys.length - updatedKeys.length);
-            }
-
-            this.#keys.set(this.#encoder.encode(updatedKeys));
+            // Otherwise, feed the previous value into the handler to generate a new
+            // value, then set that as the new value.
+            const newValue = await value(this.#get(name));
+            return this.#set(name, newValue);
         });
     }
 }
