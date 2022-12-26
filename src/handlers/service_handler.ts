@@ -45,11 +45,11 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
                         throw new Error(`A task with the name ${name} doesn't exist!`);
                     }
 
-                    await definitions['__beforeTask']?.({ name, inService: false });
+                    await definitions['__beforeTask']?.({ name, inService: true });
 
                     const data = await definitions[name](...params);
 
-                    await definitions['__afterTask']?.({ name, inService: false });
+                    await definitions['__afterTask']?.({ name, inService: true });
 
                     const response: WorkerCallReturnMessageBody = {
                         type: WorkerMessageType.CallReturn,
