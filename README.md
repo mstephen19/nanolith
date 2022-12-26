@@ -1,6 +1,6 @@
 # Nanolith
 
-Multithreading in minutes.
+Multithreading in minutes. _(More intuitive and feature-rich than [piscina](https://www.npmjs.com/package/piscina)!)_
 
 [![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)](https://www.typescriptlang.org/) [![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![Install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
 
@@ -46,6 +46,7 @@ Here's a quick rundown of everything you can do in Nanolith:
 - [📨 Communicating between threads](#📨-communicating-between-threads)
 - [📡 Streaming data between threads](#📡-streaming-data-between-threads)
 - [💾 Sharing memory between threads](#💾-sharing-memory-between-threads)
+- [🧑‍🏫 Examples](#🧑‍🏫-examples)
 - [📜 License](#license-📜)
 
 ## 💾 Installation
@@ -252,6 +253,8 @@ export const worker = await define({
     // Runs before a task is called.
     __beforeTask({ name, inService }) {
         console.log(`Running task ${name}.`);
+        // You have access to "inService", which tells you if the
+        // task will run standalone, or within a service.
         console.log(`${inService ? 'Is' : 'Is not'} in a service.`);
     },
     // Runs after a task is called.
@@ -262,13 +265,41 @@ export const worker = await define({
 });
 ```
 
+These hooks run on the same thread as their service/task.
+
 ## 🚨 Managing concurrency
 
-<!-- Discuss pool, what it does, and how to configure it (if needed) -->
+Nanolith automatically manages the concurrency your services and task calls with the internal `pool` class. By default, the maximum concurrency is one thread per core on the machine. This is a safe value to go with; however, the `maxConcurrency` can be modified up using one of the set `ConcurrencyOption`s.
+
+```TypeScript
+// index.ts 💡
+// Importing the pool
+import { pool, ConcurrencyOption } from 'nanolith';
+
+// One thread per four cores.
+pool.setConcurrency(ConcurrencyOption.Quarter);
+// One thread per two cores.
+pool.setConcurrency(ConcurrencyOption.Half);
+// Default concurrency. One thread per core (x1).
+pool.setConcurrency(ConcurrencyOption.Default);
+// One thread per core.
+pool.setConcurrency(ConcurrencyOption.x1);
+// Two threads per core.
+pool.setConcurrency(ConcurrencyOption.x2);
+// Four threads per core.
+pool.setConcurrency(ConcurrencyOption.x4);
+// Six threads per core.
+pool.setConcurrency(ConcurrencyOption.x6);
+// Eight threads per core.
+pool.setConcurrency(ConcurrencyOption.x8);
+// Ten threads per core.
+// Warning: This is overkill.
+pool.setConcurrency(ConcurrencyOption.x10);
+```
+
+<!-- todo: go over the various other properties and methods on the pool -->
 
 ## 📨 Communicating between threads
-
-<!-- Discuss the two types of messaging that are supported in Nanolith -->
 
 ## 📡 Streaming data between threads
 
@@ -278,6 +309,8 @@ export const worker = await define({
 
 <!-- SharedMap -->
 <!-- Doing highly concurrent parallel operations with SharedMap -->
+
+## 🧑‍🏫 Examples
 
 ## 📜 License
 
