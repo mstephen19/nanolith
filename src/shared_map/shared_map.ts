@@ -237,24 +237,32 @@ export class SharedMap<Data extends Record<string, any>> {
         return this.#run(() => {
             const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
 
-            // Disallow the setting of keys that don't already exist
-            if (!Keys.createKeyRegex(name).test(decodedKeys)) {
-                throw new Error(`The key "${name}" doesn't exist on this SharedMap!`);
-            }
-
             // The final index in the values array where there is data. Anything
             // beyond this point is just x00
             const finalPosition = decodedKeys.match(/\d+(?=\);($|\x00))/g)?.[0];
-            // The key
+            if (!finalPosition) throw new Error('Failed to parse keys.');
+
+            let encodedValue = encodeValue(this.#encoder, value);
+            // Handle when the user tries to pass in an empty string when setting a value
+            if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
+
+            // If the key already exists, run a new set of logic.
+            if (!Keys.createKeyRegex(name).test(decodedKeys)) {
+                const start = +finalPosition + 1;
+                const end = start + encodedValue.byteLength - 1;
+                const newKey = Keys.createKey({ name, start, end });
+                this.#keys.set(this.#encoder.encode(decodedKeys.concat(newKey)));
+                this.#values.set(encodedValue, start);
+                return;
+            }
+
+            // The key we are trying to change.
             const match = Keys.matchKey(decodedKeys, name);
-            if (!match || !finalPosition) throw new Error('Failed to parse keys.');
+            if (!match) throw new Error('Failed to parse keys.');
 
             /* Update value */
             const { start: valueStart, end: previousValueEnd } = Keys.parseKey(match);
             const previousValueByteLength = previousValueEnd - valueStart + 1;
-            let encodedValue = encodeValue(this.#encoder, value);
-            // Handle when the user tries to pass in an empty string when setting a value
-            if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
 
             // If the byteLength of the data provided is the same as the byteLength of
             // the data that already exists, we don't need to do any index shifting and
