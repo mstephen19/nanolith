@@ -218,6 +218,9 @@ In a scalable application utilizing multiple identical [services](#launchservice
 
 ## 💾 Sharing memory between threads
 
+<!-- SharedMap -->
+<!-- Doing highly concurrent parallel operations with SharedMap -->
+
 ## 📜 License
 
 The MIT License (MIT)

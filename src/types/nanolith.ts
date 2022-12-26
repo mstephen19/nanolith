@@ -1,5 +1,6 @@
+import type { ServiceCluster } from '@service_cluster';
 import type { TaskDefinitions, Tasks } from './definitions.js';
-import type { CleanKeyOf, CleanReturnType } from './utilities.js';
+import type { CleanKeyOf, CleanReturnType, PositiveWholeNumber } from './utilities.js';
 import type { TaskWorkerOptions, ServiceWorkerOptions } from './workers.js';
 import type { Service } from '@service';
 
@@ -48,7 +49,22 @@ export type Nanolith<Definitions extends TaskDefinitions> = {
      */
     launchService: <Options extends ServiceWorkerOptions>(options?: Options) => Promise<Service<Definitions>>;
     /**
+     * Simultaneously create a cluster and launch a certain number of
+     * services on it.
+     *
+     * @param count The number of services to launch on the cluster.
+     * @param options
+     */
+    clusterize<Count extends number, Options extends ServiceWorkerOptions>(
+        count?: PositiveWholeNumber<Count>,
+        options?: Options
+    ): Promise<ServiceCluster<Definitions>>;
+    /**
      * The file location at which the definitions live, and where the worker runs off of.
      */
     file: string;
+    /**
+     * The unique identifier for the set of definitions.
+     */
+    identifier: string;
 };

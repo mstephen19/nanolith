@@ -21,13 +21,23 @@ export type CleanKeyOf<T extends Record<any, any>> = Extract<keyof T, string>;
 type IsEqual<T, U> = (<G>() => G extends T ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false;
 
 /**
-Filter out keys from an object.
-*/
+ * Filter out keys from an object.
+ */
 type Filter<KeyType, ExcludeType> = IsEqual<KeyType, ExcludeType> extends true ? never : KeyType extends ExcludeType ? never : KeyType;
 
 /**
-Create a type from an object type without certain keys.
-*/
+ * Create a type from an object type without certain keys.
+ */
 export type Except<ObjectType, KeysType extends keyof ObjectType> = {
     [KeyType in keyof ObjectType as Filter<KeyType, KeysType>]: ObjectType[KeyType];
 };
+
+/**
+ * Create tuples of any length
+ */
+export type Tuple<T, N, R extends T[] = []> = R['length'] extends N ? R : Tuple<T, N, [...R, T]>;
+
+/**
+ * Ensure a number is a positive whole number.
+ */
+export type PositiveWholeNumber<Num extends number> = `${Num}` extends `-${string}` | `${string}.${string}` | '0' ? never : Num;
