@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - README streaming examples to use `.shift()` instead of `.splice()`.
 - Context of `TaskHook`s to contain the name of the task being called and whether or not it's being called within a service.
+- `ServiceCluster.launch` to disallow negative or non-whole numbers.
 
 ### Fixed
 
@@ -25,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Functionality for setting new keys on `SharedMap` instances rather than throwing an error.
 - The ability to set new values on `SharedMap` based on the previous value. This is fantastic for high-concurrency parallel operations and eliminates all race conditions.
+- `Nanolith.clusterize` method for easy creation of a service cluster and launching services all at the same time.
 
 ## [0.2.5] - 2022-24-12
 

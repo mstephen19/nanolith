@@ -23,3 +23,6 @@ jest.config.js
 .eslintrc.json
 .gitignore
 CHANGELOG.md
+
+# Files that will be removed later
+OLD_README.md
