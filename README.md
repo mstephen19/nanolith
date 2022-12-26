@@ -32,22 +32,22 @@ Here's a quick rundown of everything you can do in Nanolith:
 
 ## 📖 Table of contents
 
-- [❔ About](#about-❔)
-- [💾 Installation](#💾-installation)
-- [📝 Defining your tasks](#📝-defining-your-tasks)
+- [❔ About](#-about)
+- [💾 Installation](#-installation)
+- [📝 Defining your tasks](#-defining-your-tasks)
   - [`define()` options](#define-options)
-- [👷 Running a task](#👷-running-a-task)
+- [👷 Running a task](#-running-a-task)
   - [Task function options](#task-function-options)
-- [🎩 Understanding services](#🎩-understanding-services)
-  - [`launchService()` options]()
-- [🎬 Coordinating services](#🎬-coordinating-services)
-- [🪝 Hooks](#🪝-hooks)
-- [🚨 Managing concurrency](#🚨-managing-concurrency)
-- [📨 Communicating between threads](#📨-communicating-between-threads)
-- [📡 Streaming data between threads](#📡-streaming-data-between-threads)
-- [💾 Sharing memory between threads](#💾-sharing-memory-between-threads)
-- [🧑‍🏫 Examples](#🧑‍🏫-examples)
-- [📜 License](#license-📜)
+- [🎩 Understanding services](#-understanding-services)
+  - [`launchService()` options](#launchservice-options)
+- [🎬 Coordinating services](#-coordinating-services)
+- [🪝 Hooks](#-hooks)
+- [🚨 Managing concurrency](#-managing-concurrency)
+- [📨 Communicating between threads](#-communicating-between-threads)
+- [📡 Streaming data between threads](#-streaming-data-between-threads)
+- [💾 Sharing memory between threads](#-sharing-memory-between-threads)
+- [🧑‍🏫 Examples](#-examples)
+- [📜 License](#-license)
 
 ## 💾 Installation
 
@@ -111,7 +111,7 @@ As seen above, the first argument to `define()` is an object containing your fun
 
 ## 👷 Running a task
 
-After [defining](#📝-defining-your-tasks) a set of tasks, you can import them and call them anywhere by directly using the **Nanolith** API resolved by the `define()` function. The only difference is that instead of being called on the main thread, a new thread will be created for the task and it will be run there.
+After [defining](#-defining-your-tasks) a set of tasks, you can import them and call them anywhere by directly using the **Nanolith** API resolved by the `define()` function. The only difference is that instead of being called on the main thread, a new thread will be created for the task and it will be run there.
 
 ```TypeScript
 // 💡 index.ts
@@ -146,14 +146,14 @@ The new thread's process is shut down after the task finishes.
 | `params` | **any[]** | The arguments for the task in array form. |
 | `priority` | **boolean** | Whether or not to treat the task's worker as priority over others when being queued into the `pool`. |
 | `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
-| `messengers` | [**Messenger**](#📨-communicating-between-threads)**[]** | The `Messenger`s that should be accessible to the task. |
+| `messengers` | [**Messenger**](#-communicating-between-threads)**[]** | The `Messenger`s that should be accessible to the task. |
 | `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
 ## 🎩 Understanding services
 
-**Services** are Nanolith's flagship feature. Running a task on a service works similarly to [running a task](#👷-running-a-task) normally; however, the key difference is that the thread only shuts down when you tell it to. This means that you can run multiple tasks on the same thread rather than spawning up a new one for each call.
+**Services** are Nanolith's flagship feature. Running a task on a service works similarly to [running a task](#-running-a-task) normally; however, the key difference is that the thread only shuts down when you tell it to. This means that you can run multiple tasks on the same thread rather than spawning up a new one for each call.
 
-Considering the definitions we created [here](#📝-defining-your-tasks), here is how a service would be launched and a task would be called on it.
+Considering the definitions we created [here](#-defining-your-tasks), here is how a service would be launched and a task would be called on it.
 
 ```TypeScript
 // 💡 index.ts
@@ -190,7 +190,7 @@ The configurations for `Nanolith.launchService()` are nearly identical to the [t
 | `exceptionHandler` | **function** | An optional but _highly recommended_ option that allows you to catch uncaught exceptions within the service. |
 | `priority` | **boolean** | Whether or not to treat the service's worker as priority over others when being queued into the `pool`. |
 | `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
-| `messengers` | [**Messenger**](#📨-communicating-between-threads)**[]** | The `Messenger`s that should be accessible to the service. |
+| `messengers` | [**Messenger**](#-communicating-between-threads)**[]** | The `Messenger`s that should be accessible to the service. |
 | `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
 <!-- todo: Go over all methods & properties available on Service -->
@@ -238,7 +238,7 @@ For simplicity of the above example, we are only running a single task. However,
 
 ## 🪝 Hooks
 
-For a bit of finer control over your services and tasks, three hooks are available and can be provided directly to [`define()`](#📝-defining-your-tasks).
+For a bit of finer control over your services and tasks, three hooks are available and can be provided directly to [`define()`](#-defining-your-tasks).
 
 ```TypeScript
 // worker.ts 💼
