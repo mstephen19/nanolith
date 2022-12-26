@@ -1,4 +1,4 @@
-import { workerData, parentPort, threadId } from 'worker_threads';
+import { workerData, parentPort } from 'worker_threads';
 import { WorkerMessageType } from '@constants/messages.js';
 import { applyMessengerTransferObjects } from './utilities.js';
 
@@ -10,7 +10,7 @@ import type { TaskWorkerData } from '@typing/worker_data.js';
  * Handles only task workers.
  */
 export async function taskWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
-    process.on('uncaughtException', (err) => {
+    process.prependListener('uncaughtException', (err) => {
         const body: WorkerExceptionMessageBody = {
             type: WorkerMessageType.WorkerException,
             data: err,
@@ -31,10 +31,13 @@ export async function taskWorkerHandler<Definitions extends TaskDefinitions>(def
         if (messengerTransfers.length) applyMessengerTransferObjects(messengerTransfers);
 
         // Run the before hook if present
-        await definitions['__beforeTask']?.(threadId);
+        await definitions['__beforeTask']?.({ name, inService: false });
 
         // Run the task function
         const data = await definitions[name](...params);
+
+        // Run the after hook if present
+        await definitions['__afterTask']?.({ name, inService: false });
 
         const body: WorkerTaskReturnMessageBody = {
             type: WorkerMessageType.TaskReturn,
@@ -43,9 +46,6 @@ export async function taskWorkerHandler<Definitions extends TaskDefinitions>(def
 
         // Send the return value back to the main thread
         parentPort!.postMessage(body);
-
-        // Run the after hook if present
-        await definitions['__afterTask']?.(threadId);
     } catch (error) {
         const body: WorkerTaskErrorMessageBody = {
             type: WorkerMessageType.TaskError,

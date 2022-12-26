@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Removed
+
+- `__beforeServiceTask` and `__afterServiceTask` hooks in favor of universal `__beforeTask` and `__afterTask` hooks with new context.
+
+### Changed
+
+- README streaming examples to use `.shift()` instead of `.splice()`.
+- Context of `TaskHook`s to contain the name of the task being called and whether or not it's being called within a service.
+
+### Fixed
+
+- `__afterTask` hook being called after the returned value was posted back to the main thread instead of before.
+- Weird exclusion of `HookDefinitions` keys in `Tasks` type.
+- Needing to close all `SharedMap` instances, otherwise the thread would hang even if nothing else is happening.
+
+### Added
+
+- Functionality for setting new keys on `SharedMap` instances rather than throwing an error.
+- The ability to set new values on `SharedMap` based on the previous value. This is fantastic for high-concurrency parallel operations and eliminates all race conditions.
+
+## [0.2.5] - 2022-24-12
+
 ### Added
 
 - `SharedMap` implementation
@@ -14,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Path aliases for all main features (for easy importing/exporting).
 - Support for `NodeNext` module resolution.
 - "LICENSE" file containing MIT license.
+- Docs for `SharedMap`.
 
 ### Changed
 

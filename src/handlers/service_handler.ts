@@ -20,7 +20,7 @@ import type { ServiceWorkerData } from '@typing/worker_data.js';
  * Handles only service workers.
  */
 export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
-    process.on('uncaughtException', (err) => {
+    process.prependListener('uncaughtException', (err) => {
         const body: WorkerExceptionMessageBody = {
             type: WorkerMessageType.WorkerException,
             data: err,
@@ -31,23 +31,25 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
 
     // This listener is a priority, so should be added first
     parentPort!.on('message', async (body: MainThreadBaseMessageBody) => {
-        switch (body?.type) {
-            // Exit the worker's process when the terminate message is sent
-            case MainThreadMessageType.Terminate:
-                process.exit();
-                break;
-            // Handle calling a task within a service worker with message passing
-            case MainThreadMessageType.Call: {
-                try {
+        try {
+            switch (body?.type) {
+                // Exit the worker's process when the terminate message is sent
+                case MainThreadMessageType.Terminate:
+                    process.exit();
+                    break;
+                // Handle calling a task within a service worker with message passing
+                case MainThreadMessageType.Call: {
                     const { name, params, key } = body as MainThreadCallMessageBody;
 
                     if (!definitions?.[name] || typeof definitions[name] !== 'function') {
                         throw new Error(`A task with the name ${name} doesn't exist!`);
                     }
 
-                    await definitions['__beforeServiceTask']?.(threadId);
+                    await definitions['__beforeTask']?.({ name, inService: true });
 
                     const data = await definitions[name](...params);
+
+                    await definitions['__afterTask']?.({ name, inService: true });
 
                     const response: WorkerCallReturnMessageBody = {
                         type: WorkerMessageType.CallReturn,
@@ -56,37 +58,35 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
                     };
 
                     parentPort!.postMessage(response);
+                    break;
+                }
+                case MainThreadMessageType.MessengerTransfer: {
+                    const { data } = body as MainThreadMessengerTransferBody;
 
-                    await definitions['__afterServiceTask']?.(threadId);
-                } catch (error) {
-                    // Don't exit the process, instead post back a message with the error
-                    const response: WorkerCallErrorMessageBody = {
-                        type: WorkerMessageType.CallError,
-                        key: (body as MainThreadCallMessageBody).key,
-                        data: error as Error,
+                    (workerData as ServiceWorkerData).messengers[data.__messengerID] = new Messenger(data);
+
+                    // Send a confirmation that the messenger data was received and processed
+                    // by the callback above.
+                    const postBody: WorkerMessengerTransferSuccessBody = {
+                        type: WorkerMessageType.MessengerTransferSuccess,
+                        data: (body as MainThreadMessengerTransferBody).data.__messengerID,
                     };
 
-                    parentPort!.postMessage(response);
+                    parentPort?.postMessage(postBody);
+                    break;
                 }
-                break;
+                default:
+                    break;
             }
-            case MainThreadMessageType.MessengerTransfer: {
-                const { data } = body as MainThreadMessengerTransferBody;
+        } catch (error) {
+            // Don't exit the process, instead post back a message with the error
+            const response: WorkerCallErrorMessageBody = {
+                type: WorkerMessageType.CallError,
+                key: (body as MainThreadCallMessageBody).key,
+                data: error as Error,
+            };
 
-                (workerData as ServiceWorkerData).messengers[data.__messengerID] = new Messenger(data);
-
-                // Send a confirmation that the messenger data was received and processed
-                // by the callback above.
-                const postBody: WorkerMessengerTransferSuccessBody = {
-                    type: WorkerMessageType.MessengerTransferSuccess,
-                    data: (body as MainThreadMessengerTransferBody).data.__messengerID,
-                };
-
-                parentPort?.postMessage(postBody);
-                break;
-            }
-            default:
-                break;
+            parentPort!.postMessage(response);
         }
     });
 
