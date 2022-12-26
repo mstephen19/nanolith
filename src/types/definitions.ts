@@ -48,7 +48,7 @@ export type HookDefinitions = {
 /**
  * A collection of task functions.
  */
-export type TaskDefinitions = Record<string, TaskFunction> & HookDefinitions;
+export type TaskDefinitions = Exclude<Record<string, TaskFunction>, keyof HookDefinitions> & HookDefinitions;
 
 /**
  * A collection of task functions, excluding the `__initializeService` function if present.
