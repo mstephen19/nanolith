@@ -1,2 +1,2 @@
 export { Service } from './service.js';
-export { parent } from './parent.js';
+export { mainThread } from './main_thread.js';

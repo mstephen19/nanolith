@@ -143,7 +143,6 @@ async function createStream(metaData?: Record<any, any>) {
 }
 
 /**
- *
  * An object containing functions to be used within workers when communicating with the main thread.
  *
  * @example
@@ -153,7 +152,7 @@ async function createStream(metaData?: Record<any, any>) {
  *     console.log(Object.values(data));
  * });
  */
-export const parent = Object.freeze({
+export const mainThread = Object.freeze({
     sendMessage,
     onMessage,
     onMessengerReceived,

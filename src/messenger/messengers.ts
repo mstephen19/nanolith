@@ -1,6 +1,6 @@
 /* eslint-disable indent */
 import { workerData } from 'worker_threads';
-import { parent } from '@service';
+import { mainThread } from '@service';
 import { assertIsNotMainThread } from '@utilities';
 
 import type { Messenger } from './messenger.js';
@@ -30,7 +30,7 @@ async function use(name: string) {
                   reject(new Error(`Timed out after waiting 10 seconds to receive a messenger named ${name}`));
               }, 10e3);
 
-              const removeListener = parent.onMessengerReceived((messenger: Messenger) => {
+              const removeListener = mainThread.onMessengerReceived((messenger: Messenger) => {
                   if (messenger.ID !== name) return;
                   resolve(messenger);
                   clearTimeout(timeout);
@@ -50,9 +50,9 @@ async function use(name: string) {
  * @returns An object containing `Messenger`s organized based on their names.
  *
  * @example
- * const messengers = messages.seek();
- * console.log(messengers); // -> { foo: Messenger, bar: Messenger }
- * console.log(messengers.foo.uniqueKey);
+ * const map = messengers.seek();
+ * console.log(map); // -> { foo: Messenger, bar: Messenger }
+ * console.log(map.foo.uniqueKey);
  */
 function seek() {
     assertIsNotMainThread('messages.seek');
