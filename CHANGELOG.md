@@ -19,6 +19,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `__afterTask` hook being called after the returned value was posted back to the main thread instead of before.
 - Weird exclusion of `HookDefinitions` keys in `Tasks` type.
+- Needing to close all `SharedMap` instances, otherwise the thread would hang even if nothing else is happening.
+
+### Added
+
+- Functionality for setting new keys on `SharedMap` instances rather than throwing an error.
+- The ability to set new values on `SharedMap` based on the previous value. This is fantastic for high-concurrency parallel operations and eliminates all race conditions.
 
 ## [0.2.5] - 2022-24-12
 

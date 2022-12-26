@@ -13,6 +13,8 @@ export type KeyData = {
     end: number;
 };
 
+export type SetWithPreviousHandler<Data> = (previousValue: string) => Awaitable<Data>;
+
 export type Key = `${string}(${number},${number});`;
 
 export type SharedMapOptions = {

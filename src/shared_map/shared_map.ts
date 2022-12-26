@@ -4,14 +4,18 @@ import * as Keys from './keys.js';
 import { Bytes } from '@constants/shared_map.js';
 import { BroadcastChannelEmitter } from './broadcast_channel_emitter.js';
 
-import type { Key, SharedMapTransferData, SharedMapOptions, SharedMapBroadcastChannelEvents } from '@typing/shared_map.js';
+import type {
+    Key,
+    SharedMapTransferData,
+    SharedMapOptions,
+    SharedMapBroadcastChannelEvents,
+    SetWithPreviousHandler,
+} from '@typing/shared_map.js';
 import type { CleanKeyOf } from '@typing/utilities.js';
 
 const NULL_ENCODED = encodeValue(new TextEncoder(), null);
 
 /**
- * 👶 **BETA FEATURE** 👶
- *
  * A highly approachable solution to sharing memory between multiple threads 💾
  *
  * 💥 **Note:** Does not act exactly the same way as the {@link Map} object!
@@ -31,7 +35,7 @@ export class SharedMap<Data extends Record<string, any>> {
     #identifier: string;
     // Used by all SharedMap instances (including the orchestrator) to communicate
     // with the orchestrator channel. Orchestrator instance communicates with itself
-    #channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>;
+    // #channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>;
     #orchestratorChannel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents> | null = null;
     #closed = false;
 
@@ -77,7 +81,6 @@ export class SharedMap<Data extends Record<string, any>> {
             this.#keys = data.__keys;
             this.#values = data.__values;
             this.#identifier = data.__identifier;
-            this.#channel = new BroadcastChannelEmitter(this.#identifier);
             return;
         }
 
@@ -133,8 +136,6 @@ export class SharedMap<Data extends Record<string, any>> {
 
         // Now we can set up the orchestrator queuing system
         this.#identifier = v4();
-        // This is the channel that will be used for communicating with the orchestrator channel.
-        this.#channel = new BroadcastChannelEmitter(this.#identifier);
 
         // The channel which controls the queue. Listens for events and reacts to them accordingly.
         this.#orchestratorChannel = new BroadcastChannelEmitter(this.#identifier);
@@ -158,16 +159,13 @@ export class SharedMap<Data extends Record<string, any>> {
     }
 
     /**
-     * Closes the {@link SharedMap}'s underlying {@link BroadcastChannel} instance(s). If this instance is the
-     * orchestrator instance, no other `SharedMap` instances using its transfer object will work anymore.
+     * Disable the instance from doing any more operations. If this {@link SharedMap} instance is the
+     * orchestrator, it will close the orchestration channel and no other instances will continue to work.
      */
     close() {
-        this.#channel.close();
         // If this SharedMap is the orchestrator, close the orchestrator channel as well
-        if (this.#orchestratorChannel) {
-            this.#orchestratorChannel.close();
-            this.#closed = true;
-        }
+        if (this.#orchestratorChannel) this.#orchestratorChannel.close();
+        this.#closed = true;
     }
 
     #assertNotClosed() {
@@ -175,33 +173,48 @@ export class SharedMap<Data extends Record<string, any>> {
         throw new Error('Cannot perform actions on a closed SharedMap instance!');
     }
 
-    #wait(): Promise<string> {
+    #wait(): Promise<[string, BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>]> {
         return new Promise((resolve) => {
+            const channel = new BroadcastChannelEmitter(this.#identifier);
+
             // Generate an ID for the workflow
             const id = v4();
 
             // Wait for a notification that we are ready to run the task
-            this.#channel.on(`ready_${id}`, () => {
-                resolve(id);
+            channel.on(`ready_${id}`, () => {
+                resolve([id, channel]);
             });
 
             // Push the ID into the queue. Let the queue handle the rest.
-            this.#channel.send('push_to_queue', id);
+            channel.send('push_to_queue', id);
         });
     }
 
     async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
         // Generate a workflow ID and wait for our turn in the queue.
-        const id = await this.#wait();
+        const [id, channel] = await this.#wait();
         // Run the workflow
         const data = await workflow();
         // Once the workflow has finished, emit an event to the orchestrator requesting
         // our item to be popped off the top of the queue. Then if there is another item in
         // the queue, emit the `ready_${nextId}` event to let them know it's their turn.
-        this.#channel.send('remove_from_queue', id);
+        channel.send('remove_from_queue', id);
+
+        channel.close();
 
         // Return out the return value, if any
         return data;
+    }
+
+    #get<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
+        const decodedKeys = this.#decoder.decode(this.#keys);
+        const match = Keys.matchKey(decodedKeys, name);
+        if (!match) return null;
+
+        const { start, end } = Keys.parseKey(match as Key);
+        if (start === undefined || end === undefined) throw new Error('Failed to parse key');
+
+        return this.#decoder.decode(this.#values.slice(start, end + 1));
     }
 
     /**
@@ -214,15 +227,90 @@ export class SharedMap<Data extends Record<string, any>> {
         this.#assertNotClosed();
 
         return this.#run(() => {
-            const decodedKeys = this.#decoder.decode(this.#keys);
-            const match = Keys.matchKey(decodedKeys, name);
-            if (!match) return null;
-
-            const { start, end } = Keys.parseKey(match as Key);
-            if (start === undefined || end === undefined) throw new Error('Failed to parse key');
-
-            return this.#decoder.decode(this.#values.slice(start, end + 1));
+            return this.#get(name);
         });
+    }
+
+    #set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
+        const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
+
+        // The final index in the values array where there is data. Anything
+        // beyond this point is just x00
+        const finalPosition = decodedKeys.match(/\d+(?=\);($|\x00))/g)?.[0];
+        if (!finalPosition) throw new Error('Failed to parse keys.');
+
+        let encodedValue = encodeValue(this.#encoder, value);
+        // Handle when the user tries to pass in an empty string when setting a value
+        if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
+
+        // If the key already exists, run a new set of logic.
+        if (!Keys.createKeyRegex(name).test(decodedKeys)) {
+            const start = +finalPosition + 1;
+            const end = start + encodedValue.byteLength - 1;
+            const newKey = Keys.createKey({ name, start, end });
+            this.#keys.set(this.#encoder.encode(decodedKeys.concat(newKey)));
+            this.#values.set(encodedValue, start);
+            return;
+        }
+
+        // The key we are trying to change.
+        const match = Keys.matchKey(decodedKeys, name);
+        if (!match) throw new Error('Failed to parse keys.');
+
+        /* Update value */
+        const { start: valueStart, end: previousValueEnd } = Keys.parseKey(match);
+        const previousValueByteLength = previousValueEnd - valueStart + 1;
+
+        // If the byteLength of the data provided is the same as the byteLength of
+        // the data that already exists, we don't need to do any index shifting and
+        // can just replace the data without doing magic with keys.
+        if (previousValueByteLength === encodedValue.byteLength) {
+            this.#values.set(encodedValue, valueStart);
+            return;
+        }
+
+        const valueEnd = valueStart + encodedValue.byteLength;
+
+        // If we aren't modifying the final value, rewrite the old data to the new offset so
+        // it's not nastily overwritten
+        if (previousValueEnd !== +finalPosition) {
+            const slice = this.#values.slice(previousValueEnd + 1, +finalPosition + 1);
+            this.#values.set(slice, valueEnd);
+        }
+
+        this.#values.set(encodedValue, valueStart);
+
+        /* Update keys */
+        const keysArray = decodedKeys.split(/(?<=;)/g) as Key[];
+        const targetKeyIndex = keysArray.findIndex((item) => Keys.createKeyRegex(name).test(item));
+        const newTargetKey = Keys.createKey({ name, start: valueStart, end: valueEnd - 1 });
+
+        // Replace the old targeted key with a new one updated with the new indexes
+        keysArray.splice(targetKeyIndex, 1, newTargetKey);
+
+        // Each key after the target key must also be updated
+        for (let i = targetKeyIndex + 1; i < keysArray.length; i++) {
+            const { name, start: previousStart, end: previousEnd } = Keys.parseKey(keysArray[i]);
+            const byteLength = previousEnd - previousStart + 1;
+
+            // Calculate where the key should now start and where it should end
+            const start = previousStart - previousValueByteLength + encodedValue.byteLength;
+            const end = start + byteLength - 1;
+
+            // Replace the old key with the updated one
+            keysArray.splice(i, 1, Keys.createKey({ name, start, end }));
+        }
+
+        let updatedKeys = keysArray.join('');
+
+        // We don't want garbage lingering data, so add "empty" bytes
+        // for any extra lingering positions in case the keys string is
+        // now shorter than what it was previously
+        if (updatedKeys.length < decodedKeys.length) {
+            updatedKeys += '\x00'.repeat(decodedKeys.length - updatedKeys.length);
+        }
+
+        this.#keys.set(this.#encoder.encode(updatedKeys));
     }
 
     /**
@@ -231,81 +319,25 @@ export class SharedMap<Data extends Record<string, any>> {
      * @param name The name of the key to set. The key **must** already exist on the map.
      * @param value The new value for the key.
      */
+    set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(
+        name: KeyName,
+        handler: SetWithPreviousHandler<Data[KeyName]>
+    ): Promise<void>;
+    set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(
+        name: KeyName,
+        value: Data[KeyName] | SetWithPreviousHandler<Data[KeyName]>
+    ): Promise<void>;
     set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
         this.#assertNotClosed();
 
-        return this.#run(() => {
-            const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
+        return this.#run(async () => {
+            // If the value isn't a function, set the value straight.
+            if (typeof value !== 'function') return this.#set(name, value);
 
-            // Disallow the setting of keys that don't already exist
-            if (!Keys.createKeyRegex(name).test(decodedKeys)) {
-                throw new Error(`The key "${name}" doesn't exist on this SharedMap!`);
-            }
-
-            // The final index in the values array where there is data. Anything
-            // beyond this point is just x00
-            const finalPosition = decodedKeys.match(/\d+(?=\);($|\x00))/g)?.[0];
-            // The key
-            const match = Keys.matchKey(decodedKeys, name);
-            if (!match || !finalPosition) throw new Error('Failed to parse keys.');
-
-            /* Update value */
-            const { start: valueStart, end: previousValueEnd } = Keys.parseKey(match);
-            const previousValueByteLength = previousValueEnd - valueStart + 1;
-            let encodedValue = encodeValue(this.#encoder, value);
-            // Handle when the user tries to pass in an empty string when setting a value
-            if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
-
-            // If the byteLength of the data provided is the same as the byteLength of
-            // the data that already exists, we don't need to do any index shifting and
-            // can just replace the data without doing magic with keys.
-            if (previousValueByteLength === encodedValue.byteLength) {
-                this.#values.set(encodedValue, valueStart);
-                return;
-            }
-
-            const valueEnd = valueStart + encodedValue.byteLength;
-
-            // If we aren't modifying the final value, rewrite the old data to the new offset so
-            // it's not nastily overwritten
-            if (previousValueEnd !== +finalPosition) {
-                const slice = this.#values.slice(previousValueEnd + 1, +finalPosition + 1);
-                this.#values.set(slice, valueEnd);
-            }
-
-            this.#values.set(encodedValue, valueStart);
-
-            /* Update keys */
-            const keysArray = decodedKeys.split(/(?<=;)/g) as Key[];
-            const targetKeyIndex = keysArray.findIndex((item) => Keys.createKeyRegex(name).test(item));
-            const newTargetKey = Keys.createKey({ name, start: valueStart, end: valueEnd - 1 });
-
-            // Replace the old targeted key with a new one updated with the new indexes
-            keysArray.splice(targetKeyIndex, 1, newTargetKey);
-
-            // Each key after the target key must also be updated
-            for (let i = targetKeyIndex + 1; i < keysArray.length; i++) {
-                const { name, start: previousStart, end: previousEnd } = Keys.parseKey(keysArray[i]);
-                const byteLength = previousEnd - previousStart + 1;
-
-                // Calculate where the key should now start and where it should end
-                const start = previousStart - previousValueByteLength + encodedValue.byteLength;
-                const end = start + byteLength - 1;
-
-                // Replace the old key with the updated one
-                keysArray.splice(i, 1, Keys.createKey({ name, start, end }));
-            }
-
-            let updatedKeys = keysArray.join('');
-
-            // We don't want garbage lingering data, so add "empty" bytes
-            // for any extra lingering positions in case the keys string is
-            // now shorter than what it was previously
-            if (updatedKeys.length < decodedKeys.length) {
-                updatedKeys += '\x00'.repeat(decodedKeys.length - updatedKeys.length);
-            }
-
-            this.#keys.set(this.#encoder.encode(updatedKeys));
+            // Otherwise, feed the previous value into the handler to generate a new
+            // value, then set that as the new value.
+            const newValue = await value(this.#get(name));
+            return this.#set(name, newValue);
         });
     }
 }
