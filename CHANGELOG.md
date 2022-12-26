@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - README streaming examples to use `.shift()` instead of `.splice()`.
 - Context of `TaskHook`s to contain the name of the task being called and whether or not it's being called within a service.
 - `ServiceCluster.launch` to disallow negative or non-whole numbers.
+- Rename `parent` to `MainThread`, which makes much more sense anyways since the parent thread is always the main thread in Nanolith.
+- Rename `messengers` to `MessengerList`.
+- Rename `MessengerList.seek()` to `MessengerList.list()`.
 
 ### Fixed
 

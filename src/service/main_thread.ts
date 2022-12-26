@@ -23,11 +23,11 @@ import type { OnStreamCallback } from '@typing/streams.js';
  * [Node.js documentation](https://nodejs.org/api/worker_threads.html#workerpostmessagevalue-transferlist) for more information.
  *
  * @example
- * parent.sendMessage('foo');
- * parent.sendMessage({ hello: 'world' });
+ * MainThread.sendMessage('foo');
+ * MainThread.sendMessage({ hello: 'world' });
  */
 function sendMessage<Data = any>(data: Data, transferList?: readonly TransferListItem[]) {
-    assertIsNotMainThread('parent.sendMessage');
+    assertIsNotMainThread('MainThread.sendMessage');
 
     const body: WorkerSendMessageBody<Data> = {
         type: WorkerMessageType.Message,
@@ -46,12 +46,12 @@ function sendMessage<Data = any>(data: Data, transferList?: readonly TransferLis
  * @returns A promise of the received data.
  *
  * @example
- * const data = await parent.waitForMessage<{ foo: string }>(({ foo }) => foo === 'bar');
+ * const data = await MainThread.waitForMessage<{ foo: string }>(({ foo }) => foo === 'bar');
  *
  * console.log(data);
  */
 async function waitForMessage<Data = any>(callback: (body: Data) => Awaitable<boolean>) {
-    assertIsNotMainThread('parent.waitForMessage');
+    assertIsNotMainThread('MainThread.waitForMessage');
 
     return new Promise((resolve) => {
         const handler = async (body: MainThreadBaseMessageBody) => {
@@ -78,10 +78,10 @@ async function waitForMessage<Data = any>(callback: (body: Data) => Awaitable<bo
  * @returns A function that will remove the listener when called.
  *
  * @example
- * parent.onMessage<string>((data) => console.log(data, 'received!'));
+ * MainThread.onMessage<string>((data) => console.log(data, 'received!'));
  */
 function onMessage<Data = any>(callback: (body: Data) => Awaitable<void>): RemoveListenerFunction {
-    assertIsNotMainThread('parent.onMessage');
+    assertIsNotMainThread('MainThread.onMessage');
 
     const handler = async (body: MainThreadBaseMessageBody) => {
         if (body.type !== MainThreadMessageType.Message) return;
@@ -101,10 +101,10 @@ function onMessage<Data = any>(callback: (body: Data) => Awaitable<void>): Remov
  * @returns A function that will remove the listener when called.
  *
  * @example
- * parent.onMessengerReceived((messenger) => console.log(messenger.ID));
+ * MainThread.onMessengerReceived((messenger) => console.log(messenger.ID));
  */
 function onMessengerReceived(callback: (messenger: Messenger) => Awaitable<any>) {
-    assertIsNotMainThread('parent.onMessengerReceived');
+    assertIsNotMainThread('MainThread.onMessengerReceived');
 
     const { messengers } = workerData as BaseWorkerData;
 
@@ -124,7 +124,7 @@ function onMessengerReceived(callback: (messenger: Messenger) => Awaitable<any>)
  * @param callback The callback to run once the stream has been initialized and is ready to consume.
  */
 function onStream(callback: OnStreamCallback<Exclude<typeof parentPort, null>>) {
-    assertIsNotMainThread('parent.onStream');
+    assertIsNotMainThread('MainThread.onStream');
     listenForStream(parentPort!, callback);
 }
 
@@ -137,7 +137,7 @@ function onStream(callback: OnStreamCallback<Exclude<typeof parentPort, null>>) 
  * using it.
  */
 async function createStream(metaData?: Record<any, any>) {
-    assertIsNotMainThread('parent.stream');
+    assertIsNotMainThread('MainThread.stream');
 
     return prepareWritableToPortStream(parentPort!, metaData ?? {});
 }
@@ -146,13 +146,13 @@ async function createStream(metaData?: Record<any, any>) {
  * An object containing functions to be used within workers when communicating with the main thread.
  *
  * @example
- * parent.sendMessage('hello from worker!');
+ * MainThread.sendMessage('hello from worker!');
  *
- * parent.onMessage<Record<string, string>>((data) => {
+ * MainThread.onMessage<Record<string, string>>((data) => {
  *     console.log(Object.values(data));
  * });
  */
-export const mainThread = Object.freeze({
+export const MainThread = Object.freeze({
     sendMessage,
     onMessage,
     onMessengerReceived,
