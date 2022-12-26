@@ -31,7 +31,7 @@ export class SharedMap<Data extends Record<string, any>> {
     #identifier: string;
     // Used by all SharedMap instances (including the orchestrator) to communicate
     // with the orchestrator channel. Orchestrator instance communicates with itself
-    #channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>;
+    // #channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>;
     #orchestratorChannel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents> | null = null;
     #closed = false;
 
@@ -77,7 +77,6 @@ export class SharedMap<Data extends Record<string, any>> {
             this.#keys = data.__keys;
             this.#values = data.__values;
             this.#identifier = data.__identifier;
-            this.#channel = new BroadcastChannelEmitter(this.#identifier);
             return;
         }
 
@@ -133,8 +132,6 @@ export class SharedMap<Data extends Record<string, any>> {
 
         // Now we can set up the orchestrator queuing system
         this.#identifier = v4();
-        // This is the channel that will be used for communicating with the orchestrator channel.
-        this.#channel = new BroadcastChannelEmitter(this.#identifier);
 
         // The channel which controls the queue. Listens for events and reacts to them accordingly.
         this.#orchestratorChannel = new BroadcastChannelEmitter(this.#identifier);
@@ -158,16 +155,13 @@ export class SharedMap<Data extends Record<string, any>> {
     }
 
     /**
-     * Closes the {@link SharedMap}'s underlying {@link BroadcastChannel} instance(s). If this instance is the
-     * orchestrator instance, no other `SharedMap` instances using its transfer object will work anymore.
+     * Disable the instance from doing any more operations. If this {@link SharedMap} instance is the
+     * orchestrator, it will close the orchestration channel and no other instances will continue to work.
      */
     close() {
-        this.#channel.close();
         // If this SharedMap is the orchestrator, close the orchestrator channel as well
-        if (this.#orchestratorChannel) {
-            this.#orchestratorChannel.close();
-            this.#closed = true;
-        }
+        if (this.#orchestratorChannel) this.#orchestratorChannel.close();
+        this.#closed = true;
     }
 
     #assertNotClosed() {
@@ -175,30 +169,34 @@ export class SharedMap<Data extends Record<string, any>> {
         throw new Error('Cannot perform actions on a closed SharedMap instance!');
     }
 
-    #wait(): Promise<string> {
+    #wait(): Promise<[string, BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>]> {
         return new Promise((resolve) => {
+            const channel = new BroadcastChannelEmitter(this.#identifier);
+
             // Generate an ID for the workflow
             const id = v4();
 
             // Wait for a notification that we are ready to run the task
-            this.#channel.on(`ready_${id}`, () => {
-                resolve(id);
+            channel.on(`ready_${id}`, () => {
+                resolve([id, channel]);
             });
 
             // Push the ID into the queue. Let the queue handle the rest.
-            this.#channel.send('push_to_queue', id);
+            channel.send('push_to_queue', id);
         });
     }
 
     async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
         // Generate a workflow ID and wait for our turn in the queue.
-        const id = await this.#wait();
+        const [id, channel] = await this.#wait();
         // Run the workflow
         const data = await workflow();
         // Once the workflow has finished, emit an event to the orchestrator requesting
         // our item to be popped off the top of the queue. Then if there is another item in
         // the queue, emit the `ready_${nextId}` event to let them know it's their turn.
-        this.#channel.send('remove_from_queue', id);
+        channel.send('remove_from_queue', id);
+
+        channel.close();
 
         // Return out the return value, if any
         return data;

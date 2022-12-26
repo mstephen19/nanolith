@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `__afterTask` hook being called after the returned value was posted back to the main thread instead of before.
 - Weird exclusion of `HookDefinitions` keys in `Tasks` type.
+- Needing to close all `SharedMap` instances, otherwise the thread would hang even if nothing else is happening.
 
 ### Added
 
