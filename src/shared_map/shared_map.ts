@@ -16,8 +16,6 @@ import type { CleanKeyOf } from '@typing/utilities.js';
 const NULL_ENCODED = encodeValue(new TextEncoder(), null);
 
 /**
- * 👶 **BETA FEATURE** 👶
- *
  * A highly approachable solution to sharing memory between multiple threads 💾
  *
  * 💥 **Note:** Does not act exactly the same way as the {@link Map} object!
