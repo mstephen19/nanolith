@@ -576,7 +576,61 @@ myMap.close();
 
 But the main point of `SharedMap` is that it can be used to share values between threads without making copies of the data. This also allows for a large concurrency of parallel operations to modify the same memory location at the same time.
 
+```TypeScript
+// worker.ts 💼
+import { define, SharedMap } from 'nanolith';
+import type { SharedMapTransfer } from 'nanolith';
+
+export const worker = await define({
+    // Create a task that accept a transfer object that can be converted into a
+    // SharedMap instance.
+    async handleMap(transfer: SharedMapTransfer<{ count: number }>) {
+        // Instantiate a SharedMap instance based on the received transfer.
+        const countMap = new SharedMap(transfer);
+
+        // Increment the count a thousand times.
+        for (let i = 1; i <= 1000; i++) {
+            // Use a callback function inside ".set()" to set the new value based
+            // on the previously existing value.
+            await countMap.set('count', (prev) => {
+                return +prev + 1;
+            });
+        }
+    },
+});
+```
+
+```TypeScript
+// 💡 index.ts
+import { SharedMap } from 'nanolith';
+import { worker } from './worker.js';
+
+// Initialize a new SharedMap that has a key of "foo"
+const countMap = new SharedMap({ count: 0 });
+
+// Run 5 task functions in true parallel which will each increment
+// the count by one thousand.
+await Promise.all([
+    worker({ name: 'handleMap', params: [countMap.transfer] }),
+    worker({ name: 'handleMap', params: [countMap.transfer] }),
+    worker({ name: 'handleMap', params: [countMap.transfer] }),
+    worker({ name: 'handleMap', params: [countMap.transfer] }),
+    worker({ name: 'handleMap', params: [countMap.transfer] }),
+]);
+
+// This can be expected to be "1000"
+console.log(await countMap.get('count'));
+
+// Close the mutex orchestrator (only necessary on the
+// thread where the SharedMap was first instantiated).
+countMap.close();
+```
+
 ## 🧑‍🏫 Examples
+
+Examples coming soon!
+
+<!-- todo: Add examples -->
 
 ## 📜 License
 
