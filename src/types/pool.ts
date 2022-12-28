@@ -1,7 +1,12 @@
+import type { Worker } from 'worker_threads';
 import type { WorkerOptions } from './misc.js';
 import type { MessengerTransferData } from './messenger.js';
 import type { BaseWorkerOptions } from './workers.js';
 import type { WorkerType } from '@constants/workers.js';
+
+export type PoolItemEvents = {
+    created: (worker: Worker) => void;
+};
 
 export type BasePoolItemConfig = {
     file: string;

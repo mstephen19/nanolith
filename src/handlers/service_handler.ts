@@ -76,7 +76,7 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
                     break;
                 }
                 default:
-                    break;
+                    return;
             }
         } catch (error) {
             // Don't exit the process, instead post back a message with the error
