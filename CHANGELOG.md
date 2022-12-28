@@ -17,8 +17,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `ServiceCluster.launch` to disallow negative or non-whole numbers.
 - Rename `parent` to `MainThread`, which makes much more sense anyways since the parent thread is always the main thread in Nanolith.
 - Rename `messengers` to `MessengerList`.
-- Rename `MessengerList.seek()` to `MessengerList.list()`.'
-- General overall refactor + minor performance improvements
+- Rename `MessengerList.seek()` to `MessengerList.list()`.
+- General overall refactor + minor performance improvements.
+- README revamp.
 
 ### Fixed
 
