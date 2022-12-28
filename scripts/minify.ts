@@ -43,7 +43,15 @@ const minifyAll = async (directory: string) => {
                 const contents = Buffer.from(await fs.readFile(item.path)).toString('utf-8');
                 if (/^export\s?{};$/.test(contents.trim())) return fs.unlink(item.path);
 
-                const minified = await minify(item.path);
+                const minified = await minify(item.path, {
+                    js: {
+                        compress: {
+                            hoist_funs: true,
+                            hoist_vars: true,
+                            module: true,
+                        },
+                    },
+                });
                 await fs.writeFile(item.path, minified);
                 return;
             }

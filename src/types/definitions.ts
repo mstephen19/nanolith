@@ -1,4 +1,4 @@
-import type { Awaitable, Except, Tuple } from './utilities.js';
+import type { Awaitable, Except } from './utilities.js';
 
 type AcceptableValue = string | number | null | undefined | symbol | boolean | void | AcceptableValue[];
 

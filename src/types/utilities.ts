@@ -33,11 +33,6 @@ export type Except<ObjectType, KeysType extends keyof ObjectType> = {
 };
 
 /**
- * Create tuples of any length
- */
-export type Tuple<T, N, R extends T[] = []> = R['length'] extends N ? R : Tuple<T, N, [...R, T]>;
-
-/**
  * Ensure a number is a positive whole number.
  */
 export type PositiveWholeNumber<Num extends number> = `${Num}` extends `-${string}` | `${string}.${string}` | '0' ? never : Num;
