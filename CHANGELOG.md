@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-29-12
+
 ### Removed
 
 - `__beforeServiceTask` and `__afterServiceTask` hooks in favor of universal `__beforeTask` and `__afterTask` hooks with new context.
