@@ -1,7 +1,7 @@
 import { randomUUID as v4 } from 'crypto';
 import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData } from './utilities.js';
 import * as Keys from './keys.js';
-import { Bytes } from '@constants/shared_map.js';
+import { Bytes, NULL_ENCODED, ENCODER, DECODER } from '@constants/shared_map.js';
 import { BroadcastChannelEmitter } from './broadcast_channel_emitter.js';
 
 import type {
@@ -13,8 +13,6 @@ import type {
 } from '@typing/shared_map.js';
 import type { CleanKeyOf } from '@typing/utilities.js';
 
-const NULL_ENCODED = encodeValue(new TextEncoder(), null);
-
 /**
  * A highly approachable solution to sharing memory between multiple threads 💾
  *
@@ -25,17 +23,10 @@ export class SharedMap<Data extends Record<string, any>> {
     #keys: Uint8Array;
     // SharedArrayBuffer containing all concatenated values in bytes
     #values: Uint8Array;
-    // Instantiate an encoder and decoder once to avoid the
-    // need for constantly instantiating them.
-    #encoder = new TextEncoder();
-    #decoder = new TextDecoder();
-    // Unique to each instance
     #key = v4();
     // The identifier for the BroadcastChannel used for coordinating the queue
     #identifier: string;
-    // Used by all SharedMap instances (including the orchestrator) to communicate
-    // with the orchestrator channel. Orchestrator instance communicates with itself
-    // #channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>;
+    // Orchestrates the queue.
     #orchestratorChannel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents> | null = null;
     #closed = false;
 
@@ -91,7 +82,7 @@ export class SharedMap<Data extends Record<string, any>> {
         const { preppedKeys, preppedValues, totalLength } = entries.reduce(
             (result, [itemKey, itemValue]) => {
                 // Prepare the data by encoding it
-                let encodedData = encodeValue(this.#encoder, itemValue);
+                let encodedData = encodeValue(ENCODER, itemValue);
                 // Bugs occur when 0 byte strings are passed in. Pass in null as the default instead.
                 // This handles the cases when empty strings are passed in.
                 if (encodedData.byteLength <= 0) encodedData = NULL_ENCODED;
@@ -116,8 +107,9 @@ export class SharedMap<Data extends Record<string, any>> {
         );
 
         // Encode keys and create an array buffer for them, populating it.
-        const encodedKeys = this.#encoder.encode(preppedKeys.join());
-        this.#keys = createSharedArrayBuffer(encodedKeys.byteLength * multiplier);
+        const encodedKeys = ENCODER.encode(preppedKeys.join());
+        // If the encoded keys length * the multiplier is zero, default to 1kb
+        this.#keys = createSharedArrayBuffer(encodedKeys.byteLength * multiplier || Bytes.kilobyte);
         // It is safe to use no sort of mutex at this stage, because the arrays are just being
         // initialized and the constructor has not even returned yet
         this.#keys.set(encodedKeys);
@@ -127,7 +119,8 @@ export class SharedMap<Data extends Record<string, any>> {
         }
 
         // Create an array buffer for values and
-        this.#values = createSharedArrayBuffer(bytesOption || totalLength * multiplier);
+        // If no bytes option is provided and the totalLength * multiplier is zero, default to 3kb.
+        this.#values = createSharedArrayBuffer(bytesOption || totalLength * multiplier || Bytes.kilobyte * 3);
         preppedValues.reduce((offset, array) => {
             this.#values.set(array, offset);
             offset += array.byteLength;
@@ -176,12 +169,11 @@ export class SharedMap<Data extends Record<string, any>> {
     #wait(): Promise<[string, BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>]> {
         return new Promise((resolve) => {
             const channel = new BroadcastChannelEmitter(this.#identifier);
-
             // Generate an ID for the workflow
             const id = v4();
 
             // Wait for a notification that we are ready to run the task
-            channel.on(`ready_${id}`, () => {
+            channel.once(`ready_${id}`, () => {
                 resolve([id, channel]);
             });
 
@@ -207,14 +199,14 @@ export class SharedMap<Data extends Record<string, any>> {
     }
 
     #get<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
-        const decodedKeys = this.#decoder.decode(this.#keys);
+        const decodedKeys = DECODER.decode(this.#keys);
         const match = Keys.matchKey(decodedKeys, name);
         if (!match) return null;
 
         const { start, end } = Keys.parseKey(match as Key);
         if (start === undefined || end === undefined) throw new Error('Failed to parse key');
 
-        return this.#decoder.decode(this.#values.slice(start, end + 1));
+        return DECODER.decode(this.#values.slice(start, end + 1));
     }
 
     /**
@@ -232,23 +224,24 @@ export class SharedMap<Data extends Record<string, any>> {
     }
 
     #set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
-        const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
+        const decodedKeys = DECODER.decode(this.#keys).replace(/\x00/g, '');
 
         // The final index in the values array where there is data. Anything
         // beyond this point is just x00
         const finalPosition = decodedKeys.match(/\d+(?=\);($|\x00))/g)?.[0];
-        if (!finalPosition) throw new Error('Failed to parse keys.');
 
-        let encodedValue = encodeValue(this.#encoder, value);
+        let encodedValue = encodeValue(ENCODER, value);
         // Handle when the user tries to pass in an empty string when setting a value
         if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
 
-        // If the key already exists, run a new set of logic.
-        if (!Keys.createKeyRegex(name).test(decodedKeys)) {
-            const start = +finalPosition + 1;
+        // If the key doesn't yet exist, we just need to append it to the end.
+        if (!finalPosition || !Keys.createKeyRegex(name).test(decodedKeys)) {
+            // If the map is empty, there will be no final position and we need to add the
+            // first item.
+            const start = !finalPosition ? 0 : +finalPosition + 1;
             const end = start + encodedValue.byteLength - 1;
             const newKey = Keys.createKey({ name, start, end });
-            this.#keys.set(this.#encoder.encode(decodedKeys.concat(newKey)));
+            this.#keys.set(ENCODER.encode(decodedKeys.concat(newKey)));
             this.#values.set(encodedValue, start);
             return;
         }
@@ -310,7 +303,7 @@ export class SharedMap<Data extends Record<string, any>> {
             updatedKeys += '\x00'.repeat(decodedKeys.length - updatedKeys.length);
         }
 
-        this.#keys.set(this.#encoder.encode(updatedKeys));
+        this.#keys.set(ENCODER.encode(updatedKeys));
     }
 
     /**

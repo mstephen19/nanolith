@@ -21,11 +21,11 @@ import type { BaseWorkerData } from '@typing/worker_data.js';
  */
 async function use(name: string) {
     assertIsNotMainThread('MessengerList.use');
-
     const { messengers } = workerData as BaseWorkerData;
 
-    const messenger = !messengers[name]
-        ? ((await new Promise((resolve, reject) => {
+    const messenger = messengers[name]
+        ? messengers[name]
+        : ((await new Promise((resolve, reject) => {
               const timeout = setTimeout(() => {
                   reject(new Error(`Timed out after waiting 10 seconds to receive a messenger named ${name}`));
               }, 10e3);
@@ -36,8 +36,7 @@ async function use(name: string) {
                   clearTimeout(timeout);
                   removeListener();
               });
-          })) as Messenger)
-        : messengers[name];
+          })) as Messenger);
 
     return messenger;
 }
@@ -56,9 +55,7 @@ async function use(name: string) {
  */
 function list() {
     assertIsNotMainThread('MessengerList.seek');
-
-    const { messengers } = workerData as BaseWorkerData;
-    return messengers;
+    return (workerData as BaseWorkerData).messengers;
 }
 
 /**

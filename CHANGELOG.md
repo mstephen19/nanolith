@@ -17,13 +17,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `ServiceCluster.launch` to disallow negative or non-whole numbers.
 - Rename `parent` to `MainThread`, which makes much more sense anyways since the parent thread is always the main thread in Nanolith.
 - Rename `messengers` to `MessengerList`.
-- Rename `MessengerList.seek()` to `MessengerList.list()`.
+- Rename `MessengerList.seek()` to `MessengerList.list()`.'
+- General overall refactor + minor performance improvements
 
 ### Fixed
 
 - `__afterTask` hook being called after the returned value was posted back to the main thread instead of before.
 - Weird exclusion of `HookDefinitions` keys in `Tasks` type.
 - Needing to close all `SharedMap` instances, otherwise the thread would hang even if nothing else is happening.
+- Errors when initializing `SharedMap` with an empty object.
 
 ### Added
 

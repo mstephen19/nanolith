@@ -58,7 +58,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
                         break;
                     }
                     default:
-                        break;
+                        return;
                 }
             });
         };
@@ -107,7 +107,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     #assertIsNotTerminated() {
-        if (this.#terminated) throw new Error("Attempting to execute operations within a service who's process has exited!");
+        if (this.#terminated) throw new Error('Attempting to execute operations on a service with an exited process!');
     }
 
     /**

@@ -50,7 +50,6 @@ export class Messenger {
             const index = this.#streamEventCallbacks.indexOf(callback);
             // If it's -1, the item wasn't found
             if (index <= -1) return;
-
             this.#streamEventCallbacks.splice(index, 1);
         },
         postMessage: (value: any) => {

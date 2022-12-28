@@ -54,7 +54,7 @@ export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, i
                         break;
                     }
                     default:
-                        break;
+                        return;
                 }
             });
         });

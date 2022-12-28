@@ -1,13 +1,8 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { cleanPoolConfig } from './utilities.js';
 
-import type { Worker } from 'worker_threads';
-import type { PoolItemConfig, PoolItemOptions } from '@typing/pool.js';
+import type { PoolItemConfig, PoolItemOptions, PoolItemEvents } from '@typing/pool.js';
 import type { WorkerType } from '@constants/workers.js';
-
-type PoolItemEvents = {
-    created: (worker: Worker) => void;
-};
 
 export class PoolItem<Type extends WorkerType = WorkerType> extends TypedEmitter<PoolItemEvents> {
     public readonly options: PoolItemOptions;
