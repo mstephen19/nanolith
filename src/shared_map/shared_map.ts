@@ -169,12 +169,11 @@ export class SharedMap<Data extends Record<string, any>> {
     #wait(): Promise<[string, BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>]> {
         return new Promise((resolve) => {
             const channel = new BroadcastChannelEmitter(this.#identifier);
-
             // Generate an ID for the workflow
             const id = v4();
 
             // Wait for a notification that we are ready to run the task
-            channel.on(`ready_${id}`, () => {
+            channel.once(`ready_${id}`, () => {
                 resolve([id, channel]);
             });
 

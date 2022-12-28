@@ -25,7 +25,6 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     #serviceMap: ServiceClusterMap<Definitions> = new Map();
 
     /**
-     *
      * @param nanolith An instance of {@link Nanolith} API, returned by the `define()` function.
      */
     constructor(nanolith: Nanolith<Definitions>) {

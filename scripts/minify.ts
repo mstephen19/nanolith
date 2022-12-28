@@ -33,11 +33,16 @@ const read = async (dir: string) => {
     }, [] as { item: Dirent; type: 'dir' | 'file'; path: string }[]);
 };
 
+// minifies all files in a directory regardless of how deep it goes
 const minifyAll = async (directory: string) => {
     const items = await read(directory);
 
     const promises = items.map((item) => {
         return (async () => {
+            if (item.type === 'dir') {
+                return minifyAll(item.path);
+            }
+
             if (item.type === 'file') {
                 // If the file is just some empty export crap, delete it.
                 const contents = Buffer.from(await fs.readFile(item.path)).toString('utf-8');
@@ -53,11 +58,6 @@ const minifyAll = async (directory: string) => {
                     },
                 });
                 await fs.writeFile(item.path, minified);
-                return;
-            }
-
-            if (item.type === 'dir') {
-                await minifyAll(item.path);
                 return;
             }
         })();
