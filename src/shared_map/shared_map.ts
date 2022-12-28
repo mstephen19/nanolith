@@ -117,7 +117,8 @@ export class SharedMap<Data extends Record<string, any>> {
 
         // Encode keys and create an array buffer for them, populating it.
         const encodedKeys = this.#encoder.encode(preppedKeys.join());
-        this.#keys = createSharedArrayBuffer(encodedKeys.byteLength * multiplier);
+        // If the encoded keys length * the multiplier is zero, default to 1kb
+        this.#keys = createSharedArrayBuffer(encodedKeys.byteLength * multiplier || Bytes.kilobyte);
         // It is safe to use no sort of mutex at this stage, because the arrays are just being
         // initialized and the constructor has not even returned yet
         this.#keys.set(encodedKeys);
@@ -127,7 +128,8 @@ export class SharedMap<Data extends Record<string, any>> {
         }
 
         // Create an array buffer for values and
-        this.#values = createSharedArrayBuffer(bytesOption || totalLength * multiplier);
+        // If no bytes option is provided and the totalLength * multiplier is zero, default to 3kb.
+        this.#values = createSharedArrayBuffer(bytesOption || totalLength * multiplier || Bytes.kilobyte * 3);
         preppedValues.reduce((offset, array) => {
             this.#values.set(array, offset);
             offset += array.byteLength;
@@ -234,14 +236,23 @@ export class SharedMap<Data extends Record<string, any>> {
     #set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
         const decodedKeys = this.#decoder.decode(this.#keys).replace(/\x00/g, '');
 
-        // The final index in the values array where there is data. Anything
-        // beyond this point is just x00
-        const finalPosition = decodedKeys.match(/\d+(?=\);($|\x00))/g)?.[0];
-        if (!finalPosition) throw new Error('Failed to parse keys.');
-
         let encodedValue = encodeValue(this.#encoder, value);
         // Handle when the user tries to pass in an empty string when setting a value
         if (encodedValue.byteLength <= 0) encodedValue = NULL_ENCODED;
+
+        // The final index in the values array where there is data. Anything
+        // beyond this point is just x00
+        const finalPosition = decodedKeys.match(/\d+(?=\);($|\x00))/g)?.[0];
+        // If the map is empty, there will be no final position and we need to add the
+        // first item.
+        if (!finalPosition) {
+            const end = encodedValue.byteLength - 1;
+            const newKey = Keys.createKey({ name, start: 0, end });
+
+            this.#keys.set(this.#encoder.encode(newKey));
+            this.#values.set(encodedValue);
+            return;
+        }
 
         // If the key already exists, run a new set of logic.
         if (!Keys.createKeyRegex(name).test(decodedKeys)) {

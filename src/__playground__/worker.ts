@@ -1,8 +1,7 @@
 // worker.ts 💼
-import { define } from 'nanolith';
+import { define, SharedMap } from 'nanolith';
+import type { SharedMapTransfer } from 'nanolith';
 
 export const worker = await define({
-    owo(x) {
-        return x;
-    },
+    async avery() {},
 });
