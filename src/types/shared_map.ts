@@ -29,12 +29,18 @@ export type SharedMapOptions = {
      * values buffer is calculated in the same way.
      *
      * Defaults to `10` when no value is provided.
+     *
+     * If the size of the initial keys is zero, the default
+     * size of **1kb** is used for the keys buffer.
      */
     multiplier?: number;
     /**
      * When `bytes` is provided, the `multiplier` is not used when
      * creating the values array and the fixed byte size provided is
      * used instead.
+     *
+     * If this option is not provided and the size of the initial values
+     * is zero, the default size of **3kb** is used for the values buffer.
      */
     bytes?: number;
 };
