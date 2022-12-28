@@ -12,6 +12,7 @@ import type {
     SetWithPreviousHandler,
 } from '@typing/shared_map.js';
 import type { CleanKeyOf } from '@typing/utilities.js';
+import type { SharedMapTransfer } from '@nanolith';
 
 /**
  * A highly approachable solution to sharing memory between multiple threads 💾
@@ -314,13 +315,30 @@ export class SharedMap<Data extends Record<string, any>> {
      */
     set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(
         name: KeyName,
-        handler: SetWithPreviousHandler<Data[KeyName]>
+        handler: SetWithPreviousHandler<
+            Data extends SharedMapTransfer<infer Type> ? (KeyName extends keyof Type ? Type[KeyName] : Data[KeyName]) : Data[KeyName]
+        >
     ): Promise<void>;
     set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(
         name: KeyName,
-        value: Data[KeyName] | SetWithPreviousHandler<Data[KeyName]>
+        value: Data extends SharedMapTransfer<infer Type>
+            ? KeyName extends keyof Type
+                ? Type[KeyName]
+                : Data[KeyName]
+            :
+                  | Data[KeyName]
+                  | SetWithPreviousHandler<
+                        Data extends SharedMapTransfer<infer Type>
+                            ? KeyName extends keyof Type
+                                ? Type[KeyName]
+                                : Data[KeyName]
+                            : Data[KeyName]
+                    >
     ): Promise<void>;
-    set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
+    set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(
+        name: KeyName,
+        value: Data extends SharedMapTransfer<infer Type> ? (KeyName extends keyof Type ? Type[KeyName] : Data[KeyName]) : Data[KeyName]
+    ) {
         this.#assertNotClosed();
 
         return this.#run(async () => {

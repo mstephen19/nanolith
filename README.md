@@ -1,6 +1,6 @@
 # Nanolith
 
-Multithreading in minutes. _(More intuitive and feature-rich than [piscina](https://www.npmjs.com/package/piscina)!)_
+Multithreading in minutes. _(More intuitive and feature-rich than [Piscina](https://www.npmjs.com/package/piscina)!)_
 
 [![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)](https://www.typescriptlang.org/) [![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![Install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
 
@@ -44,6 +44,8 @@ Here's a quick rundown of everything you can do in Nanolith:
 - [🪝 Hooks](#-hooks)
 - [🚨 Managing concurrency](#-managing-concurrency)
 - [📨 Communicating between threads](#-communicating-between-threads)
+  - [Between a service and the main thread](#between-a-service-and-the-main-thread)
+  - [Between all threads](#between-all-threads)
 - [📡 Streaming data between threads](#-streaming-data-between-threads)
 - [💾 Sharing memory between threads](#-sharing-memory-between-threads)
 - [🧑‍🏫 Examples](#-examples)
@@ -146,7 +148,7 @@ The new thread's process is shut down after the task finishes.
 | `params` | **any[]** | The arguments for the task in array form. |
 | `priority` | **boolean** | Whether or not to treat the task's worker as priority over others when being queued into the `pool`. |
 | `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
-| `messengers` | [**Messenger**](#-communicating-between-threads)**[]** | The `Messenger`s that should be accessible to the task. |
+| `messengers` | [**Messenger**](#between-all-threads)**[]** | The `Messenger`s that should be accessible to the task. |
 | `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
 ## 🎩 Understanding services
@@ -190,7 +192,7 @@ The configurations for `Nanolith.launchService()` are nearly identical to the [t
 | `exceptionHandler` | **function** | An optional but _highly recommended_ option that allows you to catch uncaught exceptions within the service. |
 | `priority` | **boolean** | Whether or not to treat the service's worker as priority over others when being queued into the `pool`. |
 | `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
-| `messengers` | [**Messenger**](#-communicating-between-threads)**[]** | The `Messenger`s that should be accessible to the service. |
+| `messengers` | [**Messenger**](#between-all-threads)**[]** | The `Messenger`s that should be accessible to the service. |
 | `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
 <!-- todo: Go over all methods & properties available on Service -->
@@ -301,14 +303,278 @@ pool.setConcurrency(ConcurrencyOption.x10);
 
 ## 📨 Communicating between threads
 
+There are two ways of communicating between threads in Nanolith.
+
+### Between a service and the main thread
+
+When using [services](#-understanding-services), you are automatically able to communicate between the service and main thread with no extra work.
+
+The [`__initializeService()` hook](#-hooks) can be used to register listeners on the `MainThread`:
+
+```TypeScript
+// worker.ts 💼
+import { define, MainThread } from 'nanolith';
+
+export const worker = await define({
+    // When the service is launched, this function will be
+    // called.
+    __initializeService() {
+        // Register a listener for a message coming from the
+        // main thread.
+        MainThread.onMessage<string>((message) => {
+            // Log the message when it is received.
+            console.log(message);
+
+            // Then, after the message is received, send a
+            // confirmation to the main thread.
+            MainThread.sendMessage('hello from the service!');
+        });
+    },
+});
+```
+
+Then, the `.onMessage()` and `.sendMessage()` methods on the created [service](#-understanding-services) can be used to send messages to and receive messages from the service:
+
+```TypeScript
+// 💡 index.ts
+import { worker } from './worker.js';
+
+const service = await worker.launchService();
+
+// After the service is launched and initialized, send
+// a message to it.
+service.sendMessage('hello from the main thread');
+
+// Register a listener for when a message is received
+// from the service.
+service.onMessage(async (message) => {
+    // When a message is received, first log the message's
+    // contents.
+    console.log(message);
+
+    // Then, close the service.
+    await service.close();
+});
+```
+
+### Between all threads
+
+A bit of extra work is required when there is a need to communicate between all threads (including the main thread). First, an instance of `Messenger` must created. That instance can then be exposed to as many services and tasks as you want.
+
+Within task functions, the `.use()` method on `MessengerList` can be used to grab hold of `Messenger`s exposed to the thread:
+
+```TypeScript
+// worker.ts 💼
+import { define, MessengerList } from 'nanolith';
+
+export const worker = await define({
+    // When the service is launched, this function will be
+    // called.
+    async __initializeService() {
+        // Grab hold of the exposed "foo" messenger.
+        const fooMessenger = await MessengerList.use('foo');
+        // Register a listener for a message received on the
+        // messenger.
+        fooMessenger.onMessage<string>((message) => {
+            // Log the message when it is received.
+            console.log(message);
+            // Exit the process once any message has been received.
+            process.exit();
+        });
+    },
+    // A task function which will trigger a message to be sent
+    // on the exposed "foo" messenger.
+    async sendSomeMessage() {
+        const fooMessenger = await MessengerList.use('foo');
+        fooMessenger.sendMessage('hello from other service!');
+    },
+});
+```
+
+The messenger instance can be exposed to a [task call](#task-function-options) or [service](#launchservice-options) by using the `messengers` option.
+
+```TypeScript
+// 💡 index.ts
+import { Messenger } from 'nanolith';
+import { worker } from './worker.js';
+
+// Create a new messenger with the ID of "foo"
+const fooMessenger = new Messenger('foo');
+
+// Launch two services that have the "foo" messenger
+// exposed to both of them.
+const service1 = await worker.launchService({
+    messengers: [fooMessenger],
+});
+const service2 = await worker.launchService({
+    messengers: [fooMessenger],
+});
+
+// Call the task which sends a message on the exposed
+// "foo" messenger.
+await service1.call({ name: 'sendSomeMessage' });
+
+// Finally close the first service. The second will have
+// already closed itself.
+await service1.close();
+```
+
+> **Note:** The `Messenger` class can be used to communicate between all threads. That means between [task calls](#-running-a-task), between [services](#-understanding-services), between the main thread and multiple services/task calls, etc.
+
 ## 📡 Streaming data between threads
 
-<!-- Discuss using the streaming API on parent, Messenger, or Service -->
+It's possible to stream data from one thread to another either using [`Service`](#-understanding-services), [`Messenger`](#between-all-threads), and [`MainThread`](#between-a-service-and-the-main-thread). All have the `.createStream()` and `.onStream()` methods.
+
+```TypeScript
+// worker.ts 💼
+import { define, MainThread } from 'nanolith';
+import { createWriteStream } from 'fs';
+
+export const worker = await define({
+    __initializeService() {
+        // Wait for streams coming from the main thread.
+        MainThread.onStream((stream) => {
+            const writeStream = createWriteStream('./movie.mp4');
+            // Once the stream has finished, notify the main thread
+            // that the service is ready to be closed.
+            stream.on('end', () => {
+                MainThread.sendMessage('close please');
+            });
+
+            // Pipe the received stream right into our created
+            // write stream.
+            stream.pipe(writeStream);
+        });
+    },
+});
+```
+
+```TypeScript
+// 💡 index.ts
+import axios from 'axios';
+import { worker } from './worker.js';
+import type { Readable } from 'stream';
+
+const service = await worker.launchService();
+
+// Once a message has been received from the service,
+// close it immediately.
+service.onMessage(async () => {
+    await service.close();
+});
+
+// Get a Readstream for the entire movie "Edward Scissorhands"
+const { data: readStream } = await axios.get<Readable>(
+    'https://stream-1-1-ip4.loadshare.org/slice/3/VideoID-qbfnKjG4/CXNa4S/uSDJeP/BXvsDm/Jmrsew/360?name=edward-scissorhands_360&token=ip=85.160.33.237~st=1672263375~exp=1672277775~acl=/*~hmac=de82d742e7cda87859d519fdbf179416d67366497f2e65c103de830b379b1e8b',
+    {
+        responseType: 'stream',
+    }
+);
+
+// Send the stream to the service to be handled.
+readStream.pipe(await service.createStream());
+```
+
+When using `Messenger`, things work a bit differently. The `.onStream()` method takes a different type of callback that must first accept the stream before handling it. This is because with messengers, there are multiple possible recipients, and not all of them might want to accept the stream.
+
+Again, we use the [`__initializeService()` hook](#-hooks):
+
+```TypeScript
+// worker.ts 💼
+import { define, MessengerList, MainThread } from 'nanolith';
+import { createWriteStream } from 'fs';
+
+export const worker = await define({
+    async __initializeService() {
+        // Use the exposed "foo" messenger
+        const fooMessenger = await MessengerList.use('foo');
+
+        // Register a listener for once a stream is received.
+        fooMessenger.onStream(({ metaData, accept }) => {
+            // If the metadata of the stream matches what we
+            // want, we will continue. Otherwise we'll decline
+            // the stream by doing nothing.
+            if (metaData.scissorhands !== true) return;
+
+            // Retrieve the stream by calling the "accept" function.
+            const stream = accept();
+
+            const writeStream = createWriteStream('./movie.mp4');
+            // Once the stream has finished, notify the main thread
+            // that the service is ready to be closed.
+            stream.on('end', () => {
+                MainThread.sendMessage('close please');
+            });
+
+            // Pipe the received stream right into our created
+            // write stream.
+            stream.pipe(writeStream);
+        });
+    },
+});
+```
+
+When it comes to actually sending the stream with `Messenger`, the workflow is nearly the same:
+
+```TypeScript
+// 💡 index.ts
+import { Messenger } from 'nanolith';
+import axios from 'axios';
+import { worker } from './worker.js';
+import type { Readable } from 'stream';
+
+const fooMessenger = new Messenger('foo');
+
+const service = await worker.launchService({
+    messengers: [fooMessenger],
+});
+
+// Once a message has been received from the service,
+// close it immediately.
+service.onMessage(async () => {
+    await service.close();
+});
+
+// Get a Readstream for the entire movie "Edward Scissorhands"
+const { data: readStream } = await axios.get<Readable>(
+    'https://stream-1-1-ip4.loadshare.org/slice/3/VideoID-qbfnKjG4/CXNa4S/uSDJeP/BXvsDm/Jmrsew/360?name=edward-scissorhands_360&token=ip=85.160.33.237~st=1672263375~exp=1672277775~acl=/*~hmac=de82d742e7cda87859d519fdbf179416d67366497f2e65c103de830b379b1e8b',
+    {
+        responseType: 'stream',
+    }
+);
+
+// Send the stream on the messenger instance to be accepted
+// the  subsequently handled.
+// Attach some metadata to the stream to help the receivers distinguish
+// it from other streams. This metadata can be anything.
+readStream.pipe(await fooMessenger.createStream({ scissorhands: true }));
+```
 
 ## 💾 Sharing memory between threads
 
-<!-- SharedMap -->
-<!-- Doing highly concurrent parallel operations with SharedMap -->
+In vanilla Node.js, memory can only be shared between threads using raw bytes with [`SharedArrayBuffer`](https://amagiacademy.com/blog/posts/2021-04-10/node-shared-array-buffer). This completely sucks, which is why Nanolith's `SharedMap` is the best way to share memory between threads. If you're already familiar with the JavaScript [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) object, you'll feel comfortable with `SharedMap`.
+
+In a single-threaded sense, `SharedMap` works in quite a standard way:
+
+```TypeScript
+// 💡 index.ts
+import { SharedMap } from 'nanolith';
+
+// Initialize a new SharedMap that has a key of "foo"
+const myMap = new SharedMap({ foo: 'bar' });
+
+// Set the new value of "foo" to be "hello world"
+await myMap.set('foo', 'hello world');
+
+// Grab the current value of "foo"
+console.log(await myMap.get('foo'));
+
+// Close the mutex orchestrator (only necessary on the
+// thread where the SharedMap was first instantiated).
+myMap.close();
+```
+
+But the main point of `SharedMap` is that it can be used to share values between threads without making copies of the data. This also allows for a large concurrency of parallel operations to modify the same memory location at the same time.
 
 ## 🧑‍🏫 Examples
 

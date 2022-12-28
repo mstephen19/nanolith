@@ -1,9 +1,13 @@
+// 💡 index.ts
 import { SharedMap } from 'nanolith';
 
-const map = new SharedMap<Record<string, unknown>>({});
+// Initialize a new SharedMap that has a key of "foo"
+const countMap = new SharedMap({ count: 1 });
 
-await map.set('name', 'avery');
+countMap.set('count', (prev) => {
+    return +prev + 1;
+});
 
-console.log(await map.get('name'));
-
-map.close();
+// Close the mutex orchestrator (only necessary on the
+// thread where the SharedMap was first instantiated).
+countMap.close();
