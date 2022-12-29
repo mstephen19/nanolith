@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `MessengerList.list()` to be a getter method instead of a regular function. New syntax is `MessengerList.list`.
 - `SharedMap.get()` to use `.subarray()` instead of `.slice()` for a slight memory complexity improvement.
+- README logo image to new blue version.
 
 ### Added
 

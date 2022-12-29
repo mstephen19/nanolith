@@ -7,7 +7,7 @@ Multithreading in minutes. _(More intuitive and feature-rich than [Piscina](http
 [![Version](https://img.shields.io/npm/v/nanolith?color=blue)](https://github.com/mstephen19/nanolith/releases) ![Weekly downloads](https://img.shields.io/npm/dw/nanolith?color=violet) ![Libraries.io dependency status](https://img.shields.io/librariesio/release/npm/nanolith) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=red)](https://github.com/mstephen19/nanolith/issues)
 
 <center>
-    <img src="https://user-images.githubusercontent.com/87805115/199340985-d76cc3ea-6abb-4a4e-ac1b-a95fc693947f.png" width="550">
+    <img src="https://user-images.githubusercontent.com/87805115/210020526-2bbd427f-00d0-41cb-8ce9-7b96e5a214bd.png" width="550">
 </center>
 
 ## ❔ About
