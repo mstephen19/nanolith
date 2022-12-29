@@ -20,6 +20,7 @@ There have always been a few main goals for Nanolith:
 2. Ease-of-use 😇
 3. Seamless TypeScript support 😎
 4. Modern [ESModules](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/)-only support 📈
+5. Steady updates with new features & fixes
 
 ### So what can you do with it?
 
@@ -302,11 +303,11 @@ export const worker = await define({
 });
 ```
 
-These hooks run on the same thread as their service/task.
+These hooks run on the same thread as their corresponding service/task.
 
 ## 🚨 Managing concurrency
 
-Nanolith automatically manages the concurrency your services and task calls with the internal `pool` class. By default, the maximum concurrency is one thread per core on the machine. This is a safe value to go with; however, the `maxConcurrency` can be modified up using one of the set `ConcurrencyOption`s.
+Nanolith automatically manages the concurrency your services and task calls with the internal `pool` class. By default, the maximum concurrency is one thread per core on the machine. This is a safe value to go with; however, the `maxConcurrency` can be modified up using one of the available `ConcurrencyOption`s.
 
 ```TypeScript
 // index.ts 💡
@@ -407,7 +408,7 @@ service.onMessage(async (message) => {
 
 ### Between all threads
 
-A bit of extra work is required when there is a need to communicate between all threads (including the main thread). First, an instance of `Messenger` must created. That instance can then be exposed to as many services and tasks as you want.
+A bit of extra work is required when there is a need to communicate between all threads (including the main thread). First, an instance of `Messenger` must be created. That instance can then be exposed to as many services and tasks as you want.
 
 Within task functions, the `.use()` method on `MessengerList` can be used to grab hold of `Messenger`s exposed to the thread:
 
@@ -562,7 +563,7 @@ export const worker = await define({
 });
 ```
 
-When it comes to actually sending the stream with `Messenger`, the workflow is nearly the same:
+When it comes to actually sending the stream with `Messenger`, the workflow is nearly the same as messaging [between a service and the main thread](#between-a-service-and-the-main-thread):
 
 ```TypeScript
 // 💡 index.ts
@@ -600,7 +601,7 @@ readStream.pipe(await fooMessenger.createStream({ scissorhands: true }));
 
 ## 💾 Sharing memory between threads
 
-In vanilla Node.js, memory can only be shared between threads using raw bytes with [`SharedArrayBuffer`](https://amagiacademy.com/blog/posts/2021-04-10/node-shared-array-buffer). This completely sucks, which is why Nanolith's `SharedMap` is the best way to share memory between threads. If you're already familiar with the JavaScript [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) object, you'll feel comfortable with `SharedMap`.
+In vanilla Node.js, memory can only be shared between threads using raw bytes with [`SharedArrayBuffer`](https://amagiacademy.com/blog/posts/2021-04-10/node-shared-array-buffer). That totally sucks, but luckily sharing memory is easy in Nanolith. If you're already familiar with the JavaScript [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) object, you'll feel comfortable with `SharedMap`.
 
 In a single-threaded sense, `SharedMap` works in quite a standard way:
 
@@ -666,7 +667,7 @@ await Promise.all([
     worker({ name: 'handleMap', params: [countMap.transfer] }),
 ]);
 
-// This can be expected to be "1000"
+// This can be expected to be "5000"
 console.log(await countMap.get('count'));
 
 // Close the mutex orchestrator (only necessary on the
