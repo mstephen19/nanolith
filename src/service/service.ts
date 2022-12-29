@@ -23,13 +23,13 @@ import type { OnStreamCallback } from '@typing/streams.js';
 
 type ServiceEvents = {
     /**
-     * An event that is emitted when the service worker has exited its process.
+     * An event that is emitted when the service has exited its process.
      */
     terminated: () => void;
 };
 
 /**
- * Allows for the interaction between the main thread and long-running service workers 🏃
+ * Allows for the interaction between the main thread and long-running services 🏃
  */
 export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<ServiceEvents> {
     #worker: Worker;
@@ -111,7 +111,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
-     * Call a task to be run within the service worker
+     * Call a task to be run within the service.
      *
      * @param options A {@link ServiceCallOptions} object
      * @returns A promise of the task function's return value
@@ -180,7 +180,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
-     *
      * @param data The data to send to the service.
      * @param transferList An optional array of {@link TransferListItem}s. See the
      * [Node.js documentation](https://nodejs.org/api/worker_threads.html#workerpostmessagevalue-transferlist) for more information.
@@ -202,7 +201,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
 
     /**
      * Create a {@link Writable} instance that can be piped into in order to stream data to
-     * the service worker. The service worker can listen for incoming streams with the
+     * the service. The service can listen for incoming streams with the
      * `parent.onStream()` listener.
      *
      * @param metaData Any specific data about the stream that should be accessible when
@@ -213,7 +212,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
-     * Receive data streams from the service worker.
+     * Receive data streams from the service.
      *
      * @param callback The callback to run once the stream has been initialized and is ready to consume.
      */
@@ -245,9 +244,9 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
-     * Wait for specific messages coming from the service worker.
+     * Wait for a specific message coming from the service.
      *
-     * @param callback A function returning a boolean that will be run each time a message is received from the service worker.
+     * @param callback A function returning a boolean that will be run each time a message is received from the service.
      * Once the condition is met and the function returns `true`, the promise will resolve with the data received.
      *
      * @returns A promise of the received data.
@@ -278,10 +277,10 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
-     * Dynamically sends a {@link Messenger} object to a service worker.
+     * Dynamically send a {@link Messenger} to a service.
      * Allows for the usage of `Messenger`s created after a service is launched.
      *
-     * @param messenger A {@link Messenger} object
+     * @param messenger A {@link Messenger} objectd
      * @returns A promise which resolves after the worker automatically notifies
      * the main thread that the object was received and processed.
      *
