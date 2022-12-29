@@ -207,7 +207,7 @@ export class SharedMap<Data extends Record<string, any>> {
         const { start, end } = Keys.parseKey(match as Key);
         if (start === undefined || end === undefined) throw new Error('Failed to parse key');
 
-        return DECODER.decode(this.#values.slice(start, end + 1));
+        return DECODER.decode(this.#values.subarray(start, end + 1));
     }
 
     /**
@@ -268,6 +268,7 @@ export class SharedMap<Data extends Record<string, any>> {
         // If we aren't modifying the final value, rewrite the old data to the new offset so
         // it's not nastily overwritten
         if (previousValueEnd !== +finalPosition) {
+            // ? Potentially use .subarray here instead?
             const slice = this.#values.slice(previousValueEnd + 1, +finalPosition + 1);
             this.#values.set(slice, valueEnd);
         }
