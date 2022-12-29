@@ -1,9 +1,9 @@
 import { randomUUID as v4 } from 'crypto';
 import { pool } from '@pool';
+import { Service } from '@service';
 
 import type { TransferListItem } from 'worker_threads';
 import type { Nanolith } from '@typing/nanolith.js';
-import type { Service } from '@service';
 import type { ServiceWorkerOptions } from '@typing/workers.js';
 import type { TaskDefinitions } from '@typing/definitions.js';
 import type { PositiveWholeNumber } from '@typing/utilities.js';
@@ -119,6 +119,10 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * cluster.addService(service);
      */
     addService(service: Service<Definitions>) {
+        // Silently return if the provided value isn't actually
+        // a Service instance.
+        if (!(service instanceof Service)) return;
+
         this.#registerNewService(service);
     }
 
@@ -133,7 +137,6 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     }
 
     /**
-     *
      * @param identifier A unique identifier for a specific service on the cluster. Retrievable via
      * `cluster.currentServices`
      *
@@ -142,13 +145,11 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      */
     use(identifier: string): Service<Definitions>;
     /**
-     *
      * @returns The {@link Service} instance on the cluster that is currently the least active.
      * If no services are active, an error will be thrown.
      */
     use(): Service<Definitions>;
     /**
-     *
      * @returns The {@link Service} instance on the cluster that is currently the least active.
      * If no services are active, an error will be thrown. If the `identifier` parameter is provided,
      * the service with the specified identifier will be used if it exists on the cluster (otherwise
@@ -193,7 +194,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     }
 
     /**
-     * Runs the `.close()` method on all `Service` instances on the cluster.
+     * Close all active services on the cluster.
      */
     closeAll() {
         const promises = [...this.#serviceMap.values()].map(({ service }) => service.close());
@@ -201,8 +202,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     }
 
     /**
-     * Runs the `.close()` method on all `Service` instances on the cluster which are currently not running
-     * any tasks.
+     * Close all service instances on the cluster that are currently doing nothing (not running any tasks).
      */
     closeAllIdle() {
         const promises = [...this.#serviceMap.values()].reduce((acc, { service }) => {

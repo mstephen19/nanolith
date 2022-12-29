@@ -5,14 +5,14 @@ import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
 
 /**
- * This is the bad boy that manages all Nanolith workers 💪
+ * This is the big boy that manages all Nanolith workers 💪
  */
 class Pool {
     #concurrency = cpus().length;
     #active = 0;
     #queue: PoolItem[] = [];
     /**
-     * Easy access to the {@link ConcurrencyOption} `enum` right on `pool`.
+     * Easy access to the {@link ConcurrencyOption} enum right on `pool`.
      */
     static readonly option = ConcurrencyOption;
 
@@ -25,7 +25,7 @@ class Pool {
     }
 
     /**
-     * Whether or not the pool has reached its max concurrency.
+     * Whether or not the pool has currently reached its max concurrency.
      */
     get maxed() {
         return this.#active >= this.#concurrency;
@@ -46,7 +46,7 @@ class Pool {
     }
 
     /**
-     * A `boolean` defining whether or not the pool is currently doing nothing.
+     * A `boolean` indicating whether or not the pool is currently doing nothing.
      */
     get idle() {
         return !this.#active;
@@ -62,7 +62,7 @@ class Pool {
     /**
      * @param option A {@link ConcurrencyOption}
      *
-     * Modify the concurrency of the pool. Use this wisely.
+     * Modify the `maxConcurrency` of the pool. Use this wisely.
      * The {@link ConcurrencyOption} value defines how many workers `Pool` will allow to
      * run at the same time. It defaults to one worker per core on
      * the machine running the process.

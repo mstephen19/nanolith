@@ -12,13 +12,14 @@ Multithreading in minutes. _(More intuitive and feature-rich than [Piscina](http
 
 ## ❔ About
 
-✨**Nanolith**✨ is a performant, reliable, easy-to-use, and well-documented multithreading library. It serves to not only build upon, but entirely replace the _(deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
+✨**Nanolith**✨ is a performant, reliable, easy-to-use, and well-documented multithreading library that allows you to easily scale your Node.js applications. It serves to not only build upon, but entirely replace the _(deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
 
-There have always been three main goals for Nanolith:
+There have always been a few main goals for Nanolith:
 
 1. Performance 🏃
 2. Ease-of-use 😇
 3. Seamless TypeScript support 😎
+4. Modern [ESModules](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/)-only support 📈
 
 ### So what can you do with it?
 
@@ -40,9 +41,11 @@ Here's a quick rundown of everything you can do in Nanolith:
   - [Task function options](#task-function-options)
 - [🎩 Understanding services](#-understanding-services)
   - [`launchService()` options](#launchservice-options)
+  - [`Service` properties & methods](#service-properties--methods)
 - [🎬 Coordinating services](#-coordinating-services)
 - [🪝 Hooks](#-hooks)
 - [🚨 Managing concurrency](#-managing-concurrency)
+  - [`pool` properties & methods](#pool-properties--methods)
 - [📨 Communicating between threads](#-communicating-between-threads)
   - [Between a service and the main thread](#between-a-service-and-the-main-thread)
   - [Between all threads](#between-all-threads)
@@ -148,7 +151,7 @@ The new thread's process is shut down after the task finishes.
 | `params` | **any[]** | The arguments for the task in array form. |
 | `priority` | **boolean** | Whether or not to treat the task's worker as priority over others when being queued into the `pool`. |
 | `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
-| `messengers` | [**Messenger**](#between-all-threads)**[]** | The `Messenger`s that should be accessible to the task. |
+| `messengers` | [**Messenger**](#between-all-threads)**[]** | The [`Messenger`](#between-all-threads)s that should be accessible to the task. |
 | `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
 ## 🎩 Understanding services
@@ -192,10 +195,27 @@ The configurations for `Nanolith.launchService()` are nearly identical to the [t
 | `exceptionHandler` | **function** | An optional but _highly recommended_ option that allows you to catch uncaught exceptions within the service. |
 | `priority` | **boolean** | Whether or not to treat the service's worker as priority over others when being queued into the `pool`. |
 | `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
-| `messengers` | [**Messenger**](#between-all-threads)**[]** | The `Messenger`s that should be accessible to the service. |
+| `messengers` | [**Messenger**](#between-all-threads)**[]** | The [`Messenger`](#between-all-threads)s that should be accessible to the service. |
 | `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
-<!-- todo: Go over all methods & properties available on Service -->
+### `Service` properties & methods
+
+Along with `.call()`, `Service` offers many other properties and methods:
+
+| Name | Type | About |
+|-|-|-|
+| `activeCalls` | **Property** | The current number of active calls running on the `Service` instance. |
+| `closed` | **Property** | Whether or not the underlying `Worker` instance has exited its process. |
+| `threadID` | **Property** | The thread ID of the underlying `Worker`. |
+| `worker` | **Property** | The raw `Worker` instance being used by the service. |
+| `call()` | **Method** | Call a task to be run within the service worker. Usage is similar to [running a task normally](#-running-a-task) |
+| `close()` | **Method** | Terminates the worker, ending its process and marking the `Service` instance as `closed`. |
+| `sendMessage()` | **Method** | Send messages to the service. |
+| `onMessage()` | **Method** | Listen for and receive messages from the service. |
+| `waitForMessage()` | **Method** | Wait for a specific message coming from the service. |
+| `createStream()` | **Method** | Create a `Writable` instance that can be piped into in order to stream data to the service worker. |
+| `onStream()` | **Method** | Listen for and receive data streams from the service. |
+| `sendMessenger()` | **Method** | Dynamically send a [`Messenger`](#between-all-threads) to the service. |
 
 ## 🎬 Coordinating services
 
@@ -203,7 +223,7 @@ In a scalable application utilizing multiple identical [services](#launchservice
 
 ```TypeScript
 // 💡 index.ts
-// Importing the Nanolith API we created in worker.ts
+// Importing the Nanolith API we created in worker.ts.
 import { worker } from './worker.js';
 
 // Launch 6 identical services at the same time.
@@ -236,7 +256,22 @@ await cluster.closeAll();
 
 For simplicity of the above example, we are only running a single task. However, `ServiceCluster` can be used to run a large amount of heavy operations in true parallel on multiple services.
 
-<!-- todo: Go over all methods & properties available on ServiceCluster -->
+### `ServiceCluster` properties & methods
+
+Along with `.use()`, `ServiceCluster` offers many other properties and methods:
+
+| Name | Type | About |
+|-|-|-|
+| `activeServices` | **Property** | The number of currently running services on the cluster. |
+| `currentServices` | **Property** | An array of objects representing each active service on the cluster. Each object contains the `service` and its `identifier`. |
+| `activeServiceCalls` | **Property** | The number of currently active task calls on all services on the cluster. |
+| `launch()` | **Method** | Launch a new service and start automatically managing it with the cluster. |
+| `addService()` | **Method** | Add an already running service to the cluster. |
+| `use()` | **Method** | Find and return the currently least busy `Service` on the cluster. |
+| `notifyAll()` | **Method** | Send a message to all running services on the cluster using
+[`.sendMessage()`](#service-properties--methods). |
+| `closeAll()` | **Method** | Close all active services on the cluster. |
+| `closeAllIdle()` | **Method** | Close all service instances on the cluster that are currently doing nothing (not running any tasks). |
 
 ## 🪝 Hooks
 
@@ -275,7 +310,7 @@ Nanolith automatically manages the concurrency your services and task calls with
 
 ```TypeScript
 // index.ts 💡
-// Importing the pool
+// Importing the pool.
 import { pool, ConcurrencyOption } from 'nanolith';
 
 // One thread per four cores.
@@ -299,7 +334,20 @@ pool.setConcurrency(ConcurrencyOption.x8);
 pool.setConcurrency(ConcurrencyOption.x10);
 ```
 
-<!-- todo: go over the various other properties and methods on the pool -->
+### `pool` properties & methods
+
+Along with `.setConcurrency()`, `pool` offers many other properties and methods:
+
+| Name | Type | About |
+|-|-|-|
+| `option` | **Property** | Easy access to the `ConcurrencyOption` enum. |
+| `maxConcurrency` | **Property** | The maximum concurrency of the `pool`. |
+| `maxed` | **Property** | Whether or not the pool has currently reached its max concurrency. |
+| `queueLength` | **Property** | The current number of item in the pool's queue. |
+| `activeCount` | **Property** | The current number of workers that are running under the pool. |
+| `idle` | **Property** | A `boolean` indicating whether or not the pool is currently doing nothing. |
+| `next` | **Property** | Returns the internal `PoolItemOptions` for the next worker in the queue to be run. |
+| `setConcurrency()` | **Method** | Modify the `maxConcurrency` of the pool. Use this wisely. |
 
 ## 📨 Communicating between threads
 
