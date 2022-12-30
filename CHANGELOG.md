@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Minor performance updates for `ServiceCluster`.
 
+### Added
+
+- `.watch()` method to `SharedMap` + docs
+
 ## 0.3.1 - 2022-29-12
 
 ### Fixed
