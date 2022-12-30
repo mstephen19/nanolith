@@ -2,7 +2,7 @@
 
 # Folders
 node_modules
-dist
+build
 .vscode
 .idea
 

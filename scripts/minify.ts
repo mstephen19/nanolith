@@ -8,7 +8,7 @@ import type { Dirent } from 'fs';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const BLACKLIST = ['__playground__', '__test__'];
-const DIST = path.join(__dirname, '../dist');
+const BUILD = path.join(__dirname, '../build');
 
 const getFileType = (item: Dirent): 'dir' | 'file' | undefined => {
     if (item.isDirectory()) return 'dir';
@@ -66,4 +66,4 @@ const minifyAll = async (directory: string) => {
     await Promise.all(promises);
 };
 
-await minifyAll(DIST);
+await minifyAll(BUILD);

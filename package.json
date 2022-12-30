@@ -2,15 +2,15 @@
     "name": "nanolith",
     "version": "0.3.2-beta3",
     "description": "Multi-threading in no time with seamless TypeScript support.",
-    "main": "./dist/index.js",
-    "exports": "./dist/index.js",
+    "main": "./build/index.js",
+    "exports": "./build/index.js",
     "type": "module",
     "scripts": {
         "lint": "npx eslint \"src/**\"",
         "minify": "ts-node-esm -T scripts/minify.ts",
         "build": "npm run lint && tsc && tsc-alias && npm run minify && echo \"build succeeded\"",
         "test": "npm run build && echo \"running tests\" && NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
-        "play": "npm run build && echo \"running playground\" && node ./dist/__playground__/index.js"
+        "play": "npm run build && echo \"running playground\" && node ./build/__playground__/index.js"
     },
     "repository": {
         "type": "git",
@@ -21,6 +21,7 @@
         "url": "https://github.com/mstephen19/nanolith/issues"
     },
     "keywords": [
+        "nanoservices",
         "nanoservice",
         "microservice",
         "microservices",
@@ -40,7 +41,8 @@
         "parallel",
         "performance",
         "scaling",
-        "scale"
+        "scale",
+        "async"
     ],
     "author": "Matt Stephens",
     "license": "MIT",

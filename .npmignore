@@ -3,8 +3,8 @@
 # Folders
 node_modules
 src
-dist/__playground__
-dist/__test__
+build/__playground__
+build/__test__
 __test__coverage__
 .github
 .vscode

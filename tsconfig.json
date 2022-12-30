@@ -10,7 +10,7 @@
         "target": "ESNext",
         "removeComments": false,
         "rootDir": "./src",
-        "outDir": "./dist",
+        "outDir": "./build",
         "pretty": false,
         "allowSyntheticDefaultImports": true,
         "baseUrl": "src",

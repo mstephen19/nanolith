@@ -3,6 +3,6 @@ export default async () => {
     return {
         verbose: true,
         coverageDirectory: './__test__coverage__',
-        rootDir: './dist/__test__',
+        rootDir: './build/__test__',
     };
 };
