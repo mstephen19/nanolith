@@ -1,4 +1,5 @@
 import { ServiceCluster } from '../index.js';
+import { jest } from '@jest/globals';
 import { clusterTester, clusterTesterDefinitions } from './worker.js';
 
 describe('ServiceCluster', () => {
@@ -49,6 +50,16 @@ describe('ServiceCluster', () => {
         });
     });
 
+    describe('closeAll', () => {
+        it('Should close all active services', async () => {
+            await cluster.launch(5);
+
+            await cluster.closeAll();
+
+            expect(cluster.activeServices).toBe(0);
+        });
+    });
+
     describe('closeAllIdle', () => {
         it('Should close any idle services', async () => {
             await cluster.launch(2);
@@ -58,6 +69,24 @@ describe('ServiceCluster', () => {
             await cluster.closeAllIdle();
 
             expect(cluster.activeServices).toBe(1);
+        });
+    });
+
+    describe('notifyAll', () => {
+        it('Should send a message to all services on the cluster', async () => {
+            const callback = jest.fn(() => void true);
+            await cluster.launch(5);
+
+            cluster.currentServices.forEach(({ service }) => {
+                service.onMessage(callback);
+            });
+
+            cluster.notifyAll('notify-all');
+
+            await new Promise((r) => setTimeout(r, 2e3));
+
+            expect(callback).toHaveBeenCalledTimes(5);
+            expect(callback).toBeCalledWith('notify-all');
         });
     });
 });

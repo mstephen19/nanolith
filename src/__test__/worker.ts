@@ -64,6 +64,12 @@ export const messengerTester = await define(
 );
 
 export const clusterTesterDefinitions = {
+    __initializeService() {
+        MainThread.onMessage<string>((data) => {
+            if (!data.startsWith('notify-all')) return;
+            MainThread.sendMessage('notify-all');
+        });
+    },
     async add(x: number, y: number) {
         await new Promise((r) => setTimeout(r, 3e3));
         return x + y;

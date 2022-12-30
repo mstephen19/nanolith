@@ -12,8 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- `.watch()` method to `SharedMap` + docs
+- `.watch()` method to `SharedMap` + docs + test
 - `RemoveListenerFunction` return values for `.onStream()` method on `Service`, `MainThread`, and `Messenger`.
+- More tests for `service_cluster` and `streams` suites.
 
 ## 0.3.1 - 2022-29-12
 
