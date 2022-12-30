@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - `.watch()` method to `SharedMap` + docs
+- `RemoveListenerFunction` return values for `.onStream()` method on `Service`, `MainThread`, and `Messenger`.
 
 ## 0.3.1 - 2022-29-12
 

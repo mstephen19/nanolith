@@ -125,7 +125,7 @@ function onMessengerReceived(callback: (messenger: Messenger) => Awaitable<any>)
  */
 function onStream(callback: OnStreamCallback<Exclude<typeof parentPort, null>>) {
     assertIsNotMainThread('MainThread.onStream');
-    listenForStream(parentPort!, callback);
+    return listenForStream(parentPort!, callback);
 }
 
 /**

@@ -1,6 +1,7 @@
 import { ReadableFromPort } from './readable_from_port.js';
 import { StreamMessageType, ListenForStreamMode } from '@constants/streams.js';
 
+import type { RemoveListenerFunction } from '@typing/messages.js';
 import type { Messagable, StreamReadyMessageBody, StreamStartMessageBody } from '@typing/streams.js';
 import type { OnStreamCallback, ConfirmStreamCallback } from '@typing/streams.js';
 
@@ -8,12 +9,12 @@ export function listenForStream<Sender extends Messagable>(
     sender: Sender,
     callback: ConfirmStreamCallback<Sender>,
     mode: ListenForStreamMode.ConfirmFirst
-): void;
+): RemoveListenerFunction;
 export function listenForStream<Sender extends Messagable>(
     sender: Sender,
     callback: OnStreamCallback<Sender>,
     mode?: ListenForStreamMode.AcceptAll
-): void;
+): RemoveListenerFunction;
 /**
  * Ensure the current port is ready to start receiving data before notifying the sender.
  */
@@ -22,7 +23,7 @@ export function listenForStream<Sender extends Messagable>(
     callback: OnStreamCallback<Sender> | ConfirmStreamCallback<Sender>,
     mode: ListenForStreamMode = ListenForStreamMode.AcceptAll
 ) {
-    sender.on('message', async (data: StreamStartMessageBody) => {
+    const handler = async (data: StreamStartMessageBody) => {
         if (data.type !== StreamMessageType.Start) return;
 
         const createStream = () => {
@@ -49,5 +50,11 @@ export function listenForStream<Sender extends Messagable>(
         if (mode === ListenForStreamMode.ConfirmFirst) {
             await (callback as ConfirmStreamCallback<Sender>)({ metaData: data.meta, accept: () => createStream() });
         }
-    });
+    };
+
+    sender.on('message', handler);
+
+    return () => {
+        sender.off('message', handler);
+    };
 }

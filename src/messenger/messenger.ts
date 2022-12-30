@@ -207,7 +207,7 @@ export class Messenger {
      */
     onStream(callback: ConfirmStreamCallback<Messagable>) {
         this.#acceptStreams = true;
-        listenForStream(this.#messagableInterop, callback, ListenForStreamMode.ConfirmFirst);
+        return listenForStream(this.#messagableInterop, callback, ListenForStreamMode.ConfirmFirst);
     }
 
     /**
