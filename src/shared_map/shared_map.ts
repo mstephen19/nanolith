@@ -3,6 +3,7 @@ import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData } from '.
 import * as Keys from './keys.js';
 import { Bytes, NULL_ENCODED, ENCODER, DECODER } from '@constants/shared_map.js';
 import { BroadcastChannelEmitter } from './broadcast_channel_emitter.js';
+import { TypedEmitter } from 'tiny-typed-emitter';
 
 import type {
     Key,
@@ -19,7 +20,7 @@ import type { SharedMapTransfer } from '@nanolith';
  *
  * 💥 **Note:** Does not act exactly the same way as the {@link Map} object!
  */
-export class SharedMap<Data extends Record<string, any>> {
+export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ close: () => void }> {
     // SharedArrayBuffer containing all keys in bytes
     #keys: Uint8Array;
     // SharedArrayBuffer containing all concatenated values in bytes
@@ -41,20 +42,20 @@ export class SharedMap<Data extends Record<string, any>> {
 
     /**
      * A single ID assigned to the entire group of SharedMap instances using the
-     * allocated memory locations.
+     * shared memory buffers.
      */
     get ID() {
         return this.#identifier;
     }
 
     /**
-     * An `enum` designed to help you when assigning a fixed byte size
+     * An enum designed to help with assigning a fixed byte size
      * for the map's values.
      */
     static readonly option = Bytes;
 
     /**
-     * An `enum` designed to help you when assigning a fixed byte size
+     * An enum designed to help with assigning a fixed byte size
      * for the map's values.
      */
     readonly option = Bytes;
@@ -75,6 +76,8 @@ export class SharedMap<Data extends Record<string, any>> {
         data: Data extends SharedMapTransferData<infer Type> ? Type : Data,
         { bytes: bytesOption, multiplier = 10 } = {} as SharedMapOptions
     ) {
+        super();
+
         if (typeof data !== 'object') {
             throw new Error('Can only provide objects to SharedMap.');
         }
@@ -170,6 +173,7 @@ export class SharedMap<Data extends Record<string, any>> {
         // If this SharedMap is the orchestrator, close the orchestrator channel as well
         if (this.#orchestratorChannel) this.#orchestratorChannel.close();
         this.#closed = true;
+        this.emit('close');
     }
 
     #assertNotClosed() {
@@ -236,16 +240,30 @@ export class SharedMap<Data extends Record<string, any>> {
         });
     }
 
+    /**
+     * Watch a specific value on the map for changes.
+     *
+     * @param name The name of the key for the value to watch.
+     * @returns An object containing a `current` getter for the current value, and a `stopWatching()` function.
+     */
     async watch<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
         const channel = new BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>(this.#identifier);
         let value = await this.get(name);
+        let changed = false;
 
-        channel.on(`value_changed_${name satisfies string}`, async () => {
-            value = await this.get(name);
+        channel.on(`value_changed_${name satisfies string}`, (newEncodedValue) => {
+            changed = true;
+            value = DECODER.decode(newEncodedValue);
         });
 
+        this.once('close', channel.close.bind(channel));
+
         return Object.freeze({
+            get changed() {
+                return changed;
+            },
             get current() {
+                changed = false;
                 return value;
             },
             stopWatching() {
@@ -274,7 +292,7 @@ export class SharedMap<Data extends Record<string, any>> {
             const newKey = Keys.createKey({ name, start, end });
             this.#keys.set(ENCODER.encode(decodedKeys.concat(newKey)));
             this.#values.set(encodedValue, start);
-            return;
+            return encodedValue;
         }
 
         // The key we are trying to change.
@@ -290,7 +308,7 @@ export class SharedMap<Data extends Record<string, any>> {
         // can just replace the data without doing magic with keys.
         if (previousValueByteLength === encodedValue.byteLength) {
             this.#values.set(encodedValue, valueStart);
-            return;
+            return encodedValue;
         }
 
         const valueEnd = valueStart + encodedValue.byteLength;
@@ -336,6 +354,8 @@ export class SharedMap<Data extends Record<string, any>> {
         }
 
         this.#keys.set(ENCODER.encode(updatedKeys));
+
+        return encodedValue;
     }
 
     /**
@@ -374,9 +394,9 @@ export class SharedMap<Data extends Record<string, any>> {
 
         return this.#run(async (channel) => {
             const newValue = typeof value !== 'function' ? value : await value(this.#get(name));
-            this.#set(name, newValue);
+            const newEncodedValue = this.#set(name, newValue);
 
-            channel.send(`value_changed_${name as string}`);
+            channel.send(`value_changed_${name as string}`, newEncodedValue);
         });
     }
 }

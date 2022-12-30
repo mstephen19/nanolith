@@ -14,9 +14,6 @@ export class BroadcastChannelEmitter<Events extends EventMap> extends TypedEmitt
         // and implementing a .send method so messages can be sent on the channel as well.
 
         this.#channel = new BroadcastChannel(identifier);
-        // ? Channel needs to be unreffed maybe?
-        // * No, that seems to cause serious issues
-        // this.#channel.unref();
 
         // Emit an event each time a message is received. The name of the event corresponds to
         this.#channel.onmessage = (event) => {

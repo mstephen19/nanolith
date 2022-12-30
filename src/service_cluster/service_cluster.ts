@@ -119,9 +119,9 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * cluster.addService(service);
      */
     addService(service: Service<Definitions>) {
-        // Silently return if the provided value isn't actually
-        // a Service instance.
-        if (!(service instanceof Service)) return;
+        if (!(service instanceof Service)) {
+            throw new Error('Can only provide Service instances to .addService().');
+        }
 
         this.#registerNewService(service);
     }
@@ -176,7 +176,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     }
 
     /**
-     * Send a single message to all services on the cluster.
+     * Send the same message to all services on the cluster.
      *
      * @param data The data to send to the service.
      * @param transferList An optional array of {@link TransferListItem}s. See the

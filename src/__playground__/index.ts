@@ -1,18 +1,4 @@
-import { SharedMap } from '@shared_map';
+import { SharedMap } from 'nanolith';
 
-const map = new SharedMap({ foo: 'bar' });
-
-const data = await map.watch('foo');
-
-// bar
-console.log(data.current);
-
-await map.set('foo', 'baz');
-
-await new Promise((r) => setTimeout(r, 2e3));
-
-// baz
-console.log(data.current);
-
-map.close();
-data.stopWatching();
+const myMap = new SharedMap({ foo: 'bar' });
+const { current, changed, stopWatching } = await myMap.watch('foo');

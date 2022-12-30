@@ -55,6 +55,6 @@ export type BroadcastChannelEmitterPostMessageBody<Events extends EventMap = Eve
 export type SharedMapBroadcastChannelEvents = {
     push_to_queue: (id: string) => void;
     remove_from_queue: (id: string) => void;
-    [key: `value_changed_${string}`]: () => Awaitable<void>;
+    [key: `value_changed_${string}`]: (newEncodedValue: Uint8Array) => void;
     [key: `ready_${string}`]: () => void;
 };

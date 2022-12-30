@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
+- Minor performance updates for `ServiceCluster`.
+
+## 0.3.1 - 2022-29-12
+
+### Fixed
+
 - Typos in README.
 - `SharedMap.option` only accessible statically and not on instances.
 
