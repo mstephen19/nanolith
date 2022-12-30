@@ -20,7 +20,7 @@ There have always been a few main goals for Nanolith:
 2. Ease-of-use 😇
 3. Seamless TypeScript support 😎
 4. Modern [ESModules](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/)-only support 📈
-5. Steady updates with new features & fixes
+5. Steady updates with new features & fixes 🚀
 
 ### So what can you do with it?
 
@@ -30,7 +30,7 @@ Here's a quick rundown of everything you can do in Nanolith:
 - Spawn up separate-threaded "nanoservices" that can run any tasks you want.
 - Communicate back and forth between threads by sending messages.
 - Stream data between threads with the already familiar [`node:stream`](https://nodejs.org/api/stream.html) API.
-- Share memory between threads using the familiar-feeling `SharedMap` class.
+- Share memory between threads using the familiar-feeling [`SharedMap`](#-sharing-memory-between-threads) class.
 
 ## 📖 Table of contents
 
@@ -52,6 +52,7 @@ Here's a quick rundown of everything you can do in Nanolith:
   - [Between all threads](#between-all-threads)
 - [📡 Streaming data between threads](#-streaming-data-between-threads)
 - [💾 Sharing memory between threads](#-sharing-memory-between-threads)
+  - [Watching for changes on a shared memory location](#watching-for-changes-on-a-shared-memory-location)
 - [🧑‍🏫 Examples](#-examples)
 - [📜 License](#-license)
 
@@ -615,7 +616,7 @@ const myMap = new SharedMap({ foo: 'bar' });
 // Set the new value of "foo" to be "hello world"
 await myMap.set('foo', 'hello world');
 
-// Grab the current value of "foo"
+// Grab the current value of "foo".
 console.log(await myMap.get('foo'));
 
 // Close the mutex orchestrator (only necessary on the
@@ -675,6 +676,54 @@ console.log(await countMap.get('count'));
 // Close the mutex orchestrator (only necessary on the
 // thread where the SharedMap was first instantiated).
 countMap.close();
+```
+
+Notice that the `.get()` method will always return a stringified version of the value.
+
+### Watching for changes on a shared memory location
+
+Calling `.get()` repeatedly can be cumbersome, which is why the `.watch()` method might be useful for certain use cases. `.watch()` returns an object containing a `current` getter, which will always return the most recent value for the provided key.
+
+```TypeScript
+import { SharedMap } from 'nanolith';
+
+const myMap = new SharedMap({ foo: 'bar' });
+// Create a "watch" object for the key "foo".
+const foo = await myMap.watch('foo');
+
+// Every second, check for changes to the value under
+// the key "foo" using the watch object.
+const interval = setInterval(() => {
+    // If the watched value has changed since its
+    // .current property was last accessed, .changed
+    // will return "true".
+    if (!foo.changed) return;
+    // Log out the new changed value.
+    console.log(foo.current);
+    clearInterval(interval);
+    myMap.close();
+}, 1000);
+
+// Change the value of foo
+await myMap.set('foo', 'hello world');
+```
+
+The output of the following code is:
+
+```shell
+hello world
+```
+
+Because `current` and `changed` are getters and not static properties, destructuring them will not work properly:
+
+```TypeScript
+// This code example is wrong!
+import { SharedMap } from 'nanolith';
+
+const myMap = new SharedMap({ foo: 'bar' });
+// WRONG! WRONG! WRONG!
+const { current, changed, stopWatching } = await myMap.watch('foo');
+// WRONG! WRONG! WRONG!
 ```
 
 ## 🧑‍🏫 Examples

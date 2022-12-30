@@ -1,4 +1,5 @@
 import { SharedMap } from '@shared_map';
+import { jest } from '@jest/globals';
 import { sharedMapTester } from './worker.js';
 
 describe('SharedMap', () => {
@@ -118,6 +119,33 @@ describe('SharedMap', () => {
             expect(await map.get('value')).toBe('null');
 
             map.close();
+        });
+    });
+
+    describe('Watch', () => {
+        it('Should detect changes on a specific key', async () => {
+            const callback = jest.fn((_: string | null) => void true);
+
+            const map = new SharedMap({ value: 'foo' });
+            const value = await map.watch('value');
+
+            const promise = new Promise((resolve) => {
+                const interval = setInterval(() => {
+                    if (!value.changed) return;
+
+                    callback(value.current);
+                    clearInterval(interval);
+                    resolve(true);
+                    map.close();
+                }, 1e3);
+            });
+
+            await map.set('value', 'fooBar');
+
+            await promise;
+
+            expect(callback).toHaveBeenCalledTimes(1);
+            expect(callback).toHaveBeenCalledWith('fooBar');
         });
     });
 

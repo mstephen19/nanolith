@@ -2,6 +2,8 @@
 import { define, SharedMap } from 'nanolith';
 import type { SharedMapTransfer } from 'nanolith';
 
+export const SYMBOL = Symbol.for('foo');
+
 export const worker = await define({
     // Create a task that accept a transfer object that can be converted into a
     // SharedMap instance.
@@ -18,4 +20,5 @@ export const worker = await define({
             });
         }
     },
+    sendSymbol: () => '',
 });
