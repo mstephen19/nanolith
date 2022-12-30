@@ -1,5 +1,5 @@
 import type { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
-import type { MessengerTransferData } from './messenger.js';
+import type { MessengerRawData } from './messenger.js';
 
 export type RemoveListenerFunction = () => void;
 
@@ -20,7 +20,7 @@ export type MainThreadCallMessageBody = {
 export type MainThreadTerminateMessageBody = MainThreadBaseMessageBody<MainThreadMessageType.Terminate>;
 
 export type MainThreadMessengerTransferBody = {
-    data: MessengerTransferData;
+    data: MessengerRawData;
 } & MainThreadBaseMessageBody<MainThreadMessageType.MessengerTransfer>;
 
 export type WorkerBaseMessageBody<Type extends WorkerMessageType = WorkerMessageType> = {

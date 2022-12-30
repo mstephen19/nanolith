@@ -15,8 +15,8 @@ describe('SharedMap', () => {
         it('Should default to 1kb for keys and 3kb for values when provided an empty object and no config', () => {
             const map = new SharedMap({});
 
-            expect(map.transfer.__keys.byteLength).toBe(map.option.kilobyte);
-            expect(map.transfer.__values.byteLength).toBe(map.option.kilobyte * 3);
+            expect(map.raw.__keys.byteLength).toBe(map.option.kilobyte);
+            expect(map.raw.__values.byteLength).toBe(map.option.kilobyte * 3);
 
             map.close();
         });
@@ -29,7 +29,7 @@ describe('SharedMap', () => {
                 }
             );
 
-            expect(map.transfer.__values.byteLength).toBe(map.option.megabyte);
+            expect(map.raw.__values.byteLength).toBe(map.option.megabyte);
 
             map.close();
         });
@@ -153,7 +153,7 @@ describe('SharedMap', () => {
         it('Should reflect changes made on other threads with access to the same map', async () => {
             const map = new SharedMap({ value: 'foo' });
 
-            await sharedMapTester({ name: 'setNewValue', params: [map.transfer] });
+            await sharedMapTester({ name: 'setNewValue', params: [map.raw] });
 
             expect(await map.get('value')).toBe('HELLO FROM WORKER!');
 
@@ -166,16 +166,16 @@ describe('SharedMap', () => {
             const map = new SharedMap({ count: 0 });
 
             const { length } = await Promise.all([
-                sharedMapTester({ name: 'add1000', params: [map.transfer] }),
-                sharedMapTester({ name: 'add1000', params: [map.transfer] }),
-                sharedMapTester({ name: 'add1000', params: [map.transfer] }),
-                sharedMapTester({ name: 'add1000', params: [map.transfer] }),
-                sharedMapTester({ name: 'add1000', params: [map.transfer] }),
-                sharedMapTester({ name: 'add1000', params: [map.transfer] }),
-                sharedMapTester({ name: 'add1000', params: [map.transfer] }),
-                sharedMapTester({ name: 'add1000', params: [map.transfer] }),
-                sharedMapTester({ name: 'add1000', params: [map.transfer] }),
-                sharedMapTester({ name: 'add1000', params: [map.transfer] }),
+                sharedMapTester({ name: 'add1000', params: [map.raw] }),
+                sharedMapTester({ name: 'add1000', params: [map.raw] }),
+                sharedMapTester({ name: 'add1000', params: [map.raw] }),
+                sharedMapTester({ name: 'add1000', params: [map.raw] }),
+                sharedMapTester({ name: 'add1000', params: [map.raw] }),
+                sharedMapTester({ name: 'add1000', params: [map.raw] }),
+                sharedMapTester({ name: 'add1000', params: [map.raw] }),
+                sharedMapTester({ name: 'add1000', params: [map.raw] }),
+                sharedMapTester({ name: 'add1000', params: [map.raw] }),
+                sharedMapTester({ name: 'add1000', params: [map.raw] }),
             ]);
 
             expect(await map.get('count')).toBe(`${length * 1e3}`);

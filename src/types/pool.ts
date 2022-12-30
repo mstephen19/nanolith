@@ -1,6 +1,6 @@
 import type { Worker } from 'worker_threads';
 import type { WorkerOptions } from './misc.js';
-import type { MessengerTransferData } from './messenger.js';
+import type { MessengerRawData } from './messenger.js';
 import type { BaseWorkerOptions } from './workers.js';
 import type { WorkerType } from '@constants/workers.js';
 
@@ -38,7 +38,7 @@ export type PoolItemOptions = {
         type: WorkerType;
         name?: string;
         params?: any[];
-        messengerTransfers: MessengerTransferData[];
+        messengerTransfers: MessengerRawData[];
         messengers: Record<string, never>;
     };
     options: WorkerOptions;

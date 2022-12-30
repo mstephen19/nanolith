@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import { messengerTester } from './worker.js';
 import { Messenger } from '../index.js';
-import { isMessengerTransferObject } from '../messenger/index.js';
+import { isRawMessengerObject } from '../messenger/index.js';
 
 jest.setTimeout(10e3);
 
@@ -21,7 +21,7 @@ describe('Messenger', () => {
         it('Should return a MessengerTransferData object', () => {
             const messenger = new Messenger();
 
-            expect(isMessengerTransferObject(messenger.transfer)).toBe(true);
+            expect(isRawMessengerObject(messenger.raw)).toBe(true);
         });
     });
 

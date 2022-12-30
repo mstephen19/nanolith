@@ -1,5 +1,5 @@
 import { threadId } from 'worker_threads';
-import { define, MainThread, MessengerList, SharedMap, SharedMapTransfer } from '../index.js';
+import { define, MainThread, MessengerList, SharedMap, SharedMapRawData } from '../index.js';
 import { createDataStream } from './consts.js';
 
 export const definitions = {
@@ -141,12 +141,12 @@ export const streamDefinitions = {
 export const streamTester = await define(streamDefinitions);
 
 export const sharedMapTester = await define({
-    async setNewValue(transfer: SharedMapTransfer<{ value: string }>) {
+    async setNewValue(transfer: SharedMapRawData<{ value: string }>) {
         const map = new SharedMap(transfer);
 
         await map.set('value', 'HELLO FROM WORKER!');
     },
-    async add1000(transfer: SharedMapTransfer<{ count: number }>) {
+    async add1000(transfer: SharedMapRawData<{ count: number }>) {
         const map = new SharedMap(transfer);
 
         for (let i = 1; i <= 1e3; i++) {
