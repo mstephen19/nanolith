@@ -1,5 +1,5 @@
 import { randomUUID as v4 } from 'crypto';
-import { createSharedArrayBuffer, encodeValue, isSharedMapTransferData } from './utilities.js';
+import { createSharedArrayBuffer, encodeValue, isSharedMapRawData } from './utilities.js';
 import * as Keys from './keys.js';
 import { Bytes, NULL_ENCODED, ENCODER, DECODER } from '@constants/shared_map.js';
 import { BroadcastChannelEmitter } from './broadcast_channel_emitter.js';
@@ -7,13 +7,12 @@ import { TypedEmitter } from 'tiny-typed-emitter';
 
 import type {
     Key,
-    SharedMapTransferData,
+    SharedMapRawData,
     SharedMapOptions,
     SharedMapBroadcastChannelEvents,
     SetWithPreviousHandler,
 } from '@typing/shared_map.js';
 import type { CleanKeyOf } from '@typing/utilities.js';
-import type { SharedMapTransfer } from '@nanolith';
 
 /**
  * A highly approachable solution to sharing memory between multiple threads 💾
@@ -60,7 +59,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
      */
     readonly option = Bytes;
 
-    get transfer(): SharedMapTransferData<Data> {
+    get raw(): SharedMapRawData<Data> {
         this.#assertNotClosed();
 
         return Object.freeze({
@@ -71,9 +70,9 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
     }
 
     constructor(data: Data, options?: SharedMapOptions);
-    constructor(pair: SharedMapTransferData<Data>);
+    constructor(pair: SharedMapRawData<Data>);
     constructor(
-        data: Data extends SharedMapTransferData<infer Type> ? Type : Data,
+        data: Data extends SharedMapRawData<infer Type> ? Type : Data,
         { bytes: bytesOption, multiplier = 10 } = {} as SharedMapOptions
     ) {
         super();
@@ -82,7 +81,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
             throw new Error('Can only provide objects to SharedMap.');
         }
 
-        if (isSharedMapTransferData(data)) {
+        if (isSharedMapRawData(data)) {
             this.#keys = data.__keys;
             this.#values = data.__values;
             this.#identifier = data.__identifier;
@@ -215,7 +214,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
         return data;
     }
 
-    #get<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
+    #get<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
         const decodedKeys = DECODER.decode(this.#keys);
         const match = Keys.matchKey(decodedKeys, name);
         if (!match) return null;
@@ -232,7 +231,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
      * @param name The name of the key to retrieve the corresponding value of
      * @returns A string that can be converted back into the original data type
      */
-    get<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
+    get<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
         this.#assertNotClosed();
 
         return this.#run(() => {
@@ -246,7 +245,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
      * @param name The name of the key for the value to watch.
      * @returns An object containing a `current` getter for the current value, and a `stopWatching()` function.
      */
-    async watch<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
+    async watch<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
         const channel = new BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>(this.#identifier);
         let value = await this.get(name);
         let changed = false;
@@ -272,7 +271,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
         });
     }
 
-    #set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
+    #set<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName, value: Data[KeyName]) {
         const decodedKeys = DECODER.decode(this.#keys).replace(/\x00/g, '');
 
         // The final index in the values array where there is data. Anything
@@ -364,31 +363,31 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
      * @param name The name of the key to set. The key **must** already exist on the map.
      * @param value The new value for the key.
      */
-    set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(
+    set<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(
         name: KeyName,
         handler: SetWithPreviousHandler<
-            Data extends SharedMapTransfer<infer Type> ? (KeyName extends keyof Type ? Type[KeyName] : Data[KeyName]) : Data[KeyName]
+            Data extends SharedMapRawData<infer Type> ? (KeyName extends keyof Type ? Type[KeyName] : Data[KeyName]) : Data[KeyName]
         >
     ): Promise<void>;
-    set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(
+    set<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(
         name: KeyName,
-        value: Data extends SharedMapTransfer<infer Type>
+        value: Data extends SharedMapRawData<infer Type>
             ? KeyName extends keyof Type
                 ? Type[KeyName]
                 : Data[KeyName]
             :
                   | Data[KeyName]
                   | SetWithPreviousHandler<
-                        Data extends SharedMapTransfer<infer Type>
+                        Data extends SharedMapRawData<infer Type>
                             ? KeyName extends keyof Type
                                 ? Type[KeyName]
                                 : Data[KeyName]
                             : Data[KeyName]
                     >
     ): Promise<void>;
-    set<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(
+    set<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(
         name: KeyName,
-        value: Data extends SharedMapTransfer<infer Type> ? (KeyName extends keyof Type ? Type[KeyName] : Data[KeyName]) : Data[KeyName]
+        value: Data extends SharedMapRawData<infer Type> ? (KeyName extends keyof Type ? Type[KeyName] : Data[KeyName]) : Data[KeyName]
     ) {
         this.#assertNotClosed();
 

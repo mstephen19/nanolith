@@ -1,12 +1,12 @@
 import { randomUUID as v4 } from 'crypto';
 import { BroadcastChannel } from 'worker_threads';
-import { isMessengerTransferObject } from './utilities.js';
+import { isRawMessengerObject } from './utilities.js';
 import { MessengerMessageType } from '@constants/messenger.js';
 import { listenForStream, prepareWritableToPortStream } from '@streams';
 import { ListenForStreamMode, StreamMessageType } from '@constants/streams.js';
 
 import type {
-    MessengerTransferData,
+    MessengerRawData,
     MessengerMessageBody,
     MessengerCloseMessageBody,
     MessengerBaseMessageBody,
@@ -79,26 +79,26 @@ export class Messenger {
     constructor(identifier?: string);
     /**
      *
-     * @param transferData A {@link MessageTransferData} object containing an identifier reference to
+     * @param raw A {@link MessengerRawData} object containing an identifier reference to
      * another messenger.
      *
      * @example
      * const messenger = new Messenger('my-messenger');
-     * const messenger2 = new Messenger(messenger.transfer());
+     * const messenger2 = new Messenger(messenger.raw);
      *
      */
-    constructor(transferData: MessengerTransferData);
+    constructor(rawData: MessengerRawData);
     /**
      *
-     * @param data An `identifier` (string) or a {@link MessageTransferData} object.
+     * @param data An `identifier` (string) or a {@link MessengerRawData} object.
      */
-    constructor(data?: MessengerTransferData | string) {
-        // Only allow either nothing, strings, or MessengerTransferObjects to pass through
-        if (data && typeof data !== 'string' && !isMessengerTransferObject(data as Exclude<typeof data, string>)) {
-            throw new Error('Must either provide a string to create a new Messenger, or a MessengerTransferData object.');
+    constructor(data?: MessengerRawData | string) {
+        // Only allow either nothing, strings, or MessengerRawData objects to pass through
+        if (data && typeof data !== 'string' && !isRawMessengerObject(data as Exclude<typeof data, string>)) {
+            throw new Error('Must either provide a string to create a new Messenger, or a MessengerRawData object.');
         }
 
-        // When provided a MessengerTransferObject
+        // When provided a MessengerRawData object
         if (data && typeof data !== 'string') {
             this.#identifier = data.__messengerID;
 
@@ -106,7 +106,7 @@ export class Messenger {
         } else {
             // When provided nothing or a string
             // Assign each set of messengers an identifier. This
-            // identifier is used to "transfer" the messenger around.
+            // identifier is used to pass the messenger around.
             this.#identifier = typeof data === 'string' ? data : v4();
             this.#channel = new BroadcastChannel(this.#identifier);
         }
@@ -166,7 +166,7 @@ export class Messenger {
      * const messenger = new Messenger('my-messenger');
      * console.log(messenger.ID); // -> 'my-messenger'
      *
-     * const messenger2 = new Messenger(messenger.transfer());
+     * const messenger2 = new Messenger(messenger.raw);
      * console.log(messenger.ID === messenger2.ID) // -> true
      */
     get ID() {
@@ -179,7 +179,7 @@ export class Messenger {
      *
      * @example
      * const messenger = new Messenger('my-messenger');
-     * const messenger2 = new Messenger(messenger.transfer());
+     * const messenger2 = new Messenger(messenger.raw);
      *
      * console.log(messenger.ID === messenger2.ID) // -> true
      * console.log(messenger.uniqueKey === messenger2.uniqueKey) // -> false
@@ -285,9 +285,9 @@ export class Messenger {
     /**
      * Turns the {@link Messenger} instance into an object that can be sent to and from workers.
      *
-     * @returns A {@link MessageTransferData} object
+     * @returns A {@link MessengerRawData} object
      */
-    get transfer(): MessengerTransferData {
+    get raw(): MessengerRawData {
         return Object.freeze({
             __messengerID: this.#identifier,
         });

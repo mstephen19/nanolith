@@ -10,5 +10,5 @@ export { Bytes } from '@constants/shared_map.js';
 export type { TaskDefinitions } from '@typing/definitions.js';
 export type { Nanolith } from '@typing/nanolith.js';
 export type { TaskWorkerOptions as LaunchTaskOptions, ServiceWorkerOptions as LaunchServiceOptions } from '@typing/workers.js';
-export type { SharedMapTransferData as SharedMapTransfer } from '@typing/shared_map.js';
-export type { MessengerTransferData as MessengerTransfer } from '@typing/messenger.js';
+export type { SharedMapRawData } from '@typing/shared_map.js';
+export type { MessengerRawData } from '@typing/messenger.js';

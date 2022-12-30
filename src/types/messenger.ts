@@ -16,7 +16,7 @@ export type MessengerStreamMessageBody = {
     data: any;
 } & MessengerBaseMessageBody<MessengerMessageType.StreamMessage>;
 
-export type MessengerTransferData = Readonly<{
+export type MessengerRawData = Readonly<{
     /**
      * The unique identifier for the set of {@link BroadcastChannel}s
      * the `Messenger` instances are tuned into.

@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- `Messenger.transfer` to `Messenger.raw` + renaming of `MessengerTransferData` type to `MessengerRawData`
+- `SharedMap.transfer` to `SharedMap.raw` + renaming of `SharedMapTransferData` type to `MessengerRawData`
+
 ### Fixed
 
 - Minor performance updates for `ServiceCluster`.

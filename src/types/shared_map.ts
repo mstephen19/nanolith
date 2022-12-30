@@ -1,7 +1,7 @@
 import type { Awaitable } from './utilities.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type SharedMapTransferData<Data = Record<string, any>> = {
+export type SharedMapRawData<Data = Record<string, any>> = {
     __keys: Uint8Array;
     __values: Uint8Array;
     __identifier: string;
