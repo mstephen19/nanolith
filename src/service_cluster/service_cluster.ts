@@ -161,10 +161,10 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
             return this.#serviceMap.get(identifier);
         }
 
+        if (!this.#serviceMap.size) throw new Error('No running services found on this ServiceCluster!');
+
         // Default behavior - find the least active service.
         const values = [...this.#serviceMap.values()];
-        if (!values.length) throw new Error('No running services found on this ServiceCluster!');
-
         // Don't bother looping at all if there's just one service running on the cluster
         if (values.length === 1) return values[0].service;
 
