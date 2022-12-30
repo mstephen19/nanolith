@@ -252,8 +252,8 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
         let changed = false;
 
         channel.on(`value_changed_${name satisfies string}`, (newEncodedValue) => {
-            changed = true;
             value = DECODER.decode(newEncodedValue);
+            changed = true;
         });
 
         this.once('close', channel.close.bind(channel));
