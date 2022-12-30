@@ -1,7 +1,5 @@
 import { threadId } from 'worker_threads';
-import { define, MainThread, MessengerList } from '../index.js';
-
-import type { TaskDefinitions } from '../index.js';
+import { define, MainThread, MessengerList, SharedMap, SharedMapTransfer } from '../index.js';
 import { createDataStream } from './consts.js';
 
 export const definitions = {
@@ -60,6 +58,7 @@ export const messengerTester = await define(
             const messenger = await MessengerList.use('testing');
             messenger.sendMessage('foo');
         },
+        getList: () => Object.keys(MessengerList.list),
     },
     { identifier: 'messengerTester' }
 );
@@ -126,6 +125,26 @@ export const streamDefinitions = {
         const stream = createDataStream();
         stream.pipe(await MainThread.createStream({ id: 'test' }));
     },
+    async sendStreamWithMessenger() {
+        const messenger = await MessengerList.use('stream-messenger');
+
+        createDataStream().pipe(await messenger.createStream());
+    },
 };
 
 export const streamTester = await define(streamDefinitions);
+
+export const sharedMapTester = await define({
+    async setNewValue(transfer: SharedMapTransfer<{ value: string }>) {
+        const map = new SharedMap(transfer);
+
+        await map.set('value', 'HELLO FROM WORKER!');
+    },
+    async add1000(transfer: SharedMapTransfer<{ count: number }>) {
+        const map = new SharedMap(transfer);
+
+        for (let i = 1; i <= 1e3; i++) {
+            await map.set('count', (prev) => +prev + 1);
+        }
+    },
+});

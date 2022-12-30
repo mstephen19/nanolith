@@ -9,12 +9,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - Typos in README.
+- `SharedMap.option` only accessible statically and not on instances.
 
 ### Changed
 
 - `MessengerList.list()` to be a getter method instead of a regular function. New syntax is `MessengerList.list`.
 - `SharedMap.get()` to use `.subarray()` instead of `.slice()` for a slight memory complexity improvement.
 - README logo image to new blue version.
+- Improve validation in `SharedMap`'s constructor.
+- `pool.option` back to a regular getter property instead of a static one. Doesn't need to be static.
 
 ### Added
 

@@ -53,6 +53,12 @@ export class SharedMap<Data extends Record<string, any>> {
      */
     static readonly option = Bytes;
 
+    /**
+     * An `enum` designed to help you when assigning a fixed byte size
+     * for the map's values.
+     */
+    readonly option = Bytes;
+
     get transfer(): SharedMapTransferData<Data> {
         this.#assertNotClosed();
 
@@ -69,6 +75,10 @@ export class SharedMap<Data extends Record<string, any>> {
         data: Data extends SharedMapTransferData<infer Type> ? Type : Data,
         { bytes: bytesOption, multiplier = 10 } = {} as SharedMapOptions
     ) {
+        if (typeof data !== 'object') {
+            throw new Error('Can only provide objects to SharedMap.');
+        }
+
         if (isSharedMapTransferData(data)) {
             this.#keys = data.__keys;
             this.#values = data.__values;

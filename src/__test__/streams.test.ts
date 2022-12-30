@@ -4,6 +4,7 @@ import { createDataStream, STREAM_DATA_RESULT } from './consts.js';
 
 import type { Service } from '../service/index.js';
 import type { streamDefinitions } from './worker.js';
+import { Messenger } from '@messenger';
 
 jest.setTimeout(25e3);
 
@@ -97,6 +98,38 @@ describe('Streams', () => {
 
             expect(callback).toHaveBeenCalledTimes(1);
             expect(callback).toHaveBeenCalledWith(STREAM_DATA_RESULT);
+        });
+    });
+
+    describe('Streaming with Messenger', () => {
+        it('Should successfully send streams along the messenger', async () => {
+            const messenger = new Messenger('stream-messenger');
+
+            const promise = new Promise((r) => {
+                messenger.onStream(({ accept }) => {
+                    const arr: string[] = [];
+
+                    const stream = accept();
+
+                    stream.on('data', (data) => {
+                        arr.push(Buffer.from(data).toString('utf-8'));
+                    });
+
+                    stream.on('end', () => {
+                        r(arr.join(''));
+                    });
+                });
+            }) as Promise<string>;
+
+            const service = await streamTester.launchService({
+                messengers: [messenger],
+            });
+
+            await service.call({ name: 'sendStreamWithMessenger' });
+
+            expect(await promise).toBe(STREAM_DATA_RESULT);
+
+            await service.close();
         });
     });
 });

@@ -9,9 +9,7 @@ export const createDataStream = () => {
 
     return new Readable({
         read() {
-            if (!data.length) return this.push(null);
-
-            this.push(data.splice(0, 1)[0]);
+            this.push(data.shift() ?? null);
         },
     });
 };

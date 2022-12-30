@@ -104,4 +104,22 @@ describe('Messenger', () => {
             await service2.close();
         });
     });
+
+    describe('MessengerList', () => {
+        it('Should return a map of messengers containing the ones sent over', async () => {
+            const messenger1 = new Messenger('fooBar');
+            const messenger2 = new Messenger('fooBarBaz');
+
+            const service = await messengerTester.launchService({
+                messengers: [messenger1, messenger2],
+            });
+
+            const data = await service.call({ name: 'getList' });
+
+            expect(data).toContain('fooBar');
+            expect(data).toContain('fooBarBaz');
+
+            await service.close();
+        });
+    });
 });
