@@ -1,6 +1,6 @@
 {
     "name": "nanolith",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "description": "Multi-threading in no time with seamless TypeScript support.",
     "main": "./build/index.js",
     "exports": "./build/index.js",

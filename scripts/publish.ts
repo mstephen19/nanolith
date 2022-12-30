@@ -87,7 +87,7 @@ try {
 
     await writeFile('./package.json', newPackageJson);
 
-    await exec('npm publish --tag next');
+    await exec(`npm publish${mode === 'next' ? ' --tag next' : ''}`);
 
     console.log(`${mode} version published: ${parsed.version}`);
 } catch (error) {
