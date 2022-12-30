@@ -11,7 +11,21 @@ if (!ACCEPTABLE_ARGUMENTS.includes(process.argv[2])) throw new Error('Invalid op
 
 const mode = process.argv[2] as 'latest' | 'next';
 
-const DESIRED_PROPERTIES = ['name', 'version', 'main', 'exports', 'type', 'author', 'license', 'dependencies'];
+const DESIRED_PROPERTIES = [
+    'name',
+    'version',
+    'type',
+    'author',
+    'description',
+    'license',
+    'repository',
+    'homepage',
+    'bugs',
+    'main',
+    'exports',
+    'dependencies',
+    'keywords',
+];
 
 const exec = promisify(execSync);
 

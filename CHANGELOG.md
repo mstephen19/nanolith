@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `Messenger.transfer` to `Messenger.raw` + renaming of `MessengerTransferData` type to `MessengerRawData`
 - `SharedMap.transfer` to `SharedMap.raw` + renaming of `SharedMapTransferData` type to `MessengerRawData`
+- Slightly lower bundle size by minimizing the size of the published package.json file.
 
 ### Fixed
 
@@ -20,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `.watch()` method to `SharedMap` + docs + test
 - `RemoveListenerFunction` return values for `.onStream()` method on `Service`, `MainThread`, and `Messenger`.
 - More tests for `service_cluster` and `streams` suites.
+- New keywords to the package.json
 
 ## 0.3.1 - 2022-29-12
 
