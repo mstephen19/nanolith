@@ -626,7 +626,7 @@ myMap.close();
 
 > **Note:** The `.close()` method must be called when finished using the initial `SharedMap` instance. Once it is closed, no other instances using the transfer object will work.
 
-But the main point of `SharedMap` is that it can be used to share values between threads without making copies of the data. This also allows for a large concurrency of parallel operations to modify the same memory location at the same time.
+But the main point of `SharedMap` is that it can be used to share values between threads without making copies of the data. A mutex is also implemented under the hood, which means that a very large concurrency of truly parallel operations to modify the same memory location at the same time.
 
 ```TypeScript
 // worker.ts 💼
