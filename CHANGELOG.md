@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - New sections to README for properties & methods of `Service`, `ServiceCluster`, and `pool`.
+- Tests for streaming with `Messenger` + a test suite for `SharedMap`
 
 ## [0.3.0] - 2022-29-12
 
