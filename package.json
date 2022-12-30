@@ -1,7 +1,7 @@
 {
     "name": "nanolith",
-    "version": "0.3.2-beta2",
-    "description": "Multi-threaded nanoservices in no time with seamless TypeScript support.",
+    "version": "0.3.2-beta3",
+    "description": "Multi-threading in no time with seamless TypeScript support.",
     "main": "./dist/index.js",
     "exports": "./dist/index.js",
     "type": "module",
@@ -34,7 +34,13 @@
         "worker",
         "worker threads",
         "piscina",
-        "pool"
+        "pool",
+        "threading",
+        "concurrency",
+        "parallel",
+        "performance",
+        "scaling",
+        "scale"
     ],
     "author": "Matt Stephens",
     "license": "MIT",
