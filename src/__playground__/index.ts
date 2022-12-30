@@ -1,23 +1,18 @@
-// 💡 index.ts
-import { SharedMap } from 'nanolith';
-import { worker } from './worker.js';
+import { SharedMap } from '@shared_map';
 
-// Initialize a new SharedMap that has a key of "foo"
-const countMap = new SharedMap({ count: 0 });
+const map = new SharedMap({ foo: 'bar' });
 
-// Run 5 task functions in true parallel which will each increment
-// the count by one thousand.
-await Promise.all([
-    worker({ name: 'handleMap', params: [countMap.transfer] }),
-    worker({ name: 'handleMap', params: [countMap.transfer] }),
-    worker({ name: 'handleMap', params: [countMap.transfer] }),
-    worker({ name: 'handleMap', params: [countMap.transfer] }),
-    worker({ name: 'handleMap', params: [countMap.transfer] }),
-]);
+const data = await map.watch('foo');
 
-// This can be expected to be "1000"
-console.log(await countMap.get('count'));
+// bar
+console.log(data.current);
 
-// Close the mutex orchestrator (only necessary on the
-// thread where the SharedMap was first instantiated).
-countMap.close();
+await map.set('foo', 'baz');
+
+await new Promise((r) => setTimeout(r, 2e3));
+
+// baz
+console.log(data.current);
+
+map.close();
+data.stopWatching();

@@ -193,11 +193,13 @@ export class SharedMap<Data extends Record<string, any>> {
         });
     }
 
-    async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
+    async #run<ReturnValue>(
+        workflow: (channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>) => ReturnValue
+    ): Promise<Awaited<ReturnValue>> {
         // Generate a workflow ID and wait for our turn in the queue.
         const [id, channel] = await this.#wait();
         // Run the workflow
-        const data = await workflow();
+        const data = await workflow(channel);
         // Once the workflow has finished, emit an event to the orchestrator requesting
         // our item to be popped off the top of the queue. Then if there is another item in
         // the queue, emit the `ready_${nextId}` event to let them know it's their turn.
@@ -231,6 +233,24 @@ export class SharedMap<Data extends Record<string, any>> {
 
         return this.#run(() => {
             return this.#get(name);
+        });
+    }
+
+    async watch<KeyName extends CleanKeyOf<Data extends SharedMapTransferData<infer Type> ? Type : Data>>(name: KeyName) {
+        const channel = new BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>(this.#identifier);
+        let value = await this.get(name);
+
+        channel.on(`value_changed_${name satisfies string}`, async () => {
+            value = await this.get(name);
+        });
+
+        return Object.freeze({
+            get current() {
+                return value;
+            },
+            stopWatching() {
+                channel.close();
+            },
         });
     }
 
@@ -352,14 +372,11 @@ export class SharedMap<Data extends Record<string, any>> {
     ) {
         this.#assertNotClosed();
 
-        return this.#run(async () => {
-            // If the value isn't a function, set the value straight.
-            if (typeof value !== 'function') return this.#set(name, value);
+        return this.#run(async (channel) => {
+            const newValue = typeof value !== 'function' ? value : await value(this.#get(name));
+            this.#set(name, newValue);
 
-            // Otherwise, feed the previous value into the handler to generate a new
-            // value, then set that as the new value.
-            const newValue = await value(this.#get(name));
-            return this.#set(name, newValue);
+            channel.send(`value_changed_${name as string}`);
         });
     }
 }
