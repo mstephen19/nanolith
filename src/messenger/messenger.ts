@@ -26,7 +26,7 @@ import type { RemoveListenerFunction } from '@typing/messages.js';
 export class Messenger {
     #channel: BroadcastChannel;
     #listenerCallbacks: ((data: any) => Awaitable<void>)[] = [];
-    #streamEventCallbacks: ConfirmStreamCallback<Messagable>[] = [];
+    #streamEventCallbacks: Set<ConfirmStreamCallback<Messagable>> = new Set();
     /**
      * A value specific to an instance of Messenger. Allows for
      * ignoring messages sent by itself.
@@ -44,13 +44,10 @@ export class Messenger {
      */
     #messagableInterop: Messagable = {
         on: (_: 'message', callback: (value: any) => void) => {
-            this.#streamEventCallbacks.push(callback);
+            this.#streamEventCallbacks.add(callback);
         },
         off: (_: 'message', callback: (value: any) => void) => {
-            const index = this.#streamEventCallbacks.indexOf(callback);
-            // If it's -1, the item wasn't found
-            if (index <= -1) return;
-            this.#streamEventCallbacks.splice(index, 1);
+            this.#streamEventCallbacks.delete(callback);
         },
         postMessage: (value: any) => {
             const body: MessengerStreamMessageBody = {
@@ -142,7 +139,7 @@ export class Messenger {
                         return;
                     }
 
-                    this.#streamEventCallbacks.map((callback) => callback((body as MessengerMessageBody).data));
+                    this.#streamEventCallbacks.forEach((callback) => callback((body as MessengerMessageBody).data));
                     break;
                 }
                 case MessengerMessageType.Message: {
