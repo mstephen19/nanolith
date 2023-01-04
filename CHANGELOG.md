@@ -8,7 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Sentence in "Sharing memory between threads" section of the README
+- Sentence in "Sharing memory between threads" section of the README.
+- `.current` and `.changed` from getter properties to functions on the `SharedMapWatch` interface.
+
+### Added
+
+- `SharedMapWatch` interface with JSDoc documentation for each function.
+- Missing "`Service` properties & methods" section in README table of contents.
+
+### Fixed
+
+- Outdated examples in the README still using the `SharedMap.transfer` method the `SharedMapTransfer` type.
 
 ## [0.3.3] - 2022-30-12
 

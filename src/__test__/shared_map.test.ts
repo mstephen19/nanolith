@@ -131,9 +131,9 @@ describe('SharedMap', () => {
 
             const promise = new Promise((resolve) => {
                 const interval = setInterval(() => {
-                    if (!value.changed) return;
+                    if (!value.changed()) return;
 
-                    callback(value.current);
+                    callback(value.current());
                     clearInterval(interval);
                     resolve(true);
                     map.close();

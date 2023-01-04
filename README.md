@@ -44,6 +44,7 @@ Here's a quick rundown of everything you can do in Nanolith:
   - [`launchService()` options](#launchservice-options)
   - [`Service` properties & methods](#service-properties--methods)
 - [🎬 Coordinating services](#-coordinating-services)
+  - [`ServiceCluster` properties & methods](#servicecluster-properties--methods)
 - [🪝 Hooks](#-hooks)
 - [🚨 Managing concurrency](#-managing-concurrency)
   - [`pool` properties & methods](#pool-properties--methods)
@@ -624,21 +625,21 @@ console.log(await myMap.get('foo'));
 myMap.close();
 ```
 
-> **Note:** The `.close()` method must be called when finished using the initial `SharedMap` instance. Once it is closed, no other instances using the transfer object will work.
+> **Note:** The `.close()` method must be called when finished using the initial `SharedMap` instance. Once it is closed, no other instances using the raw object will work.
 
 But the main point of `SharedMap` is that it can be used to share values between threads without making copies of the data. A mutex is also implemented under the hood, which means that a very large concurrency of truly parallel operations to modify the same memory location at the same time.
 
 ```TypeScript
 // worker.ts 💼
 import { define, SharedMap } from 'nanolith';
-import type { SharedMapTransfer } from 'nanolith';
+import type { SharedMapRawData } from 'nanolith';
 
 export const worker = await define({
-    // Create a task that accept a transfer object that can be converted into a
+    // Create a task that accept a raw data object that can be converted into a
     // SharedMap instance.
-    async handleMap(transfer: SharedMapTransfer<{ count: number }>) {
-        // Instantiate a SharedMap instance based on the received transfer.
-        const countMap = new SharedMap(transfer);
+    async handleMap(raw: SharedMapRawData<{ count: number }>) {
+        // Instantiate a SharedMap instance based on the received raw data.
+        const countMap = new SharedMap(raw);
 
         // Increment the count a thousand times.
         for (let i = 1; i <= 1000; i++) {
@@ -663,11 +664,11 @@ const countMap = new SharedMap({ count: 0 });
 // Run 5 task functions in true parallel which will each increment
 // the count by one thousand.
 await Promise.all([
-    worker({ name: 'handleMap', params: [countMap.transfer] }),
-    worker({ name: 'handleMap', params: [countMap.transfer] }),
-    worker({ name: 'handleMap', params: [countMap.transfer] }),
-    worker({ name: 'handleMap', params: [countMap.transfer] }),
-    worker({ name: 'handleMap', params: [countMap.transfer] }),
+    worker({ name: 'handleMap', params: [countMap.raw] }),
+    worker({ name: 'handleMap', params: [countMap.raw] }),
+    worker({ name: 'handleMap', params: [countMap.raw] }),
+    worker({ name: 'handleMap', params: [countMap.raw] }),
+    worker({ name: 'handleMap', params: [countMap.raw] }),
 ]);
 
 // This can be expected to be "5000"
@@ -695,11 +696,11 @@ const foo = await myMap.watch('foo');
 // the key "foo" using the watch object.
 const interval = setInterval(() => {
     // If the watched value has changed since its
-    // .current property was last accessed, .changed
+    // .current() value was last accessed, .changed()
     // will return "true".
-    if (!foo.changed) return;
+    if (!foo.changed()) return;
     // Log out the new changed value.
-    console.log(foo.current);
+    console.log(foo.current());
     clearInterval(interval);
     myMap.close();
 }, 1000);
@@ -712,18 +713,6 @@ The output of the following code is:
 
 ```shell
 hello world
-```
-
-Because `current` and `changed` are getters and not static properties, destructuring them will not work properly:
-
-```TypeScript
-// This code example is wrong!
-import { SharedMap } from 'nanolith';
-
-const myMap = new SharedMap({ foo: 'bar' });
-// WRONG! WRONG! WRONG!
-const { current, changed, stopWatching } = await myMap.watch('foo');
-// WRONG! WRONG! WRONG!
 ```
 
 ## 🧑‍🏫 Examples
