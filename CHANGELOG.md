@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Sentence in "Sharing memory between threads" section of the README.
 - `.current` and `.changed` from getter properties to functions on the `SharedMapWatch` interface.
+- `#streamEventCallbacks` used by `Messenger`'s `Messagable` interop to be in a `Set` instead of an array.
 
 ### Added
 
