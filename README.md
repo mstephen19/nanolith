@@ -681,6 +681,8 @@ countMap.close();
 
 Notice that the `.get()` method will always return a stringified version of the value.
 
+> **Warning:** A `SharedMap` is designed to handle a large concurrency of parallel operations safely. However, this does not mean that it can reliably handle, for example, one million concurrent operations.
+
 ### Watching for changes on a shared memory location
 
 Calling `.get()` repeatedly can be cumbersome, which is why the `.watch()` method might be useful for certain use cases. `.watch()` returns an object containing a `current` getter, which will always return the most recent value for the provided key.

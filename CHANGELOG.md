@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `SharedMapWatch` interface with JSDoc documentation for each function.
 - Missing "`Service` properties & methods" section in README table of contents.
+- Small warning about `SharedMap` to the README.
 
 ### Fixed
 
