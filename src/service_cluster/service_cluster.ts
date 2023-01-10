@@ -75,17 +75,14 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     //     count: Exclude<number, 1 | 2>,
     //     options?: Options
     // ): Promise<(Service<Definitions> | undefined)[]>;
-    async launch<Count extends 1 | undefined, Options extends ServiceWorkerOptions>(
-        count?: Count,
-        options?: Options
-    ): Promise<Service<Definitions> | undefined>;
+    async launch<Options extends ServiceWorkerOptions>(count?: 1, options?: Options): Promise<[Service<Definitions> | undefined]>;
     async launch<Count extends number, Options extends ServiceWorkerOptions>(
         count: PositiveWholeNumber<Count>,
         options?: Options
     ): Promise<(Service<Definitions> | undefined)[]>;
     async launch<Count extends number, Options extends ServiceWorkerOptions>(count?: PositiveWholeNumber<Count>, options = {} as Options) {
         // Don't allow more services to be added if it exceeds the pool's `maxConcurrency`
-        if (!count || count === 1) return this.#launchService(options);
+        if (!count || count === 1) return [await this.#launchService(options)];
 
         const promises: Promise<Service<Definitions> | undefined>[] = [];
 

@@ -1,6 +1,7 @@
 import { ServiceCluster } from '../index.js';
 import { jest } from '@jest/globals';
 import { clusterTester, clusterTesterDefinitions } from './worker.js';
+import { Service } from '@service';
 
 describe('ServiceCluster', () => {
     let cluster: ServiceCluster<typeof clusterTesterDefinitions>;
@@ -13,10 +14,27 @@ describe('ServiceCluster', () => {
         await cluster.closeAll();
     });
 
-    it('Should launch and accurately describe the number of active services', async () => {
-        await cluster.launch(4);
+    describe('launch', () => {
+        it('Should launch the number of services specified', async () => {
+            await cluster.launch(4);
 
-        expect(cluster.activeServices).toBe(4);
+            expect(cluster.activeServices).toBe(4);
+        });
+
+        it('Should always return an array of services', async () => {
+            const x = await cluster.launch(1);
+
+            expect(x).toBeInstanceOf(Array);
+            expect(x).toHaveLength(1);
+            expect(x[0]).toBeInstanceOf(Service);
+
+            const y = await cluster.launch(2);
+
+            expect(y).toBeInstanceOf(Array);
+            expect(y).toHaveLength(2);
+            expect(y[0]).toBeInstanceOf(Service);
+            expect(y[1]).toBeInstanceOf(Service);
+        });
     });
 
     it('Should accurately describe the number of active calls', async () => {
