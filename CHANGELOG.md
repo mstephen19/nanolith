@@ -11,12 +11,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Sentence in "Sharing memory between threads" section of the README.
 - `.current` and `.changed` from getter properties to functions on the `SharedMapWatch` interface.
 - `#streamEventCallbacks` used by `Messenger`'s `Messagable` interop to be in a `Set` instead of an array.
+- Various minor performance and memory improvements to `SharedMap`.
 
 ### Added
 
 - `SharedMapWatch` interface with JSDoc documentation for each function.
 - Missing "`Service` properties & methods" section in README table of contents.
 - Small warning about `SharedMap` to the README.
+
+### Removed
+
+- Deleted `OLD_README.md`
 
 ### Fixed
 

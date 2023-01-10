@@ -1,0 +1,1 @@
+import { define } from 'nanolith';

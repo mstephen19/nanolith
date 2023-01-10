@@ -246,13 +246,15 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
      * @param name The name of the key for the value to watch.
      * @returns An object containing a `current` getter for the current value, and a `stopWatching()` function.
      */
-    async watch<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName): Promise<Readonly<SharedMapWatch>> {
+    async watch<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(
+        name: KeyName
+    ): Promise<Readonly<SharedMapWatch>> {
         const channel = new BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>(this.#identifier);
         let value = await this.get(name);
         let changed = false;
 
         // Listen for changes on that value. The encoded bytes array will be
-        // send along with each change event, and 
+        // send along with each change event, and
         channel.on(`value_changed_${name satisfies string}`, (newEncodedValue) => {
             value = DECODER.decode(newEncodedValue);
             changed = true;
@@ -319,7 +321,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
         // it's not nastily overwritten
         if (previousValueEnd !== +finalPosition) {
             // ? Potentially use .subarray here instead?
-            const slice = this.#values.slice(previousValueEnd + 1, +finalPosition + 1);
+            const slice = this.#values.subarray(previousValueEnd + 1, +finalPosition + 1);
             this.#values.set(slice, valueEnd);
         }
 
