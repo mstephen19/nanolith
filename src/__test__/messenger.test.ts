@@ -106,7 +106,7 @@ describe('Messenger', () => {
     });
 
     describe('MessengerList', () => {
-        it('Should return a map of messengers containing the ones sent over', async () => {
+        it('Should return a map of messengers containing the ones sent over to the thread', async () => {
             const messenger1 = new Messenger('fooBar');
             const messenger2 = new Messenger('fooBarBaz');
 

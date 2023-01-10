@@ -1,9 +1,9 @@
 import type { Awaitable, Except } from './utilities.js';
 
-type AcceptableValue = string | number | null | undefined | symbol | boolean | void | AcceptableValue[];
+type AcceptableValue = string | number | null | undefined | boolean | void | AcceptableValue[];
 
 interface AcceptableObject {
-    [key: string | number | symbol]: AcceptableObject | AcceptableValue;
+    [key: string | number]: AcceptableObject | AcceptableValue;
 }
 
 /**
