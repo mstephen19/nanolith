@@ -3,8 +3,8 @@ import callsites from 'callsites';
 
 import type { TaskDefinitions } from '@typing/definitions.js';
 
-export const getCurrentFile = (index?: number) => {
-    const fileName = callsites()[index ?? 2].getFileName()!;
+export const getCurrentFile = (index = 2) => {
+    const fileName = callsites()[index].getFileName()!;
     try {
         const filePath = fileURLToPath(fileName);
         return filePath;
