@@ -23,3 +23,6 @@ jest.config.js
 .eslintrc.json
 .gitignore
 CHANGELOG.md
+
+# backup created by custom publish script
+package-backup.json
