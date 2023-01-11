@@ -12,6 +12,7 @@ __test__coverage__
 assets
 scripts
 .circleci
+.git
 
 # Files
 **.tsbuildinfo
