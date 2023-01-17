@@ -21,7 +21,6 @@ export class SharedMap<Data extends Record<string, any>> {
     #key = v4();
     // The identifier for the BroadcastChannel used for coordinating the queue
     #identifier: string;
-    #closed = false;
 
     /**
      * Each {@link SharedMap} instance has a unique key that can be used
@@ -52,8 +51,6 @@ export class SharedMap<Data extends Record<string, any>> {
     readonly option = Bytes;
 
     get raw(): SharedMapRawData<Data> {
-        this.#assertNotClosed();
-
         return Object.freeze({
             __keys: this.#keys,
             __values: this.#values,
@@ -138,19 +135,6 @@ export class SharedMap<Data extends Record<string, any>> {
         this.#mutex = createMutex();
     }
 
-    /**
-     * Disable the instance from doing any more operations. If this {@link SharedMap} instance is the
-     * orchestrator, it will close the orchestration channel and no other instances will continue to work.
-     */
-    close() {
-        this.#closed = true;
-    }
-
-    #assertNotClosed() {
-        if (!this.#closed) return;
-        throw new Error('Cannot perform actions on a closed SharedMap instance!');
-    }
-
     async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
         // Wait for the mutex to be unlocked, then lock it
         await lockMutex(this.#mutex);
@@ -183,8 +167,6 @@ export class SharedMap<Data extends Record<string, any>> {
      * @returns A string that can be converted back into the original data type
      */
     get<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
-        this.#assertNotClosed();
-
         return this.#run(() => {
             return this.#get(name);
         });
@@ -308,8 +290,6 @@ export class SharedMap<Data extends Record<string, any>> {
         name: KeyName,
         value: Data extends SharedMapRawData<infer Type> ? (KeyName extends keyof Type ? Type[KeyName] : Data[KeyName]) : Data[KeyName]
     ) {
-        this.#assertNotClosed();
-
         return this.#run(async () => {
             const newValue = typeof value !== 'function' ? value : await value(this.#get(name));
             this.#set(name, newValue);

@@ -618,13 +618,7 @@ await myMap.set('foo', 'hello world');
 
 // Grab the current value of "foo".
 console.log(await myMap.get('foo'));
-
-// Close the mutex orchestrator (only necessary on the
-// thread where the SharedMap was first instantiated).
-myMap.close();
 ```
-
-> **Note:** The `.close()` method must be called when finished using the initial `SharedMap` instance. Once it is closed, no other instances using the raw object will work.
 
 But the main point of `SharedMap` is that it can be used to share values between threads without making copies of the data. A mutex is also implemented under the hood, which means that a very large concurrency of truly parallel operations to modify the same memory location at the same time.
 
@@ -672,10 +666,6 @@ await Promise.all([
 
 // This can be expected to be "5000"
 console.log(await countMap.get('count'));
-
-// Close the mutex orchestrator (only necessary on the
-// thread where the SharedMap was first instantiated).
-countMap.close();
 ```
 
 Notice that the `.get()` method will always return a stringified version of the value.
