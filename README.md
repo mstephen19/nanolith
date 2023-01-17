@@ -681,42 +681,6 @@ countMap.close();
 
 Notice that the `.get()` method will always return a stringified version of the value.
 
-> **Warning:** A `SharedMap` is designed to handle a large concurrency of parallel operations safely. However, this does not mean that it can reliably handle, for example, one million concurrent operations.
-
-### Watching for changes on a shared memory location
-
-Calling `.get()` repeatedly can be cumbersome, which is why the `.watch()` method might be useful for certain use cases. `.watch()` returns an object containing a `current` getter, which will always return the most recent value for the provided key.
-
-```TypeScript
-import { SharedMap } from 'nanolith';
-
-const myMap = new SharedMap({ foo: 'bar' });
-// Create a "watch" object for the key "foo".
-const foo = await myMap.watch('foo');
-
-// Every second, check for changes to the value under
-// the key "foo" using the watch object.
-const interval = setInterval(() => {
-    // If the watched value has changed since its
-    // .current() value was last accessed, .changed()
-    // will return "true".
-    if (!foo.changed()) return;
-    // Log out the new changed value.
-    console.log(foo.current());
-    clearInterval(interval);
-    myMap.close();
-}, 1000);
-
-// Change the value of foo
-await myMap.set('foo', 'hello world');
-```
-
-The output of the following code is:
-
-```shell
-hello world
-```
-
 ## 🧑‍🏫 Examples
 
 Examples coming soon!

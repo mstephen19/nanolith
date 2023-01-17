@@ -27,8 +27,8 @@ export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, i
             worker.on('error', reject);
             worker.on('messageerror', reject);
 
-            const earlyExitHandler = () => {
-                reject(new Error('Worker exited early!'));
+            const earlyExitHandler = (code: number) => {
+                reject(new Error(`Worker exited early with code ${code}!`));
             };
 
             worker.on('exit', earlyExitHandler);

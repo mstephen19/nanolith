@@ -1,5 +1,10 @@
 import { encodeValue } from '../shared_map/utilities.js';
 
+export const enum LockStatus {
+    Unlocked,
+    Locked,
+}
+
 export enum Bytes {
     /**
      * **1b** - One byte.

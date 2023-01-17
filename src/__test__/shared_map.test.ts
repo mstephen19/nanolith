@@ -122,33 +122,6 @@ describe('SharedMap', () => {
         });
     });
 
-    describe('Watch', () => {
-        it('Should detect changes on a specific key', async () => {
-            const callback = jest.fn((_: string | null) => void true);
-
-            const map = new SharedMap({ value: 'foo' });
-            const value = await map.watch('value');
-
-            const promise = new Promise((resolve) => {
-                const interval = setInterval(() => {
-                    if (!value.changed()) return;
-
-                    callback(value.current());
-                    clearInterval(interval);
-                    resolve(true);
-                    map.close();
-                }, 1e3);
-            });
-
-            await map.set('value', 'fooBar');
-
-            await promise;
-
-            expect(callback).toHaveBeenCalledTimes(1);
-            expect(callback).toHaveBeenCalledWith('fooBar');
-        });
-    });
-
     describe('Sharing', () => {
         it('Should reflect changes made on other threads with access to the same map', async () => {
             const map = new SharedMap({ value: 'foo' });
@@ -163,7 +136,7 @@ describe('SharedMap', () => {
 
     describe('Mutex', () => {
         it('Should be able to handle multiple concurrent operations at a time without forming corrupted or incorrect data', async () => {
-            const map = new SharedMap({ count: 0 });
+            const map = new SharedMap({ count: 0, count2: 0 });
 
             const { length } = await Promise.all([
                 sharedMapTester({ name: 'add1000', params: [map.raw] }),
