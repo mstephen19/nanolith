@@ -1,10 +1,13 @@
 import type { Awaitable } from './utilities.js';
 
+export type Mutex = Int32Array;
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type SharedMapRawData<Data = Record<string, any>> = {
     __keys: Uint8Array;
     __values: Uint8Array;
     __identifier: string;
+    __mutex: Mutex;
 };
 
 export interface SharedMapWatch {
@@ -12,17 +15,17 @@ export interface SharedMapWatch {
      * A boolean defining whether or not the value has changed
      * since the last time it was accessed via `.current`
      */
-    changed(): boolean
+    changed(): boolean;
     /**
      * A getter function for the current value.
      */
-    current(): string | null
+    current(): string | null;
     /**
      * A function that, when called, will stop the watch process.
      * After calling `stopWatching()`, no further changes to the
      * value will be reflected in the `changed` or `current` getters.
      */
-    stopWatching(): void
+    stopWatching(): void;
 }
 
 export type KeyData = {
@@ -61,18 +64,4 @@ export type SharedMapOptions = {
      * is zero, the default size of **3kb** is used for the values buffer.
      */
     bytes?: number;
-};
-
-export type EventMap = Record<string, (...args: any[]) => Awaitable<void>>;
-
-export type BroadcastChannelEmitterPostMessageBody<Events extends EventMap = EventMap, Key extends keyof Events = string> = {
-    name: Key;
-    value: Parameters<Events[Key]>;
-};
-
-export type SharedMapBroadcastChannelEvents = {
-    push_to_queue: (id: string) => void;
-    remove_from_queue: (id: string) => void;
-    [key: `value_changed_${string}`]: (newEncodedValue: Uint8Array) => void;
-    [key: `ready_${string}`]: () => void;
 };

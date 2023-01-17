@@ -2,17 +2,9 @@ import { randomUUID as v4 } from 'crypto';
 import { createSharedArrayBuffer, encodeValue, isSharedMapRawData } from './utilities.js';
 import * as Keys from './keys.js';
 import { Bytes, NULL_ENCODED, ENCODER, DECODER } from '@constants/shared_map.js';
-import { BroadcastChannelEmitter } from './broadcast_channel_emitter.js';
-import { TypedEmitter } from 'tiny-typed-emitter';
+import { createMutex, lockMutex, unlockMutex } from './mutex.js';
 
-import type {
-    Key,
-    SharedMapRawData,
-    SharedMapOptions,
-    SharedMapBroadcastChannelEvents,
-    SetWithPreviousHandler,
-    SharedMapWatch,
-} from '@typing/shared_map.js';
+import type { Key, SharedMapRawData, SharedMapOptions, SetWithPreviousHandler, Mutex } from '@typing/shared_map.js';
 import type { CleanKeyOf } from '@typing/utilities.js';
 
 /**
@@ -20,16 +12,15 @@ import type { CleanKeyOf } from '@typing/utilities.js';
  *
  * 💥 **Note:** Does not act exactly the same way as the {@link Map} object!
  */
-export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ close: () => void }> {
+export class SharedMap<Data extends Record<string, any>> {
     // SharedArrayBuffer containing all keys in bytes
     #keys: Uint8Array;
     // SharedArrayBuffer containing all concatenated values in bytes
     #values: Uint8Array;
+    #mutex: Mutex;
     #key = v4();
     // The identifier for the BroadcastChannel used for coordinating the queue
     #identifier: string;
-    // Orchestrates the queue.
-    #orchestratorChannel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents> | null = null;
     #closed = false;
 
     /**
@@ -67,6 +58,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
             __keys: this.#keys,
             __values: this.#values,
             __identifier: this.#identifier,
+            __mutex: this.#mutex,
         });
     }
 
@@ -76,8 +68,6 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
         data: Data extends SharedMapRawData<infer Type> ? Type : Data,
         { bytes: bytesOption, multiplier = 10 } = {} as SharedMapOptions
     ) {
-        super();
-
         if (typeof data !== 'object') {
             throw new Error('Can only provide objects to SharedMap.');
         }
@@ -86,6 +76,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
             this.#keys = data.__keys;
             this.#values = data.__values;
             this.#identifier = data.__identifier;
+            this.#mutex = data.__mutex;
             return;
         }
 
@@ -144,25 +135,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
         // Now we can set up the orchestrator queuing system
         this.#identifier = v4();
 
-        // The channel which controls the queue. Listens for events and reacts to them accordingly.
-        this.#orchestratorChannel = new BroadcastChannelEmitter(this.#identifier);
-        const queue: string[] = [];
-
-        this.#orchestratorChannel.on('push_to_queue', (id) => {
-            queue.push(id);
-            // If we push to the back of the queue but are first in line, we are ready to go.
-            if (queue[0] === id) this.#orchestratorChannel?.send(`ready_${id}`);
-        });
-
-        this.#orchestratorChannel.on('remove_from_queue', (id) => {
-            // Find the index of the ID in the queue
-            const index = queue.indexOf(id);
-            // Remove the ID from the queue
-            if (index !== -1) queue.splice(index, 1);
-
-            // If there is a first item in the queue, notify them that
-            if (queue[0]) this.#orchestratorChannel!.send(`ready_${queue[0]}`);
-        });
+        this.#mutex = createMutex();
     }
 
     /**
@@ -170,10 +143,7 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
      * orchestrator, it will close the orchestration channel and no other instances will continue to work.
      */
     close() {
-        // If this SharedMap is the orchestrator, close the orchestrator channel as well
-        if (this.#orchestratorChannel) this.#orchestratorChannel.close();
         this.#closed = true;
-        this.emit('close');
     }
 
     #assertNotClosed() {
@@ -181,35 +151,15 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
         throw new Error('Cannot perform actions on a closed SharedMap instance!');
     }
 
-    #wait(): Promise<[string, BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>]> {
-        return new Promise((resolve) => {
-            const channel = new BroadcastChannelEmitter(this.#identifier);
-            // Generate an ID for the workflow
-            const id = v4();
+    async #run<ReturnValue>(workflow: () => ReturnValue): Promise<Awaited<ReturnValue>> {
+        // Wait for the mutex to be unlocked, then lock it
+        await lockMutex(this.#mutex);
 
-            // Wait for a notification that we are ready to run the task
-            channel.once(`ready_${id}`, () => {
-                resolve([id, channel]);
-            });
-
-            // Push the ID into the queue. Let the queue handle the rest.
-            channel.send('push_to_queue', id);
-        });
-    }
-
-    async #run<ReturnValue>(
-        workflow: (channel: BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>) => ReturnValue
-    ): Promise<Awaited<ReturnValue>> {
-        // Generate a workflow ID and wait for our turn in the queue.
-        const [id, channel] = await this.#wait();
         // Run the workflow
-        const data = await workflow(channel);
-        // Once the workflow has finished, emit an event to the orchestrator requesting
-        // our item to be popped off the top of the queue. Then if there is another item in
-        // the queue, emit the `ready_${nextId}` event to let them know it's their turn.
-        channel.send('remove_from_queue', id);
+        const data = await workflow();
 
-        channel.close();
+        // Unlock the mutex when we're done
+        unlockMutex(this.#mutex);
 
         // Return out the return value, if any
         return data;
@@ -237,42 +187,6 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
 
         return this.#run(() => {
             return this.#get(name);
-        });
-    }
-
-    /**
-     * Watch a specific value on the map for changes.
-     *
-     * @param name The name of the key for the value to watch.
-     * @returns An object containing a `current` getter for the current value, and a `stopWatching()` function.
-     */
-    async watch<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(
-        name: KeyName
-    ): Promise<Readonly<SharedMapWatch>> {
-        const channel = new BroadcastChannelEmitter<SharedMapBroadcastChannelEvents>(this.#identifier);
-        let value = await this.get(name);
-        let changed = false;
-
-        // Listen for changes on that value. The encoded bytes array will be
-        // send along with each change event, and
-        channel.on(`value_changed_${name satisfies string}`, (newEncodedValue) => {
-            value = DECODER.decode(newEncodedValue);
-            changed = true;
-        });
-
-        this.once('close', channel.close.bind(channel));
-
-        return Object.freeze({
-            changed() {
-                return changed;
-            },
-            current() {
-                changed = false;
-                return value;
-            },
-            stopWatching() {
-                channel.close();
-            },
         });
     }
 
@@ -396,11 +310,9 @@ export class SharedMap<Data extends Record<string, any>> extends TypedEmitter<{ 
     ) {
         this.#assertNotClosed();
 
-        return this.#run(async (channel) => {
+        return this.#run(async () => {
             const newValue = typeof value !== 'function' ? value : await value(this.#get(name));
-            const newEncodedValue = this.#set(name, newValue);
-
-            channel.send(`value_changed_${name as string}`, newEncodedValue);
+            this.#set(name, newValue);
         });
     }
 }

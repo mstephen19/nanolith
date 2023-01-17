@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Mutex solution for `SharedMap` to be much more stable
+
+### Removed
+
+- `SharedMap.watch` functionality + docs.
+- Warning about parallel operations with `SharedMap`.
+
 ## [0.3.4] - 2023-11-01
 
 ### Changed
