@@ -8,8 +8,6 @@ describe('SharedMap', () => {
             const map = new SharedMap({ foo: 'bar' });
 
             expect(await map.get('foo')).toBe('bar');
-
-            map.close();
         });
 
         it('Should default to 1kb for keys and 3kb for values when provided an empty object and no config', () => {
@@ -17,8 +15,6 @@ describe('SharedMap', () => {
 
             expect(map.raw.__keys.byteLength).toBe(map.option.kilobyte);
             expect(map.raw.__values.byteLength).toBe(map.option.kilobyte * 3);
-
-            map.close();
         });
 
         it('Should use the configuration options when provided them', () => {
@@ -30,8 +26,6 @@ describe('SharedMap', () => {
             );
 
             expect(map.raw.__values.byteLength).toBe(map.option.megabyte);
-
-            map.close();
         });
     });
 
@@ -48,8 +42,6 @@ describe('SharedMap', () => {
             expect(await map.get('hello')).toBe('world');
             expect(await map.get('fizz')).toBe('buzz');
             expect(await map.get('num')).toBe('24567');
-
-            map.close();
         });
     });
 
@@ -73,8 +65,6 @@ describe('SharedMap', () => {
             // Modifying a value at the end
             await map.set('num', 77777777);
             expect(await map.get('num')).toBe('77777777');
-
-            map.close();
         });
 
         it("Should add a new value to the map if it doesn't already exist there", async () => {
@@ -87,8 +77,6 @@ describe('SharedMap', () => {
 
             await map.set('testing', 123);
             expect(await map.get('testing')).toBe('123');
-
-            map.close();
         });
 
         it('Should have no issues with setting values on empty maps', async () => {
@@ -96,8 +84,6 @@ describe('SharedMap', () => {
 
             await map.set('fizz', 'buzz');
             expect(await map.get('fizz')).toBe('buzz');
-
-            map.close();
         });
 
         it('Should accept a callback that can set a new value based on the previous value', async () => {
@@ -108,8 +94,6 @@ describe('SharedMap', () => {
             });
 
             expect(await map.get('count')).toBe('2');
-
-            map.close();
         });
 
         it('Should set the value to null when provided with an empty string', async () => {
@@ -117,8 +101,6 @@ describe('SharedMap', () => {
 
             await map.set('value', '');
             expect(await map.get('value')).toBe('null');
-
-            map.close();
         });
     });
 
@@ -129,8 +111,6 @@ describe('SharedMap', () => {
             await sharedMapTester({ name: 'setNewValue', params: [map.raw] });
 
             expect(await map.get('value')).toBe('HELLO FROM WORKER!');
-
-            map.close();
         });
     });
 
@@ -152,8 +132,6 @@ describe('SharedMap', () => {
             ]);
 
             expect(await map.get('count')).toBe(`${length * 1e3}`);
-
-            map.close();
         });
     });
 });
