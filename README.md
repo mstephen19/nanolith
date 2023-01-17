@@ -53,7 +53,6 @@ Here's a quick rundown of everything you can do in Nanolith:
   - [Between all threads](#between-all-threads)
 - [📡 Streaming data between threads](#-streaming-data-between-threads)
 - [💾 Sharing memory between threads](#-sharing-memory-between-threads)
-  - [Watching for changes on a shared memory location](#watching-for-changes-on-a-shared-memory-location)
 - [🧑‍🏫 Examples](#-examples)
 - [📜 License](#-license)
 
