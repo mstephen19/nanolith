@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.3.7] - 2023-21-01
+
 ### Changed
 
 - Mutex solution for `SharedMap` to be much more stable
