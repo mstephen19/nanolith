@@ -10,11 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Mutex solution for `SharedMap` to be much more stable
 - `workerHandler` to exit the process with a code of `1` when no `type` is present on `workerData`.
+- Refactored `prepareWritableToPortStream` timeout logic.
 
 ### Removed
 
 - `SharedMap.watch` functionality + docs.
-- Warning about parallel operations with `SharedMap`.
+- Warning in README about parallel operations with `SharedMap`.
 
 ### Added
 

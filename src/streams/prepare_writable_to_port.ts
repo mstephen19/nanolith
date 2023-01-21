@@ -12,12 +12,12 @@ export function prepareWritableToPortStream<Target extends Messagable>(target: T
 
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(
-            () =>
-                reject(
-                    new Error(
-                        'Stream creation failed after 15 seconds. Receiver failed to notify of its ready status. If you are using the Messenger API, make sure you are using the ".onStream()" listener on one of the receiving ends and that at least one receiver is accepting the stream with the "accept()" function.'
-                    )
-                ),
+            reject.bind(
+                undefined,
+                new Error(
+                    'Stream creation failed after 15 seconds. Receiver failed to notify of its ready status. If you are using the Messenger API, make sure you are using the ".onStream()" listener on one of the receiving ends and that at least one receiver is accepting the stream with the "accept()" function.'
+                )
+            ),
             timeoutSecs
         );
 
