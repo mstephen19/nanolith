@@ -86,7 +86,6 @@ class Pool {
     __enqueue(item: PoolItem) {
         // Prevent workers from being run on any other thread than the main thread.
         if (!isMainThread) throw new Error("Can't enqueue items to the pool on any other thread than the main thread!");
-
         if (!(item instanceof PoolItem)) throw new Error('The provided item cannot be enqueued.');
 
         if (item.options.priority) this.#queue.unshift(item);

@@ -11,6 +11,8 @@ import type {
 } from '@typing/messages.js';
 
 export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, identifier: string, { name, params, ...rest }: Options) => {
+    if (!name) throw new Error('No task name provided!');
+
     const item = new PoolItem({
         file,
         workerData: {

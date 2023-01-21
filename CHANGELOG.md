@@ -9,11 +9,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 
 - Mutex solution for `SharedMap` to be much more stable
+- `workerHandler` to exit the process with a code of `1` when no `type` is present on `workerData`.
 
 ### Removed
 
 - `SharedMap.watch` functionality + docs.
 - Warning about parallel operations with `SharedMap`.
+
+### Added
+
+- Throw an error when no task name is provided when running a task worker.
 
 ## [0.3.4] - 2023-11-01
 

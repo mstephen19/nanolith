@@ -12,7 +12,6 @@ import type { BaseWorkerData } from '@typing/worker_data.js';
 export async function workerHandler<Definitions extends TaskDefinitions>(definitions: Definitions) {
     // We only want to handle the file as worker if this function isn't being run on the main thread.
     if (isMainThread) return;
-
     const { type } = workerData as BaseWorkerData;
 
     switch (type) {
@@ -25,7 +24,7 @@ export async function workerHandler<Definitions extends TaskDefinitions>(definit
             break;
         }
         default: {
-            process.exit(0);
+            process.exit(1);
         }
     }
 }
