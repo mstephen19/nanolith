@@ -3,13 +3,14 @@ import { Worker, SHARE_ENV, isMainThread } from 'worker_threads';
 import { generateConcurrencyValue } from './utilities.js';
 import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
+import { createCounter, getCount, incr, decr } from 'utilities/counter.js';
 
 /**
  * This is the big boy that manages all Nanolith workers 💪
  */
 class Pool {
     #concurrency = cpus().length;
-    #active = 0;
+    #active = createCounter();
     #queue: PoolItem[] = [];
     /**
      * Easy access to the {@link ConcurrencyOption} enum right on `pool`.
@@ -28,7 +29,7 @@ class Pool {
      * Whether or not the pool has currently reached its max concurrency.
      */
     get maxed() {
-        return this.#active >= this.#concurrency;
+        return getCount(this.#active) >= this.#concurrency;
     }
 
     /**
@@ -42,14 +43,14 @@ class Pool {
      * The current number of workers that are running under the pool.
      */
     get activeCount() {
-        return this.#active;
+        return getCount(this.#active);
     }
 
     /**
      * A `boolean` indicating whether or not the pool is currently doing nothing.
      */
     get idle() {
-        return !this.#active;
+        return !getCount(this.#active);
     }
 
     /**
@@ -102,7 +103,7 @@ class Pool {
         // has a length of zero, do nothing.
         if (this.maxed || !this.#queue.length) return;
 
-        this.#active++;
+        incr(this.#active);
 
         const item = this.#queue.shift()!;
 
@@ -123,7 +124,7 @@ class Pool {
         item.emit('created', worker);
 
         worker.once('exit', () => {
-            this.#active--;
+            decr(this.#active);
             this.#next();
         });
     }

@@ -11,7 +11,7 @@ export const createMutex = (): Mutex => {
     return arr;
 };
 
-const lockMutexSync = (mutex: Mutex): void => {
+export const lockMutexSync = (mutex: Mutex): void => {
     // If it's already unlocked, exchange that for a locked status and return out.
     if (Atomics.compareExchange(mutex, 0, LockStatus.Unlocked, LockStatus.Locked) === LockStatus.Unlocked) {
         return;
