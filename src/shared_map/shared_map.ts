@@ -2,7 +2,7 @@ import { randomUUID as v4 } from 'crypto';
 import { createSharedArrayBuffer, encodeValue, isSharedMapRawData } from './utilities.js';
 import * as Keys from './keys.js';
 import { Bytes, NULL_ENCODED, ENCODER, DECODER } from '@constants/shared_map.js';
-import { createMutex, lockMutex, unlockMutex } from './mutex.js';
+import { createMutex, lockMutex, unlockMutex } from '../utilities/mutex.js';
 
 import type { Key, SharedMapRawData, SharedMapOptions, SetWithPreviousHandler, Mutex } from '@typing/shared_map.js';
 import type { CleanKeyOf } from '@typing/utilities.js';
