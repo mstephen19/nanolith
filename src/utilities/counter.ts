@@ -1,5 +1,5 @@
-import { createSharedUint32, getValue, setValue } from './shared_uint32_array.js';
-import type { SharedUint32 } from './shared_uint32_array.js';
+import { createSharedUint32, getValue, setValue } from './shared_uint32.js';
+import type { SharedUint32 } from './shared_uint32.js';
 
 export type Counter = SharedUint32;
 

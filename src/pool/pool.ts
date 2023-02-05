@@ -3,8 +3,7 @@ import { Worker, SHARE_ENV, isMainThread, workerData } from 'worker_threads';
 import { generateConcurrencyValue } from './utilities.js';
 import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
-import { createCounter, getCount, incr, decr } from 'utilities/counter.js';
-import { createSharedUint32, getValue, setValue } from 'utilities/shared_uint32_array.js';
+import { createCounter, getCount, incr, decr, createSharedUint32, getValue, setValue } from '@utilities';
 
 import type { BaseWorkerData } from '@typing/worker_data.js';
 import type { PoolData } from '@typing/pool.js';
@@ -21,7 +20,7 @@ const getActiveCounter = () => {
     return pool.active;
 };
 
-const getConcurrencyCount = () => {
+const getConcurrencyCounter = () => {
     if (isMainThread) {
         const count = createSharedUint32();
         setValue(count, () => cpus().length);
@@ -37,7 +36,7 @@ const getConcurrencyCount = () => {
  * This is the big boy that manages all Nanolith workers 💪
  */
 class Pool {
-    #concurrency = getConcurrencyCount();
+    #concurrency = getConcurrencyCounter();
     #active = getActiveCounter();
     #queue: PoolItem[] = [];
     /**

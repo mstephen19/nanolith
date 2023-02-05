@@ -1,6 +1,6 @@
 import { LockStatus } from '@constants/shared_map.js';
 
-import type { Mutex } from '@typing/shared_map.js';
+export type Mutex = Int32Array;
 
 export const createMutex = (): Mutex => {
     // The underlying buffer must have at least 4 bytes

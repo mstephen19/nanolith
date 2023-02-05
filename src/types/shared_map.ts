@@ -1,6 +1,5 @@
 import type { Awaitable } from './utilities.js';
-
-export type Mutex = Int32Array;
+import type { Mutex } from '@utilities';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type SharedMapRawData<Data = Record<string, any>> = {

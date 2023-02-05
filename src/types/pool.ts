@@ -4,7 +4,7 @@ import type { MessengerRawData } from './messenger.js';
 import type { BaseWorkerOptions } from './workers.js';
 import type { WorkerType } from '@constants/workers.js';
 import type { Counter } from 'utilities/counter.js';
-import type { SharedUint32 } from 'utilities/shared_uint32_array.js';
+import type { SharedUint32 } from 'utilities/shared_uint32.js';
 
 export type PoolData = {
     active: Counter;

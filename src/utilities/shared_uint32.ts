@@ -1,5 +1,6 @@
-import type { Mutex } from '@typing/shared_map.js';
 import { createMutex, lockMutexSync, unlockMutex } from './mutex.js';
+
+import type { Mutex } from './mutex.js';
 
 type Value = Uint32Array;
 
