@@ -1,18 +1,18 @@
 import { randomUUID as v4 } from 'crypto';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { listenForStream, prepareWritableToPortStream } from '@streams';
-import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
+import { ParentThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 
 import type { Worker, TransferListItem } from 'worker_threads';
 import type { TaskDefinitions, Tasks } from '@typing/definitions.js';
 import type {
-    MainThreadCallMessageBody,
+    ParentThreadCallMessageBody,
+    ParentThreadSendMessageBody,
+    ParentThreadMessengerTransferBody,
     WorkerBaseMessageBody,
     WorkerCallErrorMessageBody,
     WorkerCallReturnMessageBody,
-    MainThreadSendMessageBody,
     WorkerSendMessageBody,
-    MainThreadMessengerTransferBody,
     WorkerMessengerTransferSuccessBody,
     RemoveListenerFunction,
 } from '@typing/messages.js';
@@ -142,8 +142,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         // Increase the current number of active calls
         this.#active++;
 
-        const message: MainThreadCallMessageBody = {
-            type: MainThreadMessageType.Call,
+        const message: ParentThreadCallMessageBody = {
+            type: ParentThreadMessageType.Call,
             name,
             params: params ?? [],
             key,
@@ -191,8 +191,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     sendMessage<Data = any>(data: Data, transferList?: readonly TransferListItem[]) {
         this.#assertIsNotTerminated();
 
-        const body: MainThreadSendMessageBody<Data> = {
-            type: MainThreadMessageType.Message,
+        const body: ParentThreadSendMessageBody<Data> = {
+            type: ParentThreadMessageType.Message,
             data,
         };
 
@@ -294,8 +294,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
 
         const transferData = messenger.raw;
 
-        const body: MainThreadMessengerTransferBody = {
-            type: MainThreadMessageType.MessengerTransfer,
+        const body: ParentThreadMessengerTransferBody = {
+            type: ParentThreadMessageType.MessengerTransfer,
             data: transferData,
         };
 

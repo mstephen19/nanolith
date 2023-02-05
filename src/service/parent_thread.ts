@@ -1,5 +1,5 @@
 import { parentPort, workerData } from 'worker_threads';
-import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
+import { ParentThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 import { assertIsNotMainThread } from '@utilities';
 import { listenForStream, prepareWritableToPortStream } from '@streams';
 
@@ -7,9 +7,9 @@ import type { TransferListItem } from 'worker_threads';
 import type { Awaitable } from '@typing/utilities.js';
 import type {
     WorkerSendMessageBody,
-    MainThreadBaseMessageBody,
-    MainThreadSendMessageBody,
-    MainThreadMessengerTransferBody,
+    ParentThreadBaseMessageBody,
+    ParentThreadSendMessageBody,
+    ParentThreadMessengerTransferBody,
 } from '@typing/messages.js';
 import type { Messenger } from '../messenger/index.js';
 import type { BaseWorkerData } from '@typing/worker_data.js';
@@ -54,9 +54,9 @@ async function waitForMessage<Data = any>(callback: (body: Data) => Awaitable<bo
     assertIsNotMainThread('ParentThread.waitForMessage');
 
     return new Promise((resolve) => {
-        const handler = async (body: MainThreadBaseMessageBody) => {
-            if (body.type !== MainThreadMessageType.Message) return;
-            const { data } = body as MainThreadSendMessageBody<Data>;
+        const handler = async (body: ParentThreadBaseMessageBody) => {
+            if (body.type !== ParentThreadMessageType.Message) return;
+            const { data } = body as ParentThreadSendMessageBody<Data>;
 
             if (await callback(data)) {
                 resolve(data);
@@ -83,9 +83,9 @@ async function waitForMessage<Data = any>(callback: (body: Data) => Awaitable<bo
 function onMessage<Data = any>(callback: (body: Data) => Awaitable<void>): RemoveListenerFunction {
     assertIsNotMainThread('ParentThread.onMessage');
 
-    const handler = async (body: MainThreadBaseMessageBody) => {
-        if (body.type !== MainThreadMessageType.Message) return;
-        await callback((body as MainThreadSendMessageBody<Data>).data);
+    const handler = async (body: ParentThreadBaseMessageBody) => {
+        if (body.type !== ParentThreadMessageType.Message) return;
+        await callback((body as ParentThreadSendMessageBody<Data>).data);
     };
 
     parentPort!.on('message', handler);
@@ -108,9 +108,9 @@ function onMessengerReceived(callback: (messenger: Messenger) => Awaitable<any>)
 
     const { messengers } = workerData as BaseWorkerData;
 
-    const handler = async (body: MainThreadBaseMessageBody) => {
-        if (body.type !== MainThreadMessageType.MessengerTransfer) return;
-        await callback(messengers[(body as MainThreadMessengerTransferBody).data.__messengerID]);
+    const handler = async (body: ParentThreadBaseMessageBody) => {
+        if (body.type !== ParentThreadMessageType.MessengerTransfer) return;
+        await callback(messengers[(body as ParentThreadMessengerTransferBody).data.__messengerID]);
     };
 
     parentPort!.on('message', handler);

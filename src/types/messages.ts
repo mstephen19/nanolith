@@ -1,27 +1,27 @@
-import type { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
+import type { ParentThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 import type { MessengerRawData } from './messenger.js';
 
 export type RemoveListenerFunction = () => void;
 
-export type MainThreadBaseMessageBody<Type extends MainThreadMessageType = MainThreadMessageType> = {
+export type ParentThreadBaseMessageBody<Type extends ParentThreadMessageType = ParentThreadMessageType> = {
     type: Type;
 };
 
-export type MainThreadSendMessageBody<Data = any> = {
+export type ParentThreadSendMessageBody<Data = any> = {
     data: Data;
-} & MainThreadBaseMessageBody<MainThreadMessageType.Message>;
+} & ParentThreadBaseMessageBody<ParentThreadMessageType.Message>;
 
-export type MainThreadCallMessageBody = {
+export type ParentThreadCallMessageBody = {
     key: string;
     name: string;
     params: any[];
-} & MainThreadBaseMessageBody<MainThreadMessageType.Call>;
+} & ParentThreadBaseMessageBody<ParentThreadMessageType.Call>;
 
-export type MainThreadTerminateMessageBody = MainThreadBaseMessageBody<MainThreadMessageType.Terminate>;
+export type ParentThreadTerminateMessageBody = ParentThreadBaseMessageBody<ParentThreadMessageType.Terminate>;
 
-export type MainThreadMessengerTransferBody = {
+export type ParentThreadMessengerTransferBody = {
     data: MessengerRawData;
-} & MainThreadBaseMessageBody<MainThreadMessageType.MessengerTransfer>;
+} & ParentThreadBaseMessageBody<ParentThreadMessageType.MessengerTransfer>;
 
 export type WorkerBaseMessageBody<Type extends WorkerMessageType = WorkerMessageType> = {
     type: Type;

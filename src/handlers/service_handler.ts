@@ -1,15 +1,15 @@
 import { parentPort, workerData, threadId } from 'worker_threads';
-import { MainThreadMessageType, WorkerMessageType } from '@constants/messages.js';
+import { ParentThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 import { applyMessengerTransferObjects } from './utilities.js';
 import { Messenger } from '@messenger';
 
 import type { TaskDefinitions } from '@typing/definitions.js';
 import type {
-    MainThreadBaseMessageBody,
+    ParentThreadBaseMessageBody,
+    ParentThreadCallMessageBody,
+    ParentThreadMessengerTransferBody,
     WorkerCallReturnMessageBody,
-    MainThreadCallMessageBody,
     WorkerCallErrorMessageBody,
-    MainThreadMessengerTransferBody,
     WorkerMessengerTransferSuccessBody,
     WorkerExceptionMessageBody,
     WorkerInitializedMessageBody,
@@ -30,16 +30,16 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
     });
 
     // This listener is a priority, so should be added first
-    parentPort!.on('message', async (body: MainThreadBaseMessageBody) => {
+    parentPort!.on('message', async (body: ParentThreadBaseMessageBody) => {
         try {
             switch (body?.type) {
                 // Exit the worker's process when the terminate message is sent
-                case MainThreadMessageType.Terminate:
+                case ParentThreadMessageType.Terminate:
                     process.exit();
                     break;
                 // Handle calling a task within a service worker with message passing
-                case MainThreadMessageType.Call: {
-                    const { name, params, key } = body as MainThreadCallMessageBody;
+                case ParentThreadMessageType.Call: {
+                    const { name, params, key } = body as ParentThreadCallMessageBody;
 
                     if (!definitions?.[name] || typeof definitions[name] !== 'function') {
                         throw new Error(`A task with the name ${name} doesn't exist!`);
@@ -60,8 +60,8 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
                     parentPort!.postMessage(response);
                     break;
                 }
-                case MainThreadMessageType.MessengerTransfer: {
-                    const { data } = body as MainThreadMessengerTransferBody;
+                case ParentThreadMessageType.MessengerTransfer: {
+                    const { data } = body as ParentThreadMessengerTransferBody;
 
                     (workerData as ServiceWorkerData).messengers[data.__messengerID] = new Messenger(data);
 
@@ -69,7 +69,7 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
                     // by the callback above.
                     const postBody: WorkerMessengerTransferSuccessBody = {
                         type: WorkerMessageType.MessengerTransferSuccess,
-                        data: (body as MainThreadMessengerTransferBody).data.__messengerID,
+                        data: (body as ParentThreadMessengerTransferBody).data.__messengerID,
                     };
 
                     parentPort?.postMessage(postBody);
@@ -82,7 +82,7 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
             // Don't exit the process, instead post back a message with the error
             const response: WorkerCallErrorMessageBody = {
                 type: WorkerMessageType.CallError,
-                key: (body as MainThreadCallMessageBody).key,
+                key: (body as ParentThreadCallMessageBody).key,
                 data: error as Error,
             };
 

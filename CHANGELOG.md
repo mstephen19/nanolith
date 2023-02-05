@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `define()` to always return the `Nanolith` instance, regardless of whether or not it is being run on the main thread.
 - Renamed `MainThread` to `ParentThread` to match the changes made above + update docs.
 - Change "performant" to "scalable" in "About" section in README.
+- Renamed all `MainThread...` message body types to be `ParentThread...` instead.
 
 ## [0.3.7] - 2023-21-01
 

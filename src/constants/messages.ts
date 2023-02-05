@@ -1,8 +1,8 @@
 /**
- * Message types that will only be sent from the main thread
+ * Message types that will only be sent from the parent thread
  * to workers, and never the other way around.
  */
-export const enum MainThreadMessageType {
+export const enum ParentThreadMessageType {
     /**
      * To be used when sending a message to a worker from
      * the main thread.
@@ -25,17 +25,17 @@ export const enum MainThreadMessageType {
 
 /**
  * Message types that will only be sent from workers over to
- * the main thread, and never the other way around.
+ * the parent thread, and never the other way around.
  */
 export const enum WorkerMessageType {
     /**
      * To be used when sending a message from a worker to
-     * the main thread.
+     * the parent thread.
      */
     Message,
     /**
      * To be used when a task worker has returned a
-     * value and posting it back to the main thread.
+     * value and posting it back to the parent thread.
      */
     TaskReturn,
     /**
@@ -45,26 +45,26 @@ export const enum WorkerMessageType {
     TaskError,
     /**
      * To be used when a called task in a service worker has
-     * returned a value and posting it back to the main thread.
+     * returned a value and posting it back to the parent thread.
      */
     CallReturn,
     /**
      * To be used when a called task in a service worker has
-     * failed and posting the error back to the main thread.
+     * failed and posting the error back to the parent thread.
      */
     CallError,
     /**
-     * To be used when notifying the main thread that a `Messenger`
+     * To be used when notifying the parent thread that a `Messenger`
      * object has successfully been sent.
      */
     MessengerTransferSuccess,
     /**
-     * To be used when a service worker throws an exception and the main
+     * To be used when a service worker throws an exception and the parent
      * thread must be notified about it.
      */
     WorkerException,
     /**
-     * To be used to notify the main thread that a service worker has
+     * To be used to notify the parent thread that a service worker has
      * completed initialization and that it's ready to go.
      */
     Initialized,
