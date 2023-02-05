@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'url';
-import callsites from 'callsites';
+import { callsites } from '@utilities';
 
 import type { TaskDefinitions } from '@typing/definitions.js';
 
