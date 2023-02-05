@@ -1,4 +1,4 @@
-export { pool } from '@pool';
+export { pool, getDefaultPoolConcurrency } from '@pool';
 export { define } from '@define';
 export { ParentThread } from '@service';
 export { Messenger, MessengerList } from '@messenger';

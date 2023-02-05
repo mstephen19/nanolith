@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Renamed `MainThread` to `ParentThread` to match the changes made above + update docs.
 - Change "performant" to "scalable" in "About" section in README.
 - Renamed all `MainThread...` message body types to be `ParentThread...` instead.
+- Default max concurrency of `pool` from 1 thread per core to 2 threads per core + docs update.
 
 ### Added
 

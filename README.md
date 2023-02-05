@@ -321,7 +321,7 @@ import { pool, ConcurrencyOption } from 'nanolith';
 pool.setConcurrency(ConcurrencyOption.Quarter);
 // One thread per two cores.
 pool.setConcurrency(ConcurrencyOption.Half);
-// Default concurrency. One thread per core (x1).
+// Default concurrency. Two threads per core (x2).
 pool.setConcurrency(ConcurrencyOption.Default);
 // One thread per core.
 pool.setConcurrency(ConcurrencyOption.x1);

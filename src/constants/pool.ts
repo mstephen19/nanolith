@@ -8,9 +8,9 @@ export enum ConcurrencyOption {
      */
     Half = 'Half',
     /**
-     * Default concurrency. One thread per core (`x1`).
+     * Default concurrency. Two threads per core (`x2`).
      */
-    Default = 'x1',
+    Default = 'x2',
     /**
      * One thread per core.
      */
@@ -44,7 +44,7 @@ export enum ConcurrencyOption {
 export const concurrencyOptionMultipliers = {
     [ConcurrencyOption.Quarter]: 0.25,
     [ConcurrencyOption.Half]: 0.5,
-    [ConcurrencyOption.Default]: 1,
+    [ConcurrencyOption.Default]: 2,
     [ConcurrencyOption.x1]: 1,
     [ConcurrencyOption.x2]: 2,
     [ConcurrencyOption.x4]: 4,

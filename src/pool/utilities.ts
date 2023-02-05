@@ -1,7 +1,7 @@
 import { cpus } from 'os';
 import { concurrencyOptionMultipliers } from '@constants/pool.js';
 
-import type { ConcurrencyOption } from '@constants/pool.js';
+import { ConcurrencyOption } from '@constants/pool.js';
 import type { PoolItemOptions, PoolItemConfig } from '@typing/pool.js';
 
 export const cleanPoolConfig = <Options extends PoolItemConfig>({
@@ -31,3 +31,5 @@ export const generateConcurrencyValue = <Option extends ConcurrencyOption>(optio
     // if (!Object.values(ConcurrencyOption).includes(option)) throw new Error(`${option} isn't a proper ConcurrencyOption!`);
     return Math.round(cpus().length * concurrencyOptionMultipliers[option]);
 };
+
+export const getDefaultPoolConcurrency = () => generateConcurrencyValue(ConcurrencyOption.Default);

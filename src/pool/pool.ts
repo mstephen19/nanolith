@@ -1,6 +1,6 @@
 import { cpus } from 'os';
 import { Worker, SHARE_ENV, isMainThread, workerData } from 'worker_threads';
-import { generateConcurrencyValue } from './utilities.js';
+import { generateConcurrencyValue, getDefaultPoolConcurrency } from './utilities.js';
 import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
 import { createCounter, getCount, incr, decr, createSharedUint32, getValue, setValue } from '@utilities';
@@ -23,7 +23,7 @@ const getActiveCounter = () => {
 const getConcurrencyCounter = () => {
     if (isMainThread) {
         const count = createSharedUint32();
-        setValue(count, () => cpus().length);
+        setValue(count, () => getDefaultPoolConcurrency());
         return count;
     }
 

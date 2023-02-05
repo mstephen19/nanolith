@@ -69,4 +69,11 @@ describe('define', () => {
             expect(api({ name: 'foo' })).rejects.toThrowError();
         });
     });
+
+    // todo: Test hooks for tasks
+    // describe('Hooks', () => {
+    //     describe('__beforeTask', () => {
+    //         it('Should run before a task is run', ())
+    //     });
+    // });
 });

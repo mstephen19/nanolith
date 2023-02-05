@@ -148,6 +148,10 @@ describe('Service', () => {
                 expect(handler).toHaveBeenCalledWith('test test');
             });
         });
+        // todo: Test hooks for tasks
+        // describe('__beforeTask', () => {
+        //     it('Should run before a task is run', ())
+        // });
     });
 
     describe('listenerRemover', () => {
