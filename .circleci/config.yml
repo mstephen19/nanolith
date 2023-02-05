@@ -12,13 +12,32 @@ jobs:
                   pkg-manager: npm
             - run:
                   command: npm run test
-                  name: Run test
+                  name: Run tests
             - persist_to_workspace:
                   root: ~/project
                   paths:
                       - .
+    publish:
+        executor: node/default
+        steps:
+            - checkout
+            - attach_workspace:
+                  at: ~/project
+            - run:
+                  name: Authenticate with npm
+                  command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
+            - run:
+                  name: Publish
+                  command: npm run publish:latest
 
 workflows:
     build:
         jobs:
             - build_and_test
+            - publish:
+                  requires:
+                      - build_and_test
+                  filters:
+                      branches:
+                          only:
+                              - main
