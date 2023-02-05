@@ -4,8 +4,10 @@ import { generateConcurrencyValue } from './utilities.js';
 import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
 import { createCounter, getCount, incr, decr } from 'utilities/counter.js';
+import { createSharedUint32, getValue, setValue } from 'utilities/shared_uint32_array.js';
 
 import type { BaseWorkerData } from '@typing/worker_data.js';
+import type { PoolData } from '@typing/pool.js';
 
 const getActiveCounter = () => {
     // Create the initial instance of the counter on the
@@ -14,16 +16,28 @@ const getActiveCounter = () => {
 
     // Any subsequent threads will use the counter data added
     // to the workerData
-    const { poolActiveCounter } = workerData as BaseWorkerData;
-    if (!poolActiveCounter) throw new Error('Pool corruption. Counter data not found.');
-    return poolActiveCounter;
+    const { pool } = workerData as BaseWorkerData;
+    if (!pool || !pool.active) throw new Error('Pool corruption. Counter data not found.');
+    return pool.active;
+};
+
+const getConcurrencyCount = () => {
+    if (isMainThread) {
+        const count = createSharedUint32();
+        setValue(count, () => cpus().length);
+        return count;
+    }
+
+    const { pool } = workerData as BaseWorkerData;
+    if (!pool || !pool.concurrency) throw new Error('Pool corruption. Concurrency data not found.');
+    return pool.concurrency;
 };
 
 /**
  * This is the big boy that manages all Nanolith workers 💪
  */
 class Pool {
-    #concurrency = cpus().length;
+    #concurrency = getConcurrencyCount();
     #active = getActiveCounter();
     #queue: PoolItem[] = [];
     /**
@@ -36,14 +50,14 @@ class Pool {
      * on the machine being used. Can be changed with the `pool.setConcurrency` function
      */
     get maxConcurrency() {
-        return this.#concurrency;
+        return getValue(this.#concurrency);
     }
 
     /**
      * Whether or not the pool has currently reached its max concurrency.
      */
     get maxed() {
-        return getCount(this.#active) >= this.#concurrency;
+        return getCount(this.#active) >= getValue(this.#concurrency);
     }
 
     /**
@@ -85,7 +99,7 @@ class Pool {
     setConcurrency<Option extends ConcurrencyOption>(option: Option) {
         if (!Object.values(ConcurrencyOption).includes(option)) throw new Error(`${option} is not a valid and safe ConcurrencyOption!`);
 
-        this.#concurrency = generateConcurrencyValue(option);
+        setValue(this.#concurrency, () => generateConcurrencyValue(option));
     }
 
     /**
@@ -127,7 +141,10 @@ class Pool {
             ...options,
             workerData: {
                 ...workerData,
-                poolActiveCounter: this.#active,
+                pool: {
+                    active: this.#active,
+                    concurrency: this.#concurrency,
+                } satisfies PoolData,
             },
             env: SHARE_ENV,
         });
