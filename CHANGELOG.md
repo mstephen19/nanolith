@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `pool` to use shared values for the active count and concurrency count, enabling the spawning of new threads from other threads.
 - `pool` to allow for the enqueuing of new items on all threads.
 - `define()` to always return the `Nanolith` instance, regardless of whether or not it is being run on the main thread.
+- Renamed `MainThread` to `ParentThread` to match the changes made above + update docs.
+- Change "performant" to "scalable" in "About" section in README.
 
 ## [0.3.7] - 2023-21-01
 

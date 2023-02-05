@@ -1,6 +1,6 @@
 /* eslint-disable indent */
 import { workerData } from 'worker_threads';
-import { MainThread } from '@service';
+import { ParentThread } from '@service';
 import { assertIsNotMainThread } from '@utilities';
 
 import type { Messenger } from './messenger.js';
@@ -18,7 +18,7 @@ async function use(name: string) {
                   reject(new Error(`Timed out after waiting 10 seconds to receive a messenger named ${name}`));
               }, 10e3);
 
-              const removeListener = MainThread.onMessengerReceived((messenger: Messenger) => {
+              const removeListener = ParentThread.onMessengerReceived((messenger: Messenger) => {
                   if (messenger.ID !== name) return;
                   resolve(messenger);
                   clearTimeout(timeout);

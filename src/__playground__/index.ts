@@ -1,3 +1,7 @@
-import { api2 } from './worker.js';
+import { api2 } from './worker2.js';
 
-await api2({ name: 'bar' });
+try {
+    await api2({ name: 'bar' });
+} catch (error) {
+    console.log('whoops');
+}

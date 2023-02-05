@@ -1,6 +1,6 @@
 export { pool } from '@pool';
 export { define } from '@define';
-export { MainThread } from '@service';
+export { ParentThread } from '@service';
 export { Messenger, MessengerList } from '@messenger';
 export { ServiceCluster } from '@service_cluster';
 export { SharedMap } from '@shared_map';
