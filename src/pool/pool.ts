@@ -1,15 +1,44 @@
 import { cpus } from 'os';
-import { Worker, SHARE_ENV, isMainThread } from 'worker_threads';
+import { Worker, SHARE_ENV, isMainThread, workerData } from 'worker_threads';
 import { generateConcurrencyValue } from './utilities.js';
 import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
+import { createCounter, getCount, incr, decr } from 'utilities/counter.js';
+import { createSharedUint32, getValue, setValue } from 'utilities/shared_uint32_array.js';
+
+import type { BaseWorkerData } from '@typing/worker_data.js';
+import type { PoolData } from '@typing/pool.js';
+
+const getActiveCounter = () => {
+    // Create the initial instance of the counter on the
+    // main thread
+    if (isMainThread) return createCounter();
+
+    // Any subsequent threads will use the counter data added
+    // to the workerData
+    const { pool } = workerData as BaseWorkerData;
+    if (!pool || !pool.active) throw new Error('Pool corruption. Counter data not found.');
+    return pool.active;
+};
+
+const getConcurrencyCount = () => {
+    if (isMainThread) {
+        const count = createSharedUint32();
+        setValue(count, () => cpus().length);
+        return count;
+    }
+
+    const { pool } = workerData as BaseWorkerData;
+    if (!pool || !pool.concurrency) throw new Error('Pool corruption. Concurrency data not found.');
+    return pool.concurrency;
+};
 
 /**
  * This is the big boy that manages all Nanolith workers 💪
  */
 class Pool {
-    #concurrency = cpus().length;
-    #active = 0;
+    #concurrency = getConcurrencyCount();
+    #active = getActiveCounter();
     #queue: PoolItem[] = [];
     /**
      * Easy access to the {@link ConcurrencyOption} enum right on `pool`.
@@ -21,18 +50,18 @@ class Pool {
      * on the machine being used. Can be changed with the `pool.setConcurrency` function
      */
     get maxConcurrency() {
-        return this.#concurrency;
+        return getValue(this.#concurrency);
     }
 
     /**
      * Whether or not the pool has currently reached its max concurrency.
      */
     get maxed() {
-        return this.#active >= this.#concurrency;
+        return getCount(this.#active) >= getValue(this.#concurrency);
     }
 
     /**
-     * The current number of item in the pool's queue.
+     * The current number of item in the pool's queue on the current thread.
      */
     get queueLength() {
         return this.#queue.length;
@@ -42,14 +71,14 @@ class Pool {
      * The current number of workers that are running under the pool.
      */
     get activeCount() {
-        return this.#active;
+        return getCount(this.#active);
     }
 
     /**
      * A `boolean` indicating whether or not the pool is currently doing nothing.
      */
     get idle() {
-        return !this.#active;
+        return !getCount(this.#active);
     }
 
     /**
@@ -70,7 +99,7 @@ class Pool {
     setConcurrency<Option extends ConcurrencyOption>(option: Option) {
         if (!Object.values(ConcurrencyOption).includes(option)) throw new Error(`${option} is not a valid and safe ConcurrencyOption!`);
 
-        this.#concurrency = generateConcurrencyValue(option);
+        setValue(this.#concurrency, () => generateConcurrencyValue(option));
     }
 
     /**
@@ -85,7 +114,7 @@ class Pool {
      */
     __enqueue(item: PoolItem) {
         // Prevent workers from being run on any other thread than the main thread.
-        if (!isMainThread) throw new Error("Can't enqueue items to the pool on any other thread than the main thread!");
+        // if (!isMainThread) throw new Error("Can't enqueue items to the pool on any other thread than the main thread!");
         if (!(item instanceof PoolItem)) throw new Error('The provided item cannot be enqueued.');
 
         if (item.options.priority) this.#queue.unshift(item);
@@ -102,7 +131,7 @@ class Pool {
         // has a length of zero, do nothing.
         if (this.maxed || !this.#queue.length) return;
 
-        this.#active++;
+        incr(this.#active);
 
         const item = this.#queue.shift()!;
 
@@ -110,7 +139,13 @@ class Pool {
 
         const worker = new Worker(file, {
             ...options,
-            workerData,
+            workerData: {
+                ...workerData,
+                pool: {
+                    active: this.#active,
+                    concurrency: this.#concurrency,
+                } satisfies PoolData,
+            },
             env: SHARE_ENV,
         });
 
@@ -123,7 +158,7 @@ class Pool {
         item.emit('created', worker);
 
         worker.once('exit', () => {
-            this.#active--;
+            decr(this.#active);
             this.#next();
         });
     }

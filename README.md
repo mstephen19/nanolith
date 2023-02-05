@@ -2,6 +2,8 @@
 
 Multithreading in minutes. _(More intuitive and feature-rich than [Piscina](https://www.npmjs.com/package/piscina)!)_
 
+> Nanolith now supports nested parent threads. Spawn threads from other threads, more threads from those threads, and so on!
+
 [![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)](https://www.typescriptlang.org/) [![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![Install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
 
 [![Version](https://img.shields.io/npm/v/nanolith?color=blue)](https://github.com/mstephen19/nanolith/releases) ![Weekly downloads](https://img.shields.io/npm/dw/nanolith?color=violet) ![Libraries.io dependency status](https://img.shields.io/librariesio/release/npm/nanolith) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=red)](https://github.com/mstephen19/nanolith/issues)
@@ -12,11 +14,11 @@ Multithreading in minutes. _(More intuitive and feature-rich than [Piscina](http
 
 ## ❔ About
 
-✨**Nanolith**✨ is a performant, reliable, easy-to-use, and well-documented multithreading library that allows you to easily scale your Node.js applications. It serves to not only build upon, but entirely replace the _(deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
+✨**Nanolith**✨ is a scalable, reliable, easy-to-use, and well-documented multithreading library that allows you to easily scale your Node.js applications. It serves to not only build upon, but entirely replace the _(deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
 
 There have always been a few main goals for Nanolith:
 
-1. Performance 🏃
+1. Performance & scalability 🏃
 2. Ease-of-use 😇
 3. Seamless TypeScript support 😎
 4. Modern [ESModules](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/)-only support 📈
@@ -49,7 +51,7 @@ Here's a quick rundown of everything you can do in Nanolith:
 - [🚨 Managing concurrency](#-managing-concurrency)
   - [`pool` properties & methods](#pool-properties--methods)
 - [📨 Communicating between threads](#-communicating-between-threads)
-  - [Between a service and the main thread](#between-a-service-and-the-main-thread)
+  - [Between a service and the main (or a parent) thread](#between-a-service-and-the-main-or-a-parent-thread)
   - [Between all threads](#between-all-threads)
 - [📡 Streaming data between threads](#-streaming-data-between-threads)
 - [💾 Sharing memory between threads](#-sharing-memory-between-threads)
@@ -118,7 +120,7 @@ As seen above, the first argument to `define()` is an object containing your fun
 
 ## 👷 Running a task
 
-After [defining](#-defining-your-tasks) a set of tasks, you can import them and call them anywhere by directly using the **Nanolith** API resolved by the `define()` function. The only difference is that instead of being called on the main thread, a new thread will be created for the task and it will be run there.
+After [defining](#-defining-your-tasks) a set of tasks, you can import them and call them anywhere by directly using the **Nanolith** API resolved by the `define()` function. The only difference is that instead of being called on the main/parent thread, a new thread will be created for the task and it will be run there.
 
 ```TypeScript
 // 💡 index.ts
@@ -134,7 +136,7 @@ const result = await worker({
     params: [2, 3],
 });
 
-// The result is sent back to the main thread
+// The result is sent back to the parent thread
 // and resolved by the task function call.
 console.log(result); // -> 5
 ```
@@ -181,7 +183,7 @@ const result = await service.call({
 // all those tasks will be called on the same thread...
 
 // Similarly to regular task calls, the return value
-// is sent back to the main thread and resolve by the call.
+// is sent back to the parent thread and resolve by the call.
 console.log(result);
 
 // Shut down the second thread.
@@ -221,7 +223,7 @@ Along with `.call()`, `Service` offers many other properties and methods:
 
 ## 🎬 Coordinating services
 
-In a scalable application utilizing multiple identical [services](#launchservice-options), it is possible to optimize them by treating the main thread as an orchestrator and managing the workloads on each service. Nanolith's `ServiceCluster` automatically does this for you.
+In a scalable application utilizing multiple identical [services](#launchservice-options), it is possible to optimize them by treating the main/parent thread as an orchestrator and managing the workloads on each service. Nanolith's `ServiceCluster` automatically does this for you.
 
 ```TypeScript
 // 💡 index.ts
@@ -355,29 +357,29 @@ Along with `.setConcurrency()`, `pool` offers many other properties and methods:
 
 There are two ways of communicating between threads in Nanolith.
 
-### Between a service and the main thread
+### Between a service and the main (or a parent) thread
 
-When using [services](#-understanding-services), you are automatically able to communicate between the service and main thread with no extra work.
+When using [services](#-understanding-services), you are automatically able to communicate between the service and main (or a parent) thread with no extra work.
 
-The [`__initializeService()` hook](#-hooks) can be used to register listeners on the `MainThread`:
+The [`__initializeService()` hook](#-hooks) can be used to register listeners on the `ParentThread`:
 
 ```TypeScript
 // worker.ts 💼
-import { define, MainThread } from 'nanolith';
+import { define, ParentThread } from 'nanolith';
 
 export const worker = await define({
     // When the service is launched, this function will be
     // called.
     __initializeService() {
         // Register a listener for a message coming from the
-        // main thread.
-        MainThread.onMessage<string>((message) => {
+        // parent thread.
+        ParentThread.onMessage<string>((message) => {
             // Log the message when it is received.
             console.log(message);
 
             // Then, after the message is received, send a
-            // confirmation to the main thread.
-            MainThread.sendMessage('hello from the service!');
+            // confirmation to the parent thread.
+            ParentThread.sendMessage('hello from the service!');
         });
     },
 });
@@ -393,7 +395,7 @@ const service = await worker.launchService();
 
 // After the service is launched and initialized, send
 // a message to it.
-service.sendMessage('hello from the main thread');
+service.sendMessage('hello from the parent thread');
 
 // Register a listener for when a message is received
 // from the service.
@@ -409,7 +411,7 @@ service.onMessage(async (message) => {
 
 ### Between all threads
 
-A bit of extra work is required when there is a need to communicate between all threads (including the main thread). First, an instance of `Messenger` must be created. That instance can then be exposed to as many services and tasks as you want.
+A bit of extra work is required when there is a need to communicate between all threads (including the parent thread). First, an instance of `Messenger` must be created. That instance can then be exposed to as many services and tasks as you want.
 
 Within task functions, the `.use()` method on `MessengerList` can be used to grab hold of `Messenger`s exposed to the thread:
 
@@ -469,26 +471,26 @@ await service1.call({ name: 'sendSomeMessage' });
 await service1.close();
 ```
 
-> **Note:** The `Messenger` class can be used to communicate between all threads. That means between [task calls](#-running-a-task), between [services](#-understanding-services), between the main thread and multiple services/task calls, etc.
+> **Note:** The `Messenger` class can be used to communicate between all threads. That means between [task calls](#-running-a-task), between [services](#-understanding-services), between the parent thread and multiple services/task calls, etc.
 
 ## 📡 Streaming data between threads
 
-It's possible to stream data from one thread to another either using [`Service`](#-understanding-services), [`Messenger`](#between-all-threads), and [`MainThread`](#between-a-service-and-the-main-thread). All have the `.createStream()` and `.onStream()` methods.
+It's possible to stream data from one thread to another either using [`Service`](#-understanding-services), [`Messenger`](#between-all-threads), and [`ParentThread`](#between-a-service-and-the-main-thread). All have the `.createStream()` and `.onStream()` methods.
 
 ```TypeScript
 // worker.ts 💼
-import { define, MainThread } from 'nanolith';
+import { define, ParentThread } from 'nanolith';
 import { createWriteStream } from 'fs';
 
 export const worker = await define({
     __initializeService() {
-        // Wait for streams coming from the main thread.
-        MainThread.onStream((stream) => {
+        // Wait for streams coming from the parent thread.
+        ParentThread.onStream((stream) => {
             const writeStream = createWriteStream('./movie.mp4');
-            // Once the stream has finished, notify the main thread
+            // Once the stream has finished, notify the parent thread
             // that the service is ready to be closed.
             stream.on('end', () => {
-                MainThread.sendMessage('close please');
+                ParentThread.sendMessage('close please');
             });
 
             // Pipe the received stream right into our created
@@ -531,7 +533,7 @@ Again, we use the [`__initializeService()` hook](#-hooks):
 
 ```TypeScript
 // worker.ts 💼
-import { define, MessengerList, MainThread } from 'nanolith';
+import { define, MessengerList, ParentThread } from 'nanolith';
 import { createWriteStream } from 'fs';
 
 export const worker = await define({
@@ -550,10 +552,10 @@ export const worker = await define({
             const stream = accept();
 
             const writeStream = createWriteStream('./movie.mp4');
-            // Once the stream has finished, notify the main thread
+            // Once the stream has finished, notify the parent thread
             // that the service is ready to be closed.
             stream.on('end', () => {
-                MainThread.sendMessage('close please');
+                ParentThread.sendMessage('close please');
             });
 
             // Pipe the received stream right into our created
@@ -564,7 +566,7 @@ export const worker = await define({
 });
 ```
 
-When it comes to actually sending the stream with `Messenger`, the workflow is nearly the same as messaging [between a service and the main thread](#between-a-service-and-the-main-thread):
+When it comes to actually sending the stream with `Messenger`, the workflow is nearly the same as messaging [between a service and the main (or a parent) thread](#between-a-service-and-the-main-or-a-parent-thread):
 
 ```TypeScript
 // 💡 index.ts

@@ -1,5 +1,5 @@
 import { threadId } from 'worker_threads';
-import { define, MainThread, MessengerList, SharedMap, SharedMapRawData } from '../index.js';
+import { define, ParentThread, MessengerList, SharedMap, SharedMapRawData } from '../index.js';
 import { createDataStream } from './consts.js';
 
 export const definitions = {
@@ -10,18 +10,18 @@ export const definitions = {
         throw new Error('test');
     },
     registerListenerOnParent: () => {
-        MainThread.onMessage(() => {
-            MainThread.sendMessage('message received');
+        ParentThread.onMessage(() => {
+            ParentThread.sendMessage('message received');
         });
     },
     registerAngryListenerOnParent: () => {
-        MainThread.onMessage(() => {
+        ParentThread.onMessage(() => {
             throw new Error('angry worker');
         });
     },
     waitABit: () => new Promise((resolve) => setTimeout(resolve, 2e3)),
     sendMessageToParent: () => {
-        MainThread.sendMessage('data');
+        ParentThread.sendMessage('data');
     },
 };
 
@@ -51,7 +51,7 @@ export const messengerTester = await define(
             const messenger = await MessengerList.use('testing');
 
             messenger.onMessage(() => {
-                MainThread.sendMessage('received a message');
+                ParentThread.sendMessage('received a message');
             });
         },
         sendMessage: async () => {
@@ -65,9 +65,9 @@ export const messengerTester = await define(
 
 export const clusterTesterDefinitions = {
     __initializeService() {
-        MainThread.onMessage<string>((data) => {
+        ParentThread.onMessage<string>((data) => {
             if (!data.startsWith('notify-all')) return;
-            MainThread.sendMessage('notify-all');
+            ParentThread.sendMessage('notify-all');
         });
     },
     async add(x: number, y: number) {
@@ -84,8 +84,8 @@ export const clusterTester = await define(clusterTesterDefinitions, { identifier
 export const testServiceInitializer = await define(
     {
         __initializeService: () => {
-            MainThread.onMessage(() => {
-                MainThread.sendMessage('test test');
+            ParentThread.onMessage(() => {
+                ParentThread.sendMessage('test test');
             });
         },
     },
@@ -106,14 +106,14 @@ export const hookTester = await define(
 
 export const streamDefinitions = {
     receiveStream() {
-        MainThread.onStream((stream) => {
+        ParentThread.onStream((stream) => {
             if (stream.metaData.id !== 'test') return;
 
-            MainThread.sendMessage('stream received!');
+            ParentThread.sendMessage('stream received!');
         });
     },
     receiveStreamData() {
-        MainThread.onStream((stream) => {
+        ParentThread.onStream((stream) => {
             if (stream.metaData.id !== 'test') return;
 
             const arr: string[] = [];
@@ -123,13 +123,13 @@ export const streamDefinitions = {
             });
 
             stream.on('end', () => {
-                MainThread.sendMessage(arr.join(''));
+                ParentThread.sendMessage(arr.join(''));
             });
         });
     },
     async sendStream() {
         const stream = createDataStream();
-        stream.pipe(await MainThread.createStream({ id: 'test' }));
+        stream.pipe(await ParentThread.createStream({ id: 'test' }));
     },
     async sendStreamWithMessenger() {
         const messenger = await MessengerList.use('stream-messenger');

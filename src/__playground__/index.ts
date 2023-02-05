@@ -1,10 +1,7 @@
-import { ServiceCluster } from 'nanolith';
-import { api } from './worker.js';
+import { api2 } from './worker2.js';
 
-const cluster = new ServiceCluster(api);
-
-const x = await cluster.launch(1);
-
-console.log(x);
-
-await cluster.closeAll();
+try {
+    await api2({ name: 'bar' });
+} catch (error) {
+    console.log('whoops');
+}
