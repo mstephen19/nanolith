@@ -1,4 +1,3 @@
-import { cpus } from 'os';
 import { Worker, SHARE_ENV, isMainThread, workerData } from 'worker_threads';
 import { generateConcurrencyValue, getDefaultPoolConcurrency } from './utilities.js';
 import { ConcurrencyOption } from '@constants/pool.js';
