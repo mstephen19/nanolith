@@ -6,6 +6,15 @@ import { createReadStream, createWriteStream } from 'fs';
 import axios from 'axios';
 import jsonminify from 'jsonminify';
 
+const REGISTRY_URL = 'https://registry.npmjs.org/nanolith/';
+
+type NPMResponse = {
+    'dist-tags': {
+        next: string;
+        latest: string;
+    };
+};
+
 const ACCEPTABLE_ARGUMENTS = ['latest', 'next'];
 
 if (!ACCEPTABLE_ARGUMENTS.includes(process.argv[2])) throw new Error('Invalid option provided!');
@@ -60,14 +69,7 @@ try {
 
     const parsed: Record<string, unknown> = JSON.parse(packageJson);
 
-    type NPMResponse = {
-        'dist-tags': {
-            next: string;
-            latest: string;
-        };
-    };
-
-    const { data: nanolith } = await axios<NPMResponse>('https://registry.npmjs.org/nanolith/');
+    const { data: nanolith } = await axios<NPMResponse>(REGISTRY_URL);
 
     if (mode === 'latest' && parsed.version === nanolith['dist-tags'].latest) {
         throw new Error(`Latest version ${parsed.version} has already been published!`);

@@ -1,6 +1,25 @@
 import * as fs from 'fs/promises';
+import axios from 'axios';
+
+const REGISTRY_URL = 'https://registry.npmjs.org/nanolith/';
+
+type NPMResponse = {
+    'dist-tags': {
+        next: string;
+        latest: string;
+    };
+};
 
 type VersionParts = [number, number, number];
+
+const fetchVersion = async () => {
+    try {
+        const { data: nanolith } = await axios.get<NPMResponse>(REGISTRY_URL);
+        return nanolith?.['dist-tags']?.latest || null;
+    } catch (error) {
+        return null;
+    }
+};
 
 const bumpVersion = (version: string) => {
     if (!/(\d\.){2}\d(-beta\d+)?/.test(version)) throw new Error(`Invalid version provided: ${version}`);
@@ -26,7 +45,11 @@ const bumpVersion = (version: string) => {
 
 const pkg = JSON.parse((await fs.readFile('./package.json')).toString('utf-8')) as { version: string };
 
-const newVersion = bumpVersion(pkg.version);
+// Ideally, use the version on NPM, but fall back to the one in the package.json in the
+// worst case scenario
+const currentVersion = (await fetchVersion()) || pkg.version;
+
+const newVersion = bumpVersion(currentVersion);
 
 pkg.version = newVersion;
 
