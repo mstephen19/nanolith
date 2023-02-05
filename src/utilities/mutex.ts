@@ -3,7 +3,6 @@ import { LockStatus } from '@constants/shared_map.js';
 export type Mutex = Int32Array;
 
 export const createMutex = (): Mutex => {
-    // The underlying buffer must have at least 4 bytes
     const arr = new Int32Array(new SharedArrayBuffer(4));
     // Initialize with an unlocked status
     arr.set([LockStatus.Unlocked]);
@@ -36,4 +35,12 @@ export const unlockMutex = (mutex: Mutex) => {
         throw new Error('Mutex inconsistency.');
     }
     Atomics.notify(mutex, 0, 1);
+    // Notify any operations using waitForWriters
+    // Atomics.notify(mutex, 1);
 };
+
+// export const waitForWriters = (mutex: Mutex) => {
+//     if (Atomics.load(mutex, 0) === LockStatus.Unlocked) return;
+//     Atomics.wait(mutex, 1, 0);
+//     waitForWriters(mutex);
+// };

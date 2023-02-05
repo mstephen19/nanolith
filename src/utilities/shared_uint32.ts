@@ -17,6 +17,7 @@ export const createSharedUint32 = (): SharedUint32 => {
 };
 
 export const getValue = (data: SharedUint32) => {
+    // waitForWriters(data.lock);
     return data.value[0];
 };
 
