@@ -2,7 +2,7 @@
 
 Multithreading in minutes. _(More intuitive and feature-rich than [Piscina](https://www.npmjs.com/package/piscina)!)_
 
-> Nanolith now supports nested parent threads. Spawn threads from other threads, more threads from those threads, and so on!
+> Nanolith now supports nested parent threads. Spawn threads from other threads, more threads from those threads, and so on! 💪
 
 [![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)](https://www.typescriptlang.org/) [![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![Install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
 
