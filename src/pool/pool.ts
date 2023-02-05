@@ -1,16 +1,30 @@
 import { cpus } from 'os';
-import { Worker, SHARE_ENV, isMainThread } from 'worker_threads';
+import { Worker, SHARE_ENV, isMainThread, workerData } from 'worker_threads';
 import { generateConcurrencyValue } from './utilities.js';
 import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
 import { createCounter, getCount, incr, decr } from 'utilities/counter.js';
+
+import type { BaseWorkerData } from '@typing/worker_data.js';
+
+const getActiveCounter = () => {
+    // Create the initial instance of the counter on the
+    // main thread
+    if (isMainThread) return createCounter();
+
+    // Any subsequent threads will use the counter data added
+    // to the workerData
+    const { poolActiveCounter } = workerData as BaseWorkerData;
+    if (!poolActiveCounter) throw new Error('Pool corruption. Counter data not found.');
+    return poolActiveCounter;
+};
 
 /**
  * This is the big boy that manages all Nanolith workers 💪
  */
 class Pool {
     #concurrency = cpus().length;
-    #active = createCounter();
+    #active = getActiveCounter();
     #queue: PoolItem[] = [];
     /**
      * Easy access to the {@link ConcurrencyOption} enum right on `pool`.
@@ -111,7 +125,10 @@ class Pool {
 
         const worker = new Worker(file, {
             ...options,
-            workerData,
+            workerData: {
+                ...workerData,
+                poolActiveCounter: this.#active,
+            },
             env: SHARE_ENV,
         });
 
