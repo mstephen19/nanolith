@@ -483,7 +483,7 @@ await service1.close();
 
 ## 📡 Streaming data between threads
 
-It's possible to stream data from one thread to another either using [`Service`](#-understanding-services), [`Messenger`](#between-all-threads), and [`ParentThread`](#between-a-service-and-the-main-thread). All have the `.createStream()` and `.onStream()` methods.
+It's possible to stream data from one thread to another either using [`Service`](#-understanding-services), [`Messenger`](#between-all-threads), and [`ParentThread`](#between-a-service-and-the-main-or-a-parent-thread). All have the `.createStream()` and `.onStream()` methods.
 
 ```TypeScript
 // worker.ts 💼
@@ -495,9 +495,9 @@ export const worker = await define({
         // Wait for streams coming from the parent thread.
         ParentThread.onStream((stream) => {
             const writeStream = createWriteStream('./movie.mp4');
-            // Once the stream has finished, notify the parent thread
+            // Once we finish writing, notify the parent thread
             // that the service is ready to be closed.
-            stream.on('end', () => {
+            writeStream.on('finish', () => {
                 ParentThread.sendMessage('close please');
             });
 
@@ -531,7 +531,7 @@ const { data: readStream } = await axios.get<Readable>(
     }
 );
 
-// Send the stream to the service to be handled.
+// Send the stream to the service thread to be handled.
 readStream.pipe(await service.createStream());
 ```
 

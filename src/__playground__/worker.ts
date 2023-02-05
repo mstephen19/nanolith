@@ -1,7 +1,16 @@
-import { define } from 'nanolith';
+import { ParentThread, define } from 'nanolith';
+import fs from 'fs';
 
-export const api = await define({
-    foo() {
-        throw new Error('fuck');
+export const worker = await define({
+    __initializeService() {
+        ParentThread.onStream((stream) => {
+            const write = fs.createWriteStream('./foo.txt');
+
+            stream.pipe(write);
+
+            write.on('finish', () => {
+                ParentThread.sendMessage('ready_to_close');
+            });
+        });
     },
 });

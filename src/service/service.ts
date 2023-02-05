@@ -208,6 +208,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      * using it.
      */
     createStream(metaData?: Record<any, any>) {
+        this.#assertIsNotTerminated();
+
         return prepareWritableToPortStream(this.#worker, metaData ?? {});
     }
 
@@ -217,6 +219,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      * @param callback The callback to run once the stream has been initialized and is ready to consume.
      */
     onStream(callback: OnStreamCallback<typeof this['worker']>) {
+        this.#assertIsNotTerminated();
+
         return listenForStream(this.#worker, callback);
     }
 

@@ -1,7 +1,14 @@
-import { api2 } from './worker2.js';
+import { Readable } from 'stream';
+import { worker } from './worker.js';
 
-try {
-    await api2({ name: 'bar' });
-} catch (error) {
-    console.log('whoops');
-}
+const data = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+const readStream = Readable.from(data);
+
+const service = await worker.launchService();
+
+readStream.pipe(await service.createStream());
+
+service.onMessage<string>(async (data) => {
+    if (data !== 'ready_to_close') return;
+    await service.close();
+});

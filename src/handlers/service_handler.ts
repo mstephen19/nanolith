@@ -99,7 +99,7 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
     await definitions['__initializeService']?.(threadId);
 
     // Notify the main thread that the worker has initialized.
-    parentPort?.postMessage({
+    parentPort!.postMessage({
         type: WorkerMessageType.Initialized,
     } as WorkerInitializedMessageBody);
 }
