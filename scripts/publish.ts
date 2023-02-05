@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import { writeFile, stat, unlink } from 'fs/promises';
 import { createReadStream, createWriteStream } from 'fs';
 import axios from 'axios';
+import jsonminify from 'jsonminify';
 
 const ACCEPTABLE_ARGUMENTS = ['latest', 'next'];
 
@@ -80,12 +81,9 @@ try {
         DESIRED_PROPERTIES.reduce((acc, prop) => {
             if (parsed[prop]) acc[prop] = parsed[prop];
             return acc;
-        }, {} as Record<string, unknown>),
-        null,
-        '\t'
+        }, {} as Record<string, unknown>)
     );
-
-    await writeFile('./package.json', newPackageJson);
+    await writeFile('./package.json', jsonminify(newPackageJson));
 
     await exec(`npm publish${mode === 'next' ? ' --tag next' : ''}`);
 

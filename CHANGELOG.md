@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Change "performant" to "scalable" in "About" section in README.
 - Renamed all `MainThread...` message body types to be `ParentThread...` instead.
 
+### Added
+
+- Test for the `safeMode` option with `define()`.
+
 ## [0.3.7] - 2023-21-01
 
 ### Changed
