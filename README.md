@@ -14,7 +14,7 @@ Multithreading in minutes. _(More intuitive and feature-rich than [Piscina](http
 
 ## ❔ About
 
-✨**Nanolith**✨ is a scalable, reliable, easy-to-use, and well-documented multithreading library that allows you to easily scale your Node.js applications. It serves to not only build upon, but entirely replace the _(deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
+✨**Nanolith**✨ is a scalable, reliable, easy-to-use, and well-documented multithreading library that allows you to easily vertically scale your Node.js applications. It serves to not only build upon, but entirely replace the _(deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
 
 There have always been a few main goals for Nanolith:
 
