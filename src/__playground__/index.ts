@@ -1,3 +1,3 @@
-import { api } from './worker.js';
+import { api2 } from './worker.js';
 
-await api({ name: 'foo' });
+await api2({ name: 'bar' });

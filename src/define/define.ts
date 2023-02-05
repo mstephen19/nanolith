@@ -36,28 +36,11 @@ export async function define<Definitions extends TaskDefinitions>(
     // If a custom identifier was provided, use that. Otherwise, use the auto-generated one.
     const identifierToUse = identifier || getAutoIdentifier(definitions);
 
-    // If we are not on the main thread, run the worker.
-    if (!isMainThread) {
-        // If the identifier in the workerData is not equal to the identifier provided
-        // in the options of the "define" function, return out immediately.
-        // If the identifier for the call is not equal to the one passed into this set of definitions,
-        // don't use this set of definitions - they are trying to use a different set.
-        if ((workerData as BaseWorkerData).identifier !== identifierToUse) return undefined as unknown as Nanolith<Definitions>;
-
-        // Otherwise, this is the set of definitions that is meant to be used, and the worker
-        // can be handled accordingly.
-        await workerHandler(definitions);
-        // Since we're not running on the main thread, we can safely coerce "undefined" into
-        // our Nanolith API type. Worker handler will always exit the process anyways, so this
-        // is only here to make the TypeScript compiler happy.
-        return undefined as unknown as Nanolith<Definitions>;
-    }
-
     // Determine the file of the worker if it was not provided in the options.
     // Use a dynamic import here to
     const file = fileFromOptions ?? getCurrentFile();
 
-    return Object.freeze(
+    const api = Object.freeze(
         Object.assign(
             async <Name extends CleanKeyOf<Tasks<Definitions>>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
                 if (safeMode) assertCurrentFileNotEqual(file);
@@ -82,5 +65,24 @@ export async function define<Definitions extends TaskDefinitions>(
                 identifier: identifierToUse,
             }
         )
-    );
+    ) satisfies Nanolith<Definitions>;
+
+    // If we are not on the main thread, run the worker.
+    if (!isMainThread) {
+        // If the identifier in the workerData is not equal to the identifier provided
+        // in the options of the "define" function, return out immediately.
+        // If the identifier for the call is not equal to the one passed into this set of definitions,
+        // don't use this set of definitions - they are trying to use a different set.
+        if ((workerData as BaseWorkerData).identifier !== identifierToUse) return api;
+
+        // Otherwise, this is the set of definitions that is meant to be used, and the worker
+        // can be handled accordingly.
+        await workerHandler(definitions);
+        // Since we're not running on the main thread, we can safely coerce "undefined" into
+        // our Nanolith API type. Worker handler will always exit the process anyways, so this
+        // is only here to make the TypeScript compiler happy.
+        return api;
+    }
+
+    return api;
 }
