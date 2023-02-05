@@ -107,4 +107,25 @@ describe('ServiceCluster', () => {
             expect(callback).toBeCalledWith('notify-all');
         });
     });
+
+    describe('autoRenew', () => {
+        it('Should re-open a new service on the cluster once one has been closed', async () => {
+            const cluster = await clusterTester.clusterize(5, {
+                cluster: {
+                    autoRenew: true,
+                },
+            });
+
+            expect(cluster.activeServices).toBe(5);
+
+            await cluster.use().close();
+            await cluster.use().close();
+
+            await new Promise((r) => setTimeout(r, 2e3));
+
+            expect(cluster.activeServices).toBe(5);
+
+            await cluster.closeAll();
+        });
+    });
 });

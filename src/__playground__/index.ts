@@ -12,3 +12,12 @@ service.onMessage<string>(async (data) => {
     if (data !== 'ready_to_close') return;
     await service.close();
 });
+
+await worker.clusterize(1, {
+    clusterOptions: {
+        autoRenew: true,
+    },
+    options: {},
+    priority: true,
+    reffed: false,
+});

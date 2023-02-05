@@ -9,6 +9,7 @@ import type { Nanolith } from '@typing/nanolith.js';
 import type { ServiceWorkerOptions, TaskWorkerOptions } from '@typing/workers.js';
 import type { CleanKeyOf, CleanReturnType, PositiveWholeNumber } from '@typing/utilities.js';
 import type { BaseWorkerData } from '@typing/worker_data.js';
+import type { ServiceClusterOptions } from '@typing/service_cluster.js';
 
 /**
  * It all starts here 😎
@@ -39,7 +40,6 @@ export async function define<Definitions extends TaskDefinitions>(
     // Determine the file of the worker if it was not provided in the options.
     // Use a dynamic import here to
     const file = fileFromOptions ?? getCurrentFile();
-
     const api = Object.freeze(
         Object.assign(
             async <Name extends CleanKeyOf<Tasks<Definitions>>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
@@ -54,10 +54,10 @@ export async function define<Definitions extends TaskDefinitions>(
                 clusterize: Object.freeze(async function <Count extends number, Options extends ServiceWorkerOptions>(
                     this: Nanolith<Definitions>,
                     count = 1 as PositiveWholeNumber<Count>,
-                    options = {} as Options
+                    options = {} as Options & { cluster?: ServiceClusterOptions }
                 ) {
                     if (safeMode) assertCurrentFileNotEqual(file);
-                    const cluster = new ServiceCluster(this);
+                    const cluster = new ServiceCluster(this, options.cluster);
                     await cluster.launch(count, options);
                     return cluster;
                 }),
