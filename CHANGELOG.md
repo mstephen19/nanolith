@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - Test for the `safeMode` option with `define()`.
+- `getDefaultPoolConcurrency()` function exported from root + docs.
 
 ## [0.3.7] - 2023-21-01
 

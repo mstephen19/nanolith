@@ -334,8 +334,16 @@ pool.setConcurrency(ConcurrencyOption.x6);
 // Eight threads per core.
 pool.setConcurrency(ConcurrencyOption.x8);
 // Ten threads per core.
-// Warning: This is overkill.
+// Warning: This could be overkill.
 pool.setConcurrency(ConcurrencyOption.x10);
+```
+
+Access to the pool's default concurrency for the current machine's resources can be accessed like so:
+
+```typescript
+import { getDefaultPoolConcurrency } from 'nanolith';
+
+console.log(getDefaultPoolConcurrency)
 ```
 
 ### `pool` properties & methods
