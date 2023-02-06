@@ -49,7 +49,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
             this.#callbacks.forEach(({ resolve, reject }, key) => {
                 // Handle early exits
                 if (body.type === WorkerMessageType.Exit) {
-                    resolve((body as WorkerExitMessageBody).code);
+                    reject(new Error(`Worker exited early with code ${(body as WorkerExitMessageBody).code}!`));
                     return;
                 }
 

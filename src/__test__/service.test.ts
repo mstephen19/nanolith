@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { api, testServiceInitializer } from './worker.js';
+import { api, hookTester, testServiceInitializer } from './worker.js';
 
 import type { Service } from '../service/index.js';
 import type { definitions } from './worker.js';
@@ -48,6 +48,15 @@ describe('Service', () => {
 
             expect(promise).toBeInstanceOf(Promise);
             expect(promise).resolves.toBe(10);
+        });
+
+        it('Should reject the promise if the process is exited during the task', async () => {
+            const s = await hookTester.launchService();
+            expect(s.call({ name: 'add' })).rejects.toThrowError(new Error('Worker exited early with code 0!'));
+
+            await s.close();
+
+            await service.close();
         });
 
         it('Should reject the promise when the function throws, but should not shut down the service', async () => {

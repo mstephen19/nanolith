@@ -2,9 +2,18 @@ import { worker } from './worker.js';
 
 const service = await worker.launchService();
 
-await service.call({ name: 'exit1' });
+try {
+    await service.call({ name: 'exit1' });
+} catch (error) {}
 
-setImmediate(() => console.log(service.closed));
+await new Promise((resolve) =>
+    setImmediate(async () => {
+        console.log(service.closed);
+        setTimeout(resolve, 2e3);
+    })
+);
+
+await service.call({ name: 'exit1' });
 
 // const cluster = await worker.clusterize(5, {
 //     cluster: {
