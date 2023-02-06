@@ -55,7 +55,6 @@ describe('Service', () => {
             expect(s.call({ name: 'add' })).rejects.toThrowError(new Error('Worker exited early with code 0!'));
 
             await s.close();
-
             await service.close();
         });
 
