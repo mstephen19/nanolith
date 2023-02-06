@@ -260,6 +260,8 @@ await cluster.closeAll();
 
 For simplicity of the above example, we are only running a single task. However, `ServiceCluster` can be used to run a large amount of heavy operations in true parallel on multiple services.
 
+> **Tip:** To automatically re-launch services on a cluster when they exit with a non-zero code, look into the `autoRenew` option.
+
 ### `ServiceCluster` properties & methods
 
 Along with `.use()`, `ServiceCluster` offers many other properties and methods:
@@ -310,7 +312,7 @@ These hooks run on the same thread as their corresponding service/task.
 
 ## 🚨 Managing concurrency
 
-Nanolith automatically manages the concurrency your services and task calls with the internal `pool` class. By default, the maximum concurrency is one thread per core on the machine. This is a safe value to go with; however, the `maxConcurrency` can be modified up using one of the available `ConcurrencyOption`s.
+Nanolith automatically manages the concurrency your services and task calls with the internal `pool` class. By default, the maximum concurrency is two threads per core on the machine. This is a safe value to go with; however, the `maxConcurrency` can be modified up using one of the available `ConcurrencyOption`s.
 
 ```TypeScript
 // index.ts 💡

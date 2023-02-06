@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- `ServiceClusterOptions` and optional (experimental) `autoRenew` option.
+- `ServiceClusterOptions` and optional `autoRenew` option.
 - Accept exit codes in the `Service.close()` and `exceptionHandler.terminate()` functions.
 
 ## [0.4.1] - 2023-5-2
