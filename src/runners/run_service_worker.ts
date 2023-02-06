@@ -3,7 +3,7 @@ import { WorkerType } from '@constants/workers.js';
 import { Service } from '@service';
 import { WorkerMessageType } from '@constants/messages.js';
 
-import type { ServiceWorkerOptions } from '@typing/workers.js';
+import type { ExitCode, ServiceWorkerOptions } from '@typing/workers.js';
 import type { TaskDefinitions } from '@typing/definitions.js';
 import type { WorkerBaseMessageBody, WorkerExceptionMessageBody } from '@typing/messages.js';
 
@@ -38,7 +38,7 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
                         if (body.type !== WorkerMessageType.WorkerException) return;
                         await exceptionHandler({
                             error: (body as WorkerExceptionMessageBody).data,
-                            terminate: service.close.bind(service),
+                            terminate: (code?: ExitCode) => service.close(code),
                         });
                     });
                 }

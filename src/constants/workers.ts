@@ -13,3 +13,8 @@ export const enum WorkerType {
      */
     Service,
 }
+
+export const enum WorkerExitCode {
+    Ok = 0,
+    UncaughtException = 1,
+}

@@ -11,10 +11,8 @@ export type ServiceClusterMap<Definitions extends TaskDefinitions> = Map<
 
 export type ServiceClusterOptions = {
     /**
-     * **Experimental**
-     *
-     * Automatically re-launch a service if it is terminated or closed for any reason.
-     * This includes closing a service manually by using `.close()` or `.closeAll()`.
+     * Automatically re-launch a service if its process ends with a non-zero
+     * exit code.
      */
     autoRenew?: boolean;
 };

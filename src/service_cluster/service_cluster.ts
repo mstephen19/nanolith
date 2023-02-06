@@ -1,6 +1,7 @@
 import { randomUUID as v4 } from 'crypto';
 import { pool } from '@pool';
 import { Service } from '@service';
+import { WorkerExitCode } from '@constants/workers.js';
 
 import type { TransferListItem } from 'worker_threads';
 import type { Nanolith } from '@typing/nanolith.js';
@@ -123,11 +124,13 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
         this.#serviceMap.set(identifier, { service, identifier });
 
         // When the service is terminated, remove it from the service map.
-        service.once('terminated', async () => {
+        service.once('terminated', async (code) => {
             this.#serviceMap.delete(identifier);
 
             // Automatically relaunch the service if auto-renewal is enabled
-            if (this.#autoRenew) await this.launch(1);
+            if (this.#autoRenew && code !== WorkerExitCode.Ok) {
+                await this.launch(1);
+            }
         });
     }
 
@@ -192,10 +195,6 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * Close all active services on the cluster.
      */
     closeAll() {
-        // ! Just a temporary fix. We need to properly discern between services which have been
-        // ! involuntarily closed and those which were closed manually on purpose.
-        this.#autoRenew = false;
-
         const promises = [...this.#serviceMap.values()].map(({ service }) => service.close());
         return Promise.all(promises);
     }

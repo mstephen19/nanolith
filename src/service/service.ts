@@ -2,6 +2,7 @@ import { randomUUID as v4 } from 'crypto';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { listenForStream, prepareWritableToPortStream } from '@streams';
 import { ParentThreadMessageType, WorkerMessageType } from '@constants/messages.js';
+import { WorkerExitCode } from '@constants/workers.js';
 
 import type { Worker, TransferListItem } from 'worker_threads';
 import type { TaskDefinitions, Tasks } from '@typing/definitions.js';
@@ -17,7 +18,7 @@ import type {
     RemoveListenerFunction,
 } from '@typing/messages.js';
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '@typing/utilities.js';
-import type { ServiceCallOptions } from '@typing/workers.js';
+import type { ServiceCallOptions, ExitCode } from '@typing/workers.js';
 import type { Messenger } from '@messenger';
 import type { OnStreamCallback } from '@typing/streams.js';
 
@@ -25,7 +26,7 @@ type ServiceEvents = {
     /**
      * An event that is emitted when the service has exited its process.
      */
-    terminated: () => void;
+    terminated: (code: ExitCode) => void;
 };
 
 /**
@@ -66,12 +67,12 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         this.#worker.on('message', taskHandler);
 
         // Exit handler
-        this.#worker.once('exit', () => {
+        this.#worker.once('exit', (code: ExitCode) => {
             this.#terminated = true;
             // Early cleanup of the callbacks map
             this.#callbacks.clear();
             // Emit an event notifying that the service has been terminated.
-            this.emit('terminated');
+            this.emit('terminated', code);
             // Clean up task handler listener
             worker.off('message', taskHandler);
         });
@@ -174,8 +175,20 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     /**
      * Terminates the worker, ending its process and marking the {@link Service} instance as `closed`.
      */
-    async close() {
+    async close(code?: ExitCode) {
         this.#terminated = true;
+        // const promise = new Promise((resolve) => {
+        //     this.#worker.once('exit', resolve);
+        // }) as Promise<ExitCode>;
+
+        // const body: ParentThreadTerminateMessageBody = {
+        //     type: ParentThreadMessageType.Terminate,
+        //     code: code ?? WorkerExitCode.Ok,
+        // };
+
+        // this
+        // return promise;
+        this.#worker.emit('exit', code ?? WorkerExitCode.Ok);
         return void (await this.#worker.terminate());
     }
 
