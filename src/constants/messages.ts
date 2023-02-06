@@ -68,4 +68,9 @@ export const enum WorkerMessageType {
      * completed initialization and that it's ready to go.
      */
     Initialized,
+    /**
+     * To be used for sending messages to the main thread notifying that a
+     * service has exited.
+     */
+    Exit,
 }

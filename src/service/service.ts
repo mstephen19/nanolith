@@ -16,6 +16,7 @@ import type {
     WorkerSendMessageBody,
     WorkerMessengerTransferSuccessBody,
     RemoveListenerFunction,
+    WorkerExitMessageBody,
 } from '@typing/messages.js';
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '@typing/utilities.js';
 import type { ServiceCallOptions, ExitCode } from '@typing/workers.js';
@@ -44,10 +45,16 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         this.#worker = worker;
 
         // Only attach one listener onto the worker instead of attaching a listener for each task called.
-        const taskHandler = (body: WorkerBaseMessageBody & { key: string }) => {
+        const taskHandler = (body: WorkerBaseMessageBody) => {
             this.#callbacks.forEach(({ resolve, reject }, key) => {
+                // Handle early exits
+                if (body.type === WorkerMessageType.Exit) {
+                    resolve((body as WorkerExitMessageBody).code);
+                    return;
+                }
+
                 // If the message is for a call with a different key, also ignore the message.
-                if (body.key !== key) return;
+                if ((body as WorkerBaseMessageBody & { key: string }).key !== key) return;
 
                 switch (body.type) {
                     case WorkerMessageType.CallReturn: {

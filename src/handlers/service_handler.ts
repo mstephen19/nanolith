@@ -15,6 +15,7 @@ import type {
     WorkerExceptionMessageBody,
     WorkerInitializedMessageBody,
     ParentThreadTerminateMessageBody,
+    WorkerExitMessageBody,
 } from '@typing/messages.js';
 import type { ServiceWorkerData } from '@typing/worker_data.js';
 
@@ -29,6 +30,15 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
         };
 
         parentPort!.postMessage(body);
+    });
+
+    process.on('exit', (code) => {
+        const body: WorkerExitMessageBody = {
+            type: WorkerMessageType.Exit,
+            code,
+        };
+
+        parentPort?.postMessage(body);
     });
 
     // This listener is a priority, so should be added first

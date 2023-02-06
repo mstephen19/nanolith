@@ -1,13 +1,20 @@
 import { worker } from './worker.js';
 
-const cluster = await worker.clusterize(5, {
-    cluster: {
-        autoRenew: true,
-    },
-});
+const service = await worker.launchService();
 
-await cluster.use().close(1);
+await service.call({ name: 'exit1' });
 
-await new Promise((r) => setTimeout(r, 2e3));
+setImmediate(() => console.log(service.closed));
 
-console.log(cluster.activeServices);
+// const cluster = await worker.clusterize(5, {
+//     cluster: {
+//         autoRenew: false,
+//     },
+// });
+
+// console.log('calling');
+// const data = await cluster.use().call({ name: 'exit1' });
+// console.log(data, 'done');
+
+// console.log('foo');
+// console.log(cluster.activeServices);

@@ -59,3 +59,5 @@ export type WorkerExceptionMessageBody = {
 } & WorkerBaseMessageBody<WorkerMessageType.WorkerException>;
 
 export type WorkerInitializedMessageBody = WorkerBaseMessageBody<WorkerMessageType.Initialized>;
+
+export type WorkerExitMessageBody = { code: ExitCode } & WorkerBaseMessageBody<WorkerMessageType.Exit>;

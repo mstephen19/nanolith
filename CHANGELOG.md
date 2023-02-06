@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `ServiceClusterOptions` and optional `autoRenew` option.
 - Accept exit codes in the `Service.close()` and `exceptionHandler.terminate()` functions.
 
+### Fixed
+
+- `Service.call()` hanging forever if the underlying task uses `process.exit()`.
+
 ## [0.4.1] - 2023-5-2
 
 ### Changed
