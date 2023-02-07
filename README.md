@@ -1,16 +1,14 @@
 # Nanolith
 
-Multithreading in minutes. _(More intuitive and feature-rich than [Piscina](https://www.npmjs.com/package/piscina)!)_
-
-> Nanolith now supports nested parent threads. Spawn threads from other threads, more threads from those threads, and so on! 💪
-
 [![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)](https://www.typescriptlang.org/) [![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![Install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
 
-[![Version](https://img.shields.io/npm/v/nanolith?color=blue)](https://github.com/mstephen19/nanolith/releases) ![Weekly downloads](https://img.shields.io/npm/dw/nanolith?color=violet) ![Libraries.io dependency status](https://img.shields.io/librariesio/release/npm/nanolith) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=red)](https://github.com/mstephen19/nanolith/issues)
+[![Version](https://img.shields.io/npm/v/nanolith?color=blue)](https://github.com/mstephen19/nanolith/releases) ![Weekly downloads](https://img.shields.io/npm/dw/nanolith?color=violet) ![Libraries.io dependency status](https://img.shields.io/librariesio/release/npm/nanolith) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=lightgrey)](https://github.com/mstephen19/nanolith/issues)
 
 <center>
-    <img src="https://user-images.githubusercontent.com/87805115/210020526-2bbd427f-00d0-41cb-8ce9-7b96e5a214bd.png" width="550">
+    <img src="https://user-images.githubusercontent.com/87805115/217356985-1e32e827-7432-4357-b5c9-9c3a5f4c5639.png" width="550">
 </center>
+
+> _(More intuitive and feature-rich than [Piscina](https://www.npmjs.com/package/piscina)!)_
 
 ## ❔ About
 
