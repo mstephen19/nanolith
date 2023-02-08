@@ -132,6 +132,10 @@ describe('ServiceCluster', () => {
             await Promise.all([c.closeAll(), cluster.closeAll()]);
         });
 
+        // todo: Add autoRenew test for a service that closes with process.exit() and
+        // todo: the error is caught on the parent thread. It should still start up a
+        // todo: new service.
+
         it('Should NOT re-open new services if autoRenew is not enabled', async () => {
             const c = await clusterTester.clusterize(5, {
                 autoRenew: false,
