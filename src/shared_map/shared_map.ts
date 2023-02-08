@@ -150,9 +150,15 @@ export class SharedMap<Data extends Record<string, any>> {
         return data;
     }
 
-    #get<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
+    #getKey<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
         const decodedKeys = DECODER.decode(this.#keys);
         const match = Keys.matchKey(decodedKeys, name);
+        if (!match) return null;
+        return match;
+    }
+
+    #get<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
+        const match = this.#getKey(name);
         if (!match) return null;
 
         const { start, end } = Keys.parseKey(match as Key);
@@ -307,7 +313,13 @@ export class SharedMap<Data extends Record<string, any>> {
      *
      * @param key The name of the key to delete.
      */
-    delete<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(key: KeyName) {
-        return this.set(key, null as Data[KeyName]);
+    async delete<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
+        return this.#run(() => {
+            // Do nothing if there is no match
+            const match = this.#getKey(name);
+            if (!match) return;
+
+            return this.#set(name, null as Data[KeyName]);
+        });
     }
 }

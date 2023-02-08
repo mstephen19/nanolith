@@ -1,5 +1,4 @@
 import { SharedMap } from '@shared_map';
-import { jest } from '@jest/globals';
 import { sharedMapTester } from './worker.js';
 
 describe('SharedMap', () => {
@@ -42,6 +41,18 @@ describe('SharedMap', () => {
             expect(await map.get('hello')).toBe('world');
             expect(await map.get('fizz')).toBe('buzz');
             expect(await map.get('num')).toBe('24567');
+        });
+
+        it('Should return null for non-existent properties', async () => {
+            const map = new SharedMap({
+                foo: 'bar',
+                hello: 'world',
+                fizz: 'buzz',
+                num: 24567,
+            });
+
+            //@ts-ignore
+            expect(await map.get('weifjoweifj')).toBeNull();
         });
     });
 
@@ -100,7 +111,17 @@ describe('SharedMap', () => {
             const map = new SharedMap({ value: 'foo' });
 
             await map.set('value', '');
-            expect(await map.get('value')).toBe('null');
+            expect(await map.get('value')).toBeNull();
+        });
+    });
+
+    describe('Deleting', () => {
+        it('Should set the value to null', async () => {
+            const map = new SharedMap({ value: 'foo' });
+
+            await map.delete('value');
+
+            expect(await map.get('value')).toBeNull();
         });
     });
 
