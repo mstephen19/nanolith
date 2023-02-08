@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `ServiceClusterOptions` and optional `autoRenew` option.
 - Accept exit codes in the `Service.close()` and `exceptionHandler.terminate()` functions.
 - `SharedMap.delete()` method.
+- New clause to the license.
 
 ### Fixed
 
