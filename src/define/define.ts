@@ -54,10 +54,10 @@ export async function define<Definitions extends TaskDefinitions>(
                 clusterize: Object.freeze(async function <Count extends number, Options extends ServiceWorkerOptions>(
                     this: Nanolith<Definitions>,
                     count = 1 as PositiveWholeNumber<Count>,
-                    options = {} as Options & { cluster?: ServiceClusterOptions }
+                    options = {} as Options & ServiceClusterOptions
                 ) {
                     if (safeMode) assertCurrentFileNotEqual(file);
-                    const cluster = new ServiceCluster(this, options.cluster);
+                    const cluster = new ServiceCluster(this, { autoRenew: options.autoRenew });
                     await cluster.launch(count, options);
                     return cluster;
                 }),

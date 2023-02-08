@@ -58,7 +58,7 @@ export type Nanolith<Definitions extends TaskDefinitions> = {
      */
     clusterize<Count extends number, Options extends ServiceWorkerOptions>(
         count?: PositiveWholeNumber<Count>,
-        options?: Options & { cluster?: ServiceClusterOptions }
+        options?: Options & ServiceClusterOptions
     ): Promise<ServiceCluster<Definitions>>;
     /**
      * The file location at which the definitions live, and where the worker runs off of.

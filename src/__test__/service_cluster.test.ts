@@ -111,9 +111,7 @@ describe('ServiceCluster', () => {
     describe('autoRenew', () => {
         it('Should re-open a new service on the cluster once one has been closed', async () => {
             const c = await clusterTester.clusterize(5, {
-                cluster: {
-                    autoRenew: true,
-                },
+                autoRenew: true,
             });
 
             expect(c.activeServices).toBe(5);
@@ -136,9 +134,7 @@ describe('ServiceCluster', () => {
 
         it('Should NOT re-open new services if autoRenew is not enabled', async () => {
             const c = await clusterTester.clusterize(5, {
-                cluster: {
-                    autoRenew: false,
-                },
+                autoRenew: false,
             });
 
             expect(c.activeServices).toBe(5);
