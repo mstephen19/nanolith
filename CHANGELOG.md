@@ -20,9 +20,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - `SharedMap.get()` returning `null` for non-existent properties, but returning the string of `'null'` for existing properties with values set to `null`.
-
-### Fixed
-
 - `Service.call()` hanging forever if the underlying task uses `process.exit()`.
 
 ## [0.4.1] - 2023-5-2
