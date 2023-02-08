@@ -158,7 +158,10 @@ export class SharedMap<Data extends Record<string, any>> {
         const { start, end } = Keys.parseKey(match as Key);
         if (start === undefined || end === undefined) throw new Error('Failed to parse key');
 
-        return DECODER.decode(this.#values.subarray(start, end + 1));
+        const decoded = DECODER.decode(this.#values.subarray(start, end + 1));
+
+        if (decoded === 'null') return null;
+        return decoded;
     }
 
     /**
@@ -295,5 +298,16 @@ export class SharedMap<Data extends Record<string, any>> {
             const newValue = typeof value !== 'function' ? value : await value(this.#get(name));
             this.#set(name, newValue);
         });
+    }
+
+    /**
+     * Delete a key on the {@link SharedMap} instance.
+     *
+     * **Note:** Does not actually delete the key. Just sets it to "null".
+     *
+     * @param key The name of the key to delete.
+     */
+    delete<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(key: KeyName) {
+        return this.set(key, null as Data[KeyName]);
     }
 }
