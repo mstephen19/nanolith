@@ -5,7 +5,7 @@
 [![Version](https://img.shields.io/npm/v/nanolith?color=blue)](https://github.com/mstephen19/nanolith/releases) ![Weekly downloads](https://img.shields.io/npm/dw/nanolith?color=violet) ![Libraries.io dependency status](https://img.shields.io/librariesio/release/npm/nanolith) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=lightgrey)](https://github.com/mstephen19/nanolith/issues)
 
 <center>
-    <img src="https://user-images.githubusercontent.com/87805115/217356985-1e32e827-7432-4357-b5c9-9c3a5f4c5639.png" width="550">
+    <img src="https://user-images.githubusercontent.com/87805115/217611158-14822948-f312-4fb6-af0e-83d534ce854f.png" width="550">
 </center>
 
 > _(More intuitive and feature-rich than [Piscina](https://www.npmjs.com/package/piscina)!)_
