@@ -1,7 +1,7 @@
 import { define } from 'nanolith';
 
-export const api = await define({
-    foo() {
-        throw new Error('fuck');
+export const worker = await define({
+    exit1() {
+        process.exit(1);
     },
 });

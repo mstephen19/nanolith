@@ -1,17 +1,18 @@
 {
     "name": "nanolith",
-    "version": "0.4.1",
+    "version": "0.4.2-beta4",
     "description": "Multi-threading in no time with seamless TypeScript support.",
     "main": "./build/index.js",
     "exports": "./build/index.js",
     "type": "module",
     "scripts": {
+        "bump": "ts-node-esm -T scripts/bump.ts",
         "lint": "npx eslint \"src/**\"",
         "minify": "ts-node-esm -T scripts/minify.ts",
         "build": "npm run lint && tsc && tsc-alias && npm run minify && echo \"build succeeded\"",
         "test": "npm run build && echo \"running tests\" && NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
         "play": "npm run build && echo \"running playground\" && node ./build/__playground__/index.js",
-        "publish:latest": "ts-node-esm -T scripts/publish.ts latest",
+        "publish:latest": "npm run bump && ts-node-esm -T scripts/publish.ts latest",
         "publish:next": "ts-node-esm -T scripts/publish.ts next"
     },
     "repository": {

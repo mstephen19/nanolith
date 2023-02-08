@@ -2,6 +2,7 @@ import { randomUUID as v4 } from 'crypto';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { listenForStream, prepareWritableToPortStream } from '@streams';
 import { ParentThreadMessageType, WorkerMessageType } from '@constants/messages.js';
+import { WorkerExitCode } from '@constants/workers.js';
 
 import type { Worker, TransferListItem } from 'worker_threads';
 import type { TaskDefinitions, Tasks } from '@typing/definitions.js';
@@ -15,9 +16,10 @@ import type {
     WorkerSendMessageBody,
     WorkerMessengerTransferSuccessBody,
     RemoveListenerFunction,
+    WorkerExitMessageBody,
 } from '@typing/messages.js';
 import type { Awaitable, CleanKeyOf, CleanReturnType } from '@typing/utilities.js';
-import type { ServiceCallOptions } from '@typing/workers.js';
+import type { ServiceCallOptions, ExitCode } from '@typing/workers.js';
 import type { Messenger } from '@messenger';
 import type { OnStreamCallback } from '@typing/streams.js';
 
@@ -25,7 +27,7 @@ type ServiceEvents = {
     /**
      * An event that is emitted when the service has exited its process.
      */
-    terminated: () => void;
+    terminated: (code: ExitCode) => void;
 };
 
 /**
@@ -43,10 +45,16 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         this.#worker = worker;
 
         // Only attach one listener onto the worker instead of attaching a listener for each task called.
-        const taskHandler = (body: WorkerBaseMessageBody & { key: string }) => {
+        const taskHandler = (body: WorkerBaseMessageBody) => {
             this.#callbacks.forEach(({ resolve, reject }, key) => {
+                // Handle early exits
+                if (body.type === WorkerMessageType.Exit) {
+                    reject(new Error(`Worker exited early with code ${(body as WorkerExitMessageBody).code}!`));
+                    return;
+                }
+
                 // If the message is for a call with a different key, also ignore the message.
-                if (body.key !== key) return;
+                if ((body as WorkerBaseMessageBody & { key: string }).key !== key) return;
 
                 switch (body.type) {
                     case WorkerMessageType.CallReturn: {
@@ -66,12 +74,12 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         this.#worker.on('message', taskHandler);
 
         // Exit handler
-        this.#worker.once('exit', () => {
+        this.#worker.once('exit', (code: ExitCode) => {
             this.#terminated = true;
             // Early cleanup of the callbacks map
             this.#callbacks.clear();
             // Emit an event notifying that the service has been terminated.
-            this.emit('terminated');
+            this.emit('terminated', code);
             // Clean up task handler listener
             worker.off('message', taskHandler);
         });
@@ -174,8 +182,20 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     /**
      * Terminates the worker, ending its process and marking the {@link Service} instance as `closed`.
      */
-    async close() {
+    async close(code?: ExitCode) {
         this.#terminated = true;
+        // const promise = new Promise((resolve) => {
+        //     this.#worker.once('exit', resolve);
+        // }) as Promise<ExitCode>;
+
+        // const body: ParentThreadTerminateMessageBody = {
+        //     type: ParentThreadMessageType.Terminate,
+        //     code: code ?? WorkerExitCode.Ok,
+        // };
+
+        // this
+        // return promise;
+        this.#worker.emit('exit', code ?? WorkerExitCode.Ok);
         return void (await this.#worker.terminate());
     }
 
@@ -208,6 +228,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      * using it.
      */
     createStream(metaData?: Record<any, any>) {
+        this.#assertIsNotTerminated();
+
         return prepareWritableToPortStream(this.#worker, metaData ?? {});
     }
 
@@ -217,6 +239,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      * @param callback The callback to run once the stream has been initialized and is ready to consume.
      */
     onStream(callback: OnStreamCallback<typeof this['worker']>) {
+        this.#assertIsNotTerminated();
+
         return listenForStream(this.#worker, callback);
     }
 

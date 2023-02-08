@@ -8,6 +8,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+- Minor refactors.
+- README image.
+
+### Added
+
+- `ServiceClusterOptions` and optional `autoRenew` option.
+- Accept exit codes in the `Service.close()` and `exceptionHandler.terminate()` functions.
+- `SharedMap.delete()` method.
+- New clause to the license.
+
+### Fixed
+
+- `SharedMap.get()` returning `null` for non-existent properties, but returning the string of `'null'` for existing properties with values set to `null`.
+- `Service.call()` hanging forever if the underlying task uses `process.exit()`.
+
+## [0.4.1] - 2023-5-2
+
+### Changed
+
 - `pool` to use shared values for the active count and concurrency count, enabling the spawning of new threads from other threads.
 - `pool` to allow for the enqueuing of new items on all threads.
 - `define()` to always return the `Nanolith` instance, regardless of whether or not it is being run on the main thread.

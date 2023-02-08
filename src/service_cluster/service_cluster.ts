@@ -1,20 +1,14 @@
 import { randomUUID as v4 } from 'crypto';
 import { pool } from '@pool';
 import { Service } from '@service';
+import { WorkerExitCode } from '@constants/workers.js';
 
 import type { TransferListItem } from 'worker_threads';
 import type { Nanolith } from '@typing/nanolith.js';
 import type { ServiceWorkerOptions } from '@typing/workers.js';
 import type { TaskDefinitions } from '@typing/definitions.js';
 import type { PositiveWholeNumber } from '@typing/utilities.js';
-
-type ServiceClusterMap<Definitions extends TaskDefinitions> = Map<
-    string,
-    {
-        service: Service<Definitions>;
-        identifier: string;
-    }
->;
+import type { ServiceClusterMap, ServiceClusterOptions } from '@typing/service_cluster.js';
 
 /**
  * A lightweight API for managing multiple services using the same set
@@ -23,11 +17,13 @@ type ServiceClusterMap<Definitions extends TaskDefinitions> = Map<
 export class ServiceCluster<Definitions extends TaskDefinitions> {
     #nanolith: Nanolith<Definitions>;
     #serviceMap: ServiceClusterMap<Definitions> = new Map();
+    #autoRenew = false;
 
     /**
      * @param nanolith An instance of {@link Nanolith} API, returned by the `define()` function.
      */
-    constructor(nanolith: Nanolith<Definitions>) {
+    constructor(nanolith: Nanolith<Definitions>, options?: ServiceClusterOptions) {
+        this.#autoRenew = !!options?.autoRenew;
         this.#nanolith = nanolith;
     }
 
@@ -128,8 +124,13 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
         this.#serviceMap.set(identifier, { service, identifier });
 
         // When the service is terminated, remove it from the service map.
-        service.once('terminated', () => {
+        service.once('terminated', async (code) => {
             this.#serviceMap.delete(identifier);
+
+            // Automatically relaunch the service if auto-renewal is enabled
+            if (this.#autoRenew && code !== WorkerExitCode.Ok) {
+                await this.launch(1);
+            }
         });
     }
 

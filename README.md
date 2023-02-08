@@ -1,16 +1,14 @@
 # Nanolith
 
-Multithreading in minutes. _(More intuitive and feature-rich than [Piscina](https://www.npmjs.com/package/piscina)!)_
-
-> Nanolith now supports nested parent threads. Spawn threads from other threads, more threads from those threads, and so on! 💪
-
 [![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)](https://www.typescriptlang.org/) [![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![Install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
 
-[![Version](https://img.shields.io/npm/v/nanolith?color=blue)](https://github.com/mstephen19/nanolith/releases) ![Weekly downloads](https://img.shields.io/npm/dw/nanolith?color=violet) ![Libraries.io dependency status](https://img.shields.io/librariesio/release/npm/nanolith) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=red)](https://github.com/mstephen19/nanolith/issues)
+[![Version](https://img.shields.io/npm/v/nanolith?color=blue)](https://github.com/mstephen19/nanolith/releases) ![Weekly downloads](https://img.shields.io/npm/dw/nanolith?color=violet) ![Libraries.io dependency status](https://img.shields.io/librariesio/release/npm/nanolith) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=lightgrey)](https://github.com/mstephen19/nanolith/issues)
 
 <center>
-    <img src="https://user-images.githubusercontent.com/87805115/210020526-2bbd427f-00d0-41cb-8ce9-7b96e5a214bd.png" width="550">
+    <img src="https://user-images.githubusercontent.com/87805115/217611158-14822948-f312-4fb6-af0e-83d534ce854f.png" width="550">
 </center>
+
+> _(More intuitive and feature-rich than [Piscina](https://www.npmjs.com/package/piscina)!)_
 
 ## ❔ About
 
@@ -260,6 +258,8 @@ await cluster.closeAll();
 
 For simplicity of the above example, we are only running a single task. However, `ServiceCluster` can be used to run a large amount of heavy operations in true parallel on multiple services.
 
+> **Tip:** To automatically re-launch services on a cluster when they exit with a non-zero code, look into the `autoRenew` option.
+
 ### `ServiceCluster` properties & methods
 
 Along with `.use()`, `ServiceCluster` offers many other properties and methods:
@@ -310,7 +310,7 @@ These hooks run on the same thread as their corresponding service/task.
 
 ## 🚨 Managing concurrency
 
-Nanolith automatically manages the concurrency your services and task calls with the internal `pool` class. By default, the maximum concurrency is one thread per core on the machine. This is a safe value to go with; however, the `maxConcurrency` can be modified up using one of the available `ConcurrencyOption`s.
+Nanolith automatically manages the concurrency your services and task calls with the internal `pool` class. By default, the maximum concurrency is two threads per core on the machine. This is a safe value to go with; however, the `maxConcurrency` can be modified up using one of the available `ConcurrencyOption`s.
 
 ```TypeScript
 // index.ts 💡
@@ -483,7 +483,7 @@ await service1.close();
 
 ## 📡 Streaming data between threads
 
-It's possible to stream data from one thread to another either using [`Service`](#-understanding-services), [`Messenger`](#between-all-threads), and [`ParentThread`](#between-a-service-and-the-main-thread). All have the `.createStream()` and `.onStream()` methods.
+It's possible to stream data from one thread to another either using [`Service`](#-understanding-services), [`Messenger`](#between-all-threads), and [`ParentThread`](#between-a-service-and-the-main-or-a-parent-thread). All have the `.createStream()` and `.onStream()` methods.
 
 ```TypeScript
 // worker.ts 💼
@@ -495,9 +495,9 @@ export const worker = await define({
         // Wait for streams coming from the parent thread.
         ParentThread.onStream((stream) => {
             const writeStream = createWriteStream('./movie.mp4');
-            // Once the stream has finished, notify the parent thread
+            // Once we finish writing, notify the parent thread
             // that the service is ready to be closed.
-            stream.on('end', () => {
+            writeStream.on('finish', () => {
                 ParentThread.sendMessage('close please');
             });
 
@@ -531,7 +531,7 @@ const { data: readStream } = await axios.get<Readable>(
     }
 );
 
-// Send the stream to the service to be handled.
+// Send the stream to the service thread to be handled.
 readStream.pipe(await service.createStream());
 ```
 

@@ -1,7 +1,10 @@
-import { api2 } from './worker2.js';
+import { SharedMap } from '@shared_map';
 
-try {
-    await api2({ name: 'bar' });
-} catch (error) {
-    console.log('whoops');
-}
+const map = new SharedMap({ foo: 'bar', test: 123 });
+
+await map.delete('foo');
+
+console.log(await map.get('foo'));
+
+// @ts-ignore
+console.log(await map.get('xyz'));

@@ -5,6 +5,7 @@ import { applyMessengerTransferObjects } from './utilities.js';
 import type { TaskDefinitions } from '@typing/definitions.js';
 import type { WorkerTaskReturnMessageBody, WorkerTaskErrorMessageBody, WorkerExceptionMessageBody } from '@typing/messages.js';
 import type { TaskWorkerData } from '@typing/worker_data.js';
+import { WorkerExitCode } from '@constants/workers.js';
 
 /**
  * Handles only task workers.
@@ -54,6 +55,6 @@ export async function taskWorkerHandler<Definitions extends TaskDefinitions>(def
 
         parentPort!.postMessage(body);
     } finally {
-        process.exit();
+        process.exit(WorkerExitCode.Ok);
     }
 }

@@ -3,6 +3,7 @@ import type { TaskDefinitions, Tasks } from './definitions.js';
 import type { CleanKeyOf, CleanReturnType, PositiveWholeNumber } from './utilities.js';
 import type { TaskWorkerOptions, ServiceWorkerOptions } from './workers.js';
 import type { Service } from '@service';
+import type { ServiceClusterOptions } from './service_cluster.js';
 
 /**
  * The API returned by the `define` function, which allows for the calling of task workers,
@@ -57,7 +58,7 @@ export type Nanolith<Definitions extends TaskDefinitions> = {
      */
     clusterize<Count extends number, Options extends ServiceWorkerOptions>(
         count?: PositiveWholeNumber<Count>,
-        options?: Options
+        options?: Options & ServiceClusterOptions
     ): Promise<ServiceCluster<Definitions>>;
     /**
      * The file location at which the definitions live, and where the worker runs off of.

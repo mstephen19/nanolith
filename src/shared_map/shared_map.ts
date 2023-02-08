@@ -150,15 +150,24 @@ export class SharedMap<Data extends Record<string, any>> {
         return data;
     }
 
-    #get<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
+    #getKey<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
         const decodedKeys = DECODER.decode(this.#keys);
         const match = Keys.matchKey(decodedKeys, name);
+        if (!match) return null;
+        return match;
+    }
+
+    #get<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
+        const match = this.#getKey(name);
         if (!match) return null;
 
         const { start, end } = Keys.parseKey(match as Key);
         if (start === undefined || end === undefined) throw new Error('Failed to parse key');
 
-        return DECODER.decode(this.#values.subarray(start, end + 1));
+        const decoded = DECODER.decode(this.#values.subarray(start, end + 1));
+
+        if (decoded === 'null') return null;
+        return decoded;
     }
 
     /**
@@ -294,6 +303,23 @@ export class SharedMap<Data extends Record<string, any>> {
         return this.#run(async () => {
             const newValue = typeof value !== 'function' ? value : await value(this.#get(name));
             this.#set(name, newValue);
+        });
+    }
+
+    /**
+     * Delete a key on the {@link SharedMap} instance.
+     *
+     * **Note:** Does not actually delete the key. Just sets it to "null".
+     *
+     * @param key The name of the key to delete.
+     */
+    async delete<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
+        return this.#run(() => {
+            // Do nothing if there is no match
+            const match = this.#getKey(name);
+            if (!match) return;
+
+            return this.#set(name, null as Data[KeyName]);
         });
     }
 }

@@ -69,7 +69,7 @@ export type ExceptionHandlerContext = {
     /**
      * An asynchronous function that can be used to exit the service's process.
      */
-    terminate: () => Promise<void>;
+    terminate: (code?: ExitCode) => void;
 };
 
 /**
@@ -82,3 +82,5 @@ export type ServiceWorkerOptions = BaseWorkerOptions & {
      */
     exceptionHandler?: ({ error, terminate }: ExceptionHandlerContext) => Awaitable<void>;
 };
+
+export type ExitCode = number;

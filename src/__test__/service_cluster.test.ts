@@ -107,4 +107,50 @@ describe('ServiceCluster', () => {
             expect(callback).toBeCalledWith('notify-all');
         });
     });
+
+    describe('autoRenew', () => {
+        it('Should re-open a new service on the cluster once one has been closed', async () => {
+            const c = await clusterTester.clusterize(5, {
+                autoRenew: true,
+            });
+
+            expect(c.activeServices).toBe(5);
+
+            // Closing with a zero code will not renew
+            await c.use().close();
+            expect(c.activeServices).toBe(4);
+
+            // Closing with a non-zero code should auto-renew
+            await c.use().close(1);
+            await c.use().close(1);
+            await c.use().close(1);
+
+            await new Promise((resolve) => setTimeout(resolve, 2e3));
+
+            expect(c.activeServices).toBe(4);
+
+            await Promise.all([c.closeAll(), cluster.closeAll()]);
+        });
+
+        it('Should NOT re-open new services if autoRenew is not enabled', async () => {
+            const c = await clusterTester.clusterize(5, {
+                autoRenew: false,
+            });
+
+            expect(c.activeServices).toBe(5);
+
+            // Closing with a zero code will not renew
+            await c.use().close();
+            expect(c.activeServices).toBe(4);
+
+            // Closing with a non-zero code should auto-renew
+            await c.use().close(1);
+            await c.use().close(1);
+            await c.use().close(1);
+
+            expect(c.activeServices).toBe(1);
+
+            await Promise.all([c.closeAll(), cluster.closeAll()]);
+        });
+    });
 });

@@ -1,5 +1,6 @@
 import type { ParentThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 import type { MessengerRawData } from './messenger.js';
+import type { ExitCode } from './workers.js';
 
 export type RemoveListenerFunction = () => void;
 
@@ -17,7 +18,7 @@ export type ParentThreadCallMessageBody = {
     params: any[];
 } & ParentThreadBaseMessageBody<ParentThreadMessageType.Call>;
 
-export type ParentThreadTerminateMessageBody = ParentThreadBaseMessageBody<ParentThreadMessageType.Terminate>;
+export type ParentThreadTerminateMessageBody = { code: ExitCode } & ParentThreadBaseMessageBody<ParentThreadMessageType.Terminate>;
 
 export type ParentThreadMessengerTransferBody = {
     data: MessengerRawData;
@@ -58,3 +59,5 @@ export type WorkerExceptionMessageBody = {
 } & WorkerBaseMessageBody<WorkerMessageType.WorkerException>;
 
 export type WorkerInitializedMessageBody = WorkerBaseMessageBody<WorkerMessageType.Initialized>;
+
+export type WorkerExitMessageBody = { code: ExitCode } & WorkerBaseMessageBody<WorkerMessageType.Exit>;
