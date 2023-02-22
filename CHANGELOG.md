@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Upgraded to TypeScript 5.0 beta.
+
 ## [0.4.2] - 2023-8-2
 
 ### Changed
