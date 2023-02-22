@@ -1,6 +1,21 @@
 import type { Awaitable, Except } from './utilities.js';
 
-type AcceptableValue = string | number | boolean | null | undefined | void;
+type AcceptableValue =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | void
+    | Buffer
+    | SharedArrayBuffer
+    | ArrayBuffer
+    | Int8Array
+    | Int16Array
+    | Int32Array
+    | Uint8Array
+    | Uint16Array
+    | Uint32Array;
 
 type AcceptableArray = Acceptable[];
 

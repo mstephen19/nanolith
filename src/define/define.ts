@@ -30,7 +30,7 @@ import type { ServiceClusterOptions } from '@typing/service_cluster.js';
  *     },
  * });
  */
-export async function define<const Definitions extends TaskDefinitions>(
+export async function define<Definitions extends TaskDefinitions>(
     definitions: Definitions,
     { identifier, file: fileFromOptions, safeMode = true }: DefineOptions = {}
 ): Promise<Nanolith<Definitions>> {

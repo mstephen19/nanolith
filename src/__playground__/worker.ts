@@ -1,7 +1,7 @@
-import { SharedMap, define } from 'nanolith';
+import { define } from 'nanolith';
 
 export const worker = await define({
-    foo<A extends string[]>(...data: A) {
-        return '';
+    foo() {
+        return new Uint16Array();
     },
 });
