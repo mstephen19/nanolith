@@ -1,7 +1,7 @@
-import { define } from 'nanolith';
+import { SharedMap, define } from 'nanolith';
 
 export const worker = await define({
-    exit1() {
-        process.exit(1);
+    foo<A extends string[]>(...data: A) {
+        return '';
     },
 });

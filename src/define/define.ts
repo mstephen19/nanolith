@@ -27,10 +27,10 @@ import type { ServiceClusterOptions } from '@typing/service_cluster.js';
  *     waitThenAdd: async (x: number, y: number) => {
  *         await new Promise((resolve) => setTimeout(resolve, 5000));
  *         return x + y;
- *     }.
+ *     },
  * });
  */
-export async function define<Definitions extends TaskDefinitions>(
+export async function define<const Definitions extends TaskDefinitions>(
     definitions: Definitions,
     { identifier, file: fileFromOptions, safeMode = true }: DefineOptions = {}
 ): Promise<Nanolith<Definitions>> {

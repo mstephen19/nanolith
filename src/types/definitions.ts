@@ -1,21 +1,23 @@
 import type { Awaitable, Except } from './utilities.js';
 
-type AcceptableValue = string | number | null | undefined | boolean | void | AcceptableValue[];
+type AcceptableValue = string | number | boolean | null | undefined | void;
+
+type AcceptableArray = Acceptable[];
 
 interface AcceptableObject {
-    [key: string | number]: AcceptableObject | AcceptableValue;
+    [key: string | number]: Acceptable;
 }
 
 /**
  * A union of all the data types that can be sent across threads.
  */
-export type Acceptable = AcceptableValue | AcceptableObject;
+export type Acceptable = AcceptableValue | AcceptableObject | AcceptableArray;
 
 /**
  * A function that can be used in the `define` function when defining
  * a collection of tasks.
  */
-export type TaskFunction = (...args: any[]) => Awaitable<any>;
+export type TaskFunction = (...args: any[]) => Awaitable<Acceptable>;
 
 export type InitializeServiceHook = (threadID: number) => Awaitable<void>;
 
