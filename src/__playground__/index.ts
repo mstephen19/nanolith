@@ -1,10 +1,5 @@
-import { SharedMap } from '@shared_map';
+import { worker } from './worker.js';
 
-const map = new SharedMap({ foo: 'bar', test: 123 });
+const service = await worker.launchService();
 
-await map.delete('foo');
-
-console.log(await map.get('foo'));
-
-// @ts-ignore
-console.log(await map.get('xyz'));
+await service.call({ name: 'exit1' });
