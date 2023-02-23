@@ -27,7 +27,7 @@ import type { ServiceClusterOptions } from '@typing/service_cluster.js';
  *     waitThenAdd: async (x: number, y: number) => {
  *         await new Promise((resolve) => setTimeout(resolve, 5000));
  *         return x + y;
- *     }.
+ *     },
  * });
  */
 export async function define<const Definitions extends TaskDefinitions>(
