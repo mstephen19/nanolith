@@ -64,7 +64,7 @@
         "ts-node": "^10.9.1",
         "tsc-alias": "^1.8.2",
         "tsconfig-paths": "^4.1.1",
-        "typescript": "^5.0.0-beta"
+        "typescript": "^4.9.5"
     },
     "dependencies": {
         "tiny-typed-emitter": "^2.1.0"

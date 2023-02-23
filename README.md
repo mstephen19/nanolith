@@ -1,7 +1,5 @@
 # Nanolith
 
-> Nanolith is an early adopter of the [TypeScript 5.0 beta](https://www.youtube.com/watch?v=iOTAFRFgm8I)
-
 [![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)](https://www.typescriptlang.org/) [![CircleCI](https://circleci.com/gh/mstephen19/nanolith.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/nanolith) [![Install size](https://packagephobia.com/badge?p=nanolith@latest)](https://packagephobia.com/result?p=nanolith@latest)
 
 [![Version](https://img.shields.io/npm/v/nanolith?color=blue)](https://github.com/mstephen19/nanolith/releases) ![Weekly downloads](https://img.shields.io/npm/dw/nanolith?color=violet) ![Libraries.io dependency status](https://img.shields.io/librariesio/release/npm/nanolith) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/nanolith?color=lightgrey)](https://github.com/mstephen19/nanolith/issues)
