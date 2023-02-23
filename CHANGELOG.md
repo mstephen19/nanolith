@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Upgraded to TypeScript 5.0 beta.
 - Switch `define` to use a `const` generic.
 
+### Fixed
+
+- Task/service calls throwing an error when the worker exits early with exit code 0.
+
 ## [0.4.2] - 2023-8-2
 
 ### Changed
