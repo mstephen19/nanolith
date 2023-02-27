@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - Task/service calls throwing an error when the worker exits early with exit code 0.
+- Some JSDoc typos.
 
 ## [0.4.2] - 2023-8-2
 
