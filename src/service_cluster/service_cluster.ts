@@ -128,9 +128,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
             this.#serviceMap.delete(identifier);
 
             // Automatically relaunch the service if auto-renewal is enabled
-            if (this.#autoRenew && code !== WorkerExitCode.Ok) {
-                await this.launch(1);
-            }
+            if (this.#autoRenew && code !== WorkerExitCode.Ok) await this.launch(1);
         });
     }
 

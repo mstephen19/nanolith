@@ -17,7 +17,6 @@ import type { RemoveListenerFunction } from '@typing/messages.js';
 import type { OnStreamCallback } from '@typing/streams.js';
 
 /**
- *
  * @param data The data to send to the main thread.
  * @param transferList An optional array of {@link TransferListItem}s. See the
  * [Node.js documentation](https://nodejs.org/api/worker_threads.html#workerpostmessagevalue-transferlist) for more information.

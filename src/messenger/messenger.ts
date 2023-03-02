@@ -34,7 +34,6 @@ export class Messenger {
     #key = v4();
     /**
      * A value specific to all Messenger instances using the ports
-     * in the ports array.
      */
     #identifier: string;
     /**
@@ -65,7 +64,6 @@ export class Messenger {
     #acceptStreams = false;
 
     /**
-     *
      * @param identifier An optional (but recommended) name for the `Messenger` that can be used
      * to reference it later on.
      *
@@ -75,18 +73,15 @@ export class Messenger {
      */
     constructor(identifier?: string);
     /**
-     *
      * @param raw A {@link MessengerRawData} object containing an identifier reference to
      * another messenger.
      *
      * @example
      * const messenger = new Messenger('my-messenger');
      * const messenger2 = new Messenger(messenger.raw);
-     *
      */
     constructor(rawData: MessengerRawData);
     /**
-     *
      * @param data An `identifier` (string) or a {@link MessengerRawData} object.
      */
     constructor(data?: MessengerRawData | string) {

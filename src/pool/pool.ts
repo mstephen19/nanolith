@@ -1,35 +1,10 @@
-import { Worker, SHARE_ENV, isMainThread, workerData } from 'worker_threads';
-import { generateConcurrencyValue, getDefaultPoolConcurrency } from './utilities.js';
+import { Worker, SHARE_ENV } from 'worker_threads';
+import { generateConcurrencyValue, getConcurrencyCounter, getActiveCounter } from './utilities.js';
 import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
-import { createCounter, getCount, incr, decr, createSharedUint32, getValue, setValue } from '@utilities';
+import { getCount, incr, decr, getValue, setValue } from '@utilities';
 
-import type { BaseWorkerData } from '@typing/worker_data.js';
 import type { PoolData } from '@typing/pool.js';
-
-const getActiveCounter = () => {
-    // Create the initial instance of the counter on the
-    // main thread
-    if (isMainThread) return createCounter();
-
-    // Any subsequent threads will use the counter data added
-    // to the workerData
-    const { pool } = workerData as BaseWorkerData;
-    if (!pool || !pool.active) throw new Error('Pool corruption. Counter data not found.');
-    return pool.active;
-};
-
-const getConcurrencyCounter = () => {
-    if (isMainThread) {
-        const count = createSharedUint32();
-        setValue(count, () => getDefaultPoolConcurrency());
-        return count;
-    }
-
-    const { pool } = workerData as BaseWorkerData;
-    if (!pool || !pool.concurrency) throw new Error('Pool corruption. Concurrency data not found.');
-    return pool.concurrency;
-};
 
 /**
  * This is the big boy that manages all Nanolith workers 💪
@@ -106,9 +81,6 @@ class Pool {
      * Don't use this unless you really know what you're doing.
      * This method is used internally to queue tasks and services up to the pool
      * to be created and run.
-     *
-     * This function **will** throw an error when trying to spawn up workers from within
-     * any thread that is not the main one.
      */
     __enqueue(item: PoolItem) {
         // Prevent workers from being run on any other thread than the main thread.

@@ -314,7 +314,7 @@ export class SharedMap<Data extends Record<string, any>> {
      * @param key The name of the key to delete.
      */
     async delete<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
-        return this.#run(() => {
+        await this.#run(() => {
             // Do nothing if there is no match
             const match = this.#getKey(name);
             if (!match) return;
