@@ -84,7 +84,7 @@ export class SharedMap<Data extends Record<string, any>> {
 
         for (const key of keys) {
             const value = await this.get(key as Extract<keyof (Data extends SharedMapRawData<infer Type> ? Type : Data), string>);
-            yield [key, value];
+            yield [key, value] as [string, string | null];
         }
     }
 
