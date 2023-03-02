@@ -1,10 +1,11 @@
-import { Messenger } from 'nanolith';
-import { worker } from './worker.js';
+import { SharedMap } from '@shared_map';
 
-const foo = new Messenger('foo');
+const map = new SharedMap({ a: 1, b: 2, c: 3, d: 4 });
 
-const service = await worker.launchService();
+const entries: string[] = [];
 
-await service.sendMessenger(foo);
+for await (const entry of map.entries()) {
+    entries.push(entry);
+}
 
-console.log('resolve');
+console.log(entries);

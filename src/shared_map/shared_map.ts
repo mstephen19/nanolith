@@ -60,6 +60,14 @@ export class SharedMap<Data extends Record<string, any>> {
         });
     }
 
+    async *entries() {
+        const keys = await this.#run(() => {
+            return DECODER.decode(this.#keys);
+        });
+
+        yield keys;
+    }
+
     constructor(data: Data, options?: SharedMapOptions);
     constructor(pair: SharedMapRawData<Data>);
     constructor(
@@ -110,7 +118,7 @@ export class SharedMap<Data extends Record<string, any>> {
         );
 
         // Encode keys and create an array buffer for them, populating it.
-        const encodedKeys = ENCODER.encode(preppedKeys.join());
+        const encodedKeys = ENCODER.encode(preppedKeys.join(''));
         // If the encoded keys length * the multiplier is zero, default to 1kb
         this.#keys = createSharedArrayBuffer(encodedKeys.byteLength * multiplier || Bytes.kilobyte);
         // It is safe to use no sort of mutex at this stage, because the arrays are just being

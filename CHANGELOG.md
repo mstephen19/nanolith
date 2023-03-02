@@ -9,7 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - Task/service calls throwing an error when the worker exits early with exit code 0.
-- Some JSDoc typos.
+- Some JSDoc typos & unnecessary spaces.
+- SharedMap keys containing unnecessary commas that take up extra space.
 
 ## [0.4.2] - 2023-8-2
 
