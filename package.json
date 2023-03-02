@@ -1,6 +1,6 @@
 {
     "name": "nanolith",
-    "version": "0.4.3-beta3",
+    "version": "0.4.2",
     "description": "Multi-threading in no time with seamless TypeScript support.",
     "main": "./build/index.js",
     "exports": "./build/index.js",
@@ -40,12 +40,13 @@
         "piscina",
         "pool",
         "threading",
+        "concurrent",
         "concurrency",
         "parallel",
         "performance",
-        "scaling",
-        "scale",
-        "async"
+        "scalability",
+        "async",
+        "tasks"
     ],
     "author": "Matt Stephens",
     "license": "MIT",

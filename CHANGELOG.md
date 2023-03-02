@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - `SharedMap.entries()` method for asynchronously iterating over map keys and values + docs.
+- More keywords to package.json.
 
 ### Fixed
 
