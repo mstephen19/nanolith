@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `SharedMap.entries()` method for asynchronously iterating over map keys and values.
+
 ### Fixed
 
 - Task/service calls throwing an error when the worker exits early with exit code 0.

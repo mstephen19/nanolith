@@ -60,12 +60,32 @@ export class SharedMap<Data extends Record<string, any>> {
         });
     }
 
+    /**
+     * Returns an {@link AsyncGenerator} that iterates through
+     * the keys and values of the map.
+     *
+     * @example
+     * const map = new SharedMap({ a: 1, b: 2, c: 3 });
+     *
+     * for await (const [key, value] of map.entries()) {
+     *     console.log(key, value);
+     * }
+     * // Output:
+     * // 'a', '1'
+     * // 'b', '2'
+     * // 'c', '3'
+     */
     async *entries() {
-        const keys = await this.#run(() => {
+        const keysDecoded = await this.#run(() => {
             return DECODER.decode(this.#keys);
         });
 
-        yield keys;
+        const keys = keysDecoded.match(/(?<=^|;)[^;]+(?=\()/g) ?? [];
+
+        for (const key of keys) {
+            const value = await this.get(key as Extract<keyof (Data extends SharedMapRawData<infer Type> ? Type : Data), string>);
+            yield [key, value];
+        }
     }
 
     constructor(data: Data, options?: SharedMapOptions);
