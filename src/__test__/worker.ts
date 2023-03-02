@@ -2,6 +2,15 @@ import { threadId } from 'worker_threads';
 import { define, ParentThread, MessengerList, SharedMap, SharedMapRawData } from '../index.js';
 import { createDataStream } from './consts.js';
 
+export const exitTester = await define({
+    exit1() {
+        process.exit(1);
+    },
+    exit0() {
+        process.exit(0);
+    },
+});
+
 export const definitions = {
     add: (x: number, y: number) => {
         return x + y;
@@ -95,7 +104,7 @@ export const testServiceInitializer = await define(
 export const hookTester = await define(
     {
         __beforeTask() {
-            process.exit();
+            process.exit(1);
         },
         add() {
             return 1 + 1;

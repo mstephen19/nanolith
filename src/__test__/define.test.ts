@@ -2,7 +2,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import { define } from 'nanolith';
 import { Service } from '../service/index.js';
-import { api2, api, dummy, hookTester } from './worker.js';
+import { api2, api, dummy, hookTester, exitTester } from './worker.js';
 
 describe('define', () => {
     it('Should contain the anticipated properties', () => {
@@ -55,8 +55,13 @@ describe('define', () => {
     });
 
     describe('earlyExitHandler', () => {
-        it('Should not allow the call to hang and should reject the promise if the worker exits early', () => {
-            expect(hookTester({ name: 'add' })).rejects.toThrowError(new Error('Worker exited early with code 0!'));
+        it('Should not allow the call to hang and should reject the promise if the worker exits early with a non-zero code', () => {
+            expect(hookTester({ name: 'add' })).rejects.toThrowError(new Error('Worker exited early with code 1!'));
+            expect(exitTester({ name: 'exit1' })).rejects.toThrowError(new Error('Worker exited early with code 1!'));
+        });
+
+        it('Should resolve with undefined when the worker exits with a code of 0', () => {
+            expect(exitTester({ name: 'exit0' })).resolves.not.toBeDefined();
         });
     });
 

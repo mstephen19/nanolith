@@ -1,7 +1,7 @@
 import { randomUUID as v4 } from 'crypto';
 import { createSharedArrayBuffer, encodeValue, isSharedMapRawData } from './utilities.js';
 import * as Keys from './keys.js';
-import { Bytes, NULL_ENCODED, ENCODER, DECODER } from '@constants/shared_map.js';
+import { Bytes, NULL_ENCODED, ENCODER, DECODER, NULL } from '@constants/shared_map.js';
 import { createMutex, lockMutex, unlockMutex } from '@utilities';
 
 import type { Key, SharedMapRawData, SharedMapOptions, SetWithPreviousHandler } from '@typing/shared_map.js';
@@ -60,13 +60,41 @@ export class SharedMap<Data extends Record<string, any>> {
         });
     }
 
+    /**
+     * Returns an {@link AsyncGenerator} that iterates through
+     * the keys and values of the map.
+     *
+     * @example
+     * const map = new SharedMap({ a: 1, b: 2, c: 3 });
+     *
+     * for await (const [key, value] of map.entries()) {
+     *     console.log(key, value);
+     * }
+     * // Output:
+     * // 'a', '1'
+     * // 'b', '2'
+     * // 'c', '3'
+     */
+    async *entries() {
+        const keysDecoded = await this.#run(() => {
+            return DECODER.decode(this.#keys);
+        });
+
+        const keys = keysDecoded.match(/(?<=^|;)[^;]+(?=\()/g) ?? [];
+
+        for (const key of keys) {
+            const value = await this.get(key as Extract<keyof (Data extends SharedMapRawData<infer Type> ? Type : Data), string>);
+            yield [key, value] as [string, string | null];
+        }
+    }
+
     constructor(data: Data, options?: SharedMapOptions);
     constructor(pair: SharedMapRawData<Data>);
     constructor(
         data: Data extends SharedMapRawData<infer Type> ? Type : Data,
         { bytes: bytesOption, multiplier = 10 } = {} as SharedMapOptions
     ) {
-        if (typeof data !== 'object') {
+        if (typeof data !== 'object' || Array.isArray(data)) {
             throw new Error('Can only provide objects to SharedMap.');
         }
 
@@ -85,7 +113,7 @@ export class SharedMap<Data extends Record<string, any>> {
         const { preppedKeys, preppedValues, totalLength } = entries.reduce(
             (result, [itemKey, itemValue]) => {
                 // Prepare the data by encoding it
-                let encodedData = encodeValue(ENCODER, itemValue);
+                let encodedData = itemValue === undefined || itemValue === null ? NULL_ENCODED : encodeValue(ENCODER, itemValue);
                 // Bugs occur when 0 byte strings are passed in. Pass in null as the default instead.
                 // This handles the cases when empty strings are passed in.
                 if (encodedData.byteLength <= 0) encodedData = NULL_ENCODED;
@@ -110,7 +138,7 @@ export class SharedMap<Data extends Record<string, any>> {
         );
 
         // Encode keys and create an array buffer for them, populating it.
-        const encodedKeys = ENCODER.encode(preppedKeys.join());
+        const encodedKeys = ENCODER.encode(preppedKeys.join(''));
         // If the encoded keys length * the multiplier is zero, default to 1kb
         this.#keys = createSharedArrayBuffer(encodedKeys.byteLength * multiplier || Bytes.kilobyte);
         // It is safe to use no sort of mutex at this stage, because the arrays are just being
@@ -164,10 +192,22 @@ export class SharedMap<Data extends Record<string, any>> {
         const { start, end } = Keys.parseKey(match as Key);
         if (start === undefined || end === undefined) throw new Error('Failed to parse key');
 
-        const decoded = DECODER.decode(this.#values.subarray(start, end + 1));
+        const data = this.#values.subarray(start, end + 1);
 
-        if (decoded === 'null') return null;
+        if (this.#isNull(data)) return null;
+
+        const decoded = DECODER.decode(this.#values.subarray(start, end + 1));
         return decoded;
+    }
+
+    #isNull(data: Uint8Array) {
+        if (data.length !== NULL_ENCODED.length) return false;
+
+        for (let i = 0; i < NULL_ENCODED.length; i++) {
+            if (NULL_ENCODED[i] !== data[i]) return false;
+        }
+
+        return true;
     }
 
     /**
@@ -314,12 +354,12 @@ export class SharedMap<Data extends Record<string, any>> {
      * @param key The name of the key to delete.
      */
     async delete<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
-        return this.#run(() => {
+        await this.#run(() => {
             // Do nothing if there is no match
             const match = this.#getKey(name);
             if (!match) return;
 
-            return this.#set(name, null as Data[KeyName]);
+            return this.#set(name, NULL as Data[KeyName]);
         });
     }
 }

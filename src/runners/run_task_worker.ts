@@ -30,7 +30,8 @@ export const runTaskWorker = <Options extends TaskWorkerOptions>(file: string, i
             worker.on('messageerror', reject);
 
             const earlyExitHandler = (code: number) => {
-                reject(new Error(`Worker exited early with code ${code}!`));
+                if (code !== 0) return reject(new Error(`Worker exited early with code ${code}!`));
+                resolve(undefined);
             };
 
             worker.once('exit', earlyExitHandler);

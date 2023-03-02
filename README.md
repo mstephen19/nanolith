@@ -451,7 +451,7 @@ export const worker = await define({
 });
 ```
 
-The messenger instance can be exposed to a [task call](#task-function-options) or [service](#launchservice-options) by using the `messengers` option.
+Messenger instances can be exposed to a [task call](#task-function-options) or [service](#launchservice-options) by using the `messengers` option.
 
 ```TypeScript
 // 💡 index.ts
@@ -627,7 +627,7 @@ const myMap = new SharedMap({ foo: 'bar' });
 await myMap.set('foo', 'hello world');
 
 // Grab the current value of "foo".
-console.log(await myMap.get('foo'));
+console.log(await myMap.get('foo')); // -> "hello world"
 ```
 
 But the main point of `SharedMap` is that it can be used to share values between threads without making copies of the data. A mutex is also implemented under the hood, which means that a very large concurrency of truly parallel operations to modify the same memory location at the same time.
@@ -678,22 +678,30 @@ await Promise.all([
 console.log(await countMap.get('count'));
 ```
 
-Notice that the `.get()` method will always return a stringified version of the value.
+Notice that the `.get()` method will always return a stringified version of the value. The value can then be converted into its original type.
 
-## 🧑‍🏫 Examples
+Asynchronously iterating through entries on a `SharedMap` instance is made simple with the `.entries()` method and a [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop:
 
-Examples coming soon!
+```TypeScript
+import { SharedMap } from 'nanolith';
 
-<!-- todo: Add examples -->
+const map = new SharedMap({ a: 1, b: 2, c: 3 });
+
+for await (const [key, value] of map.entries()) {
+    console.log(key, value);
+}
+```
+
+Output:
+
+```shell
+'a', '1'
+'b', '2'
+'c', '3'
+```
 
 ## 📜 License
 
-The MIT License (MIT)
-
 Copyright (c) 2023 Matthias Stephens
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+[See full license with overriding clause](https://github.com/mstephen19/nanolith/blob/main/LICENSE)

@@ -155,4 +155,23 @@ describe('SharedMap', () => {
             expect(await map.get('count')).toBe(`${length * 1e3}`);
         });
     });
+
+    describe('entries', () => {
+        it('Should asynchronously iterate through all keys and values in the map', async () => {
+            const map = new SharedMap({ a: 1, b: 2, c: 3, d: 4 });
+
+            const data: [string, string | null][] = [];
+
+            for await (const entry of map.entries()) {
+                data.push(entry);
+            }
+
+            expect(data).toEqual([
+                ['a', '1'],
+                ['b', '2'],
+                ['c', '3'],
+                ['d', '4'],
+            ]);
+        });
+    });
 });

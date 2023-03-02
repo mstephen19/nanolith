@@ -49,8 +49,9 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
             this.#callbacks.forEach(({ resolve, reject }, key) => {
                 // Handle early exits
                 if (body.type === WorkerMessageType.Exit) {
-                    reject(new Error(`Worker exited early with code ${(body as WorkerExitMessageBody).code}!`));
-                    return;
+                    const { code } = body as WorkerExitMessageBody;
+                    if (code !== 0) return reject(new Error(`Worker exited early with code ${code}!`));
+                    return resolve(undefined);
                 }
 
                 // If the message is for a call with a different key, also ignore the message.
@@ -157,6 +158,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
             key,
         };
 
+        // Register the handler callbacks first
         const promise = new Promise((resolve, reject) => {
             // Add the data to the callbacks map. The promise
             // will be resolved when the corresponding message
@@ -164,6 +166,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
             this.#addCallbacks({ key, resolve, reject });
         }) as Promise<CleanReturnType<Definitions[Name]>>;
 
+        // Then call the task by posting the message to the
+        // child thread.
         this.#worker.postMessage(message, transferList);
 
         const data = await promise;

@@ -1,15 +1,34 @@
 import type { Awaitable, Except } from './utilities.js';
 
-type AcceptableValue = string | number | null | undefined | boolean | void | AcceptableValue[];
+type AcceptableValue =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | void
+    | SharedArrayBuffer
+    | ArrayBuffer
+    | Buffer
+    | Int8Array
+    | Int16Array
+    | Int32Array
+    | Uint8Array
+    | Uint16Array
+    | Uint32Array;
 
 interface AcceptableObject {
-    [key: string | number]: AcceptableObject | AcceptableValue;
+    [key: string | number]: Acceptable;
 }
+
+type AcceptableArray = Acceptable[];
 
 /**
  * A union of all the data types that can be sent across threads.
+ *
+ * **Note:** To be used in the future.
  */
-export type Acceptable = AcceptableValue | AcceptableObject;
+export type Acceptable = AcceptableValue | AcceptableObject | AcceptableArray;
 
 /**
  * A function that can be used in the `define` function when defining

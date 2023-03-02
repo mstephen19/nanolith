@@ -8,7 +8,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Minor refactors.
+- Some minor refactors.
+
+### Added
+
+- `SharedMap.entries()` method for asynchronously iterating over map keys and values + docs.
+- More keywords to package.json.
+
+### Fixed
+
+- Task/service calls throwing an error when the worker exits early with exit code 0.
+- Some JSDoc typos & unnecessary spaces.
+- SharedMap keys containing unnecessary commas that take up extra space.
+
+### Removed
+
+- Empty **Examples** section in README.
+- Replaced content in README **License** section with a link to the license in the GitHub repository.
+
+## [0.4.2] - 2023-8-2
+
+### Changed
+
+- Minor refactors & performance improvements.
 - README image.
 
 ### Added

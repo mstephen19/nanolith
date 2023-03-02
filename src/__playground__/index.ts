@@ -1,10 +1,8 @@
 import { SharedMap } from '@shared_map';
 
-const map = new SharedMap({ foo: 'bar', test: 123 });
-
-await map.delete('foo');
-
-console.log(await map.get('foo'));
+const map = new SharedMap({ a: 'a' });
 
 // @ts-ignore
-console.log(await map.get('xyz'));
+await map.set('a', undefined);
+
+console.log(await map.get('a'));

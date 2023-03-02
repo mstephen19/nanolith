@@ -20,8 +20,10 @@ export enum Bytes {
     megabyte = 1048576,
 }
 
-export const NULL_ENCODED = encodeValue(new TextEncoder(), null);
-
 export const ENCODER = new TextEncoder();
 
 export const DECODER = new TextDecoder();
+
+export const NULL = null;
+
+export const NULL_ENCODED = encodeValue(ENCODER, NULL);
