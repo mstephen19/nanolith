@@ -14,9 +14,10 @@ async function use(name: string) {
     const messenger = messengers[name]
         ? messengers[name]
         : ((await new Promise((resolve, reject) => {
-              const timeout = setTimeout(() => {
-                  reject(new Error(`Timed out after waiting 10 seconds to receive a messenger named ${name}`));
-              }, 10e3);
+              const timeout = setTimeout(
+                  reject.bind(undefined, new Error(`Timed out after waiting 10 seconds to receive a messenger named ${name}`)),
+                  10e3
+              );
 
               const removeListener = ParentThread.onMessengerReceived((messenger: Messenger) => {
                   if (messenger.ID !== name) return;

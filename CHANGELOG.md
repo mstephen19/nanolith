@@ -6,9 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Some minor refactors.
+
 ### Added
 
-- `SharedMap.entries()` method for asynchronously iterating over map keys and values.
+- `SharedMap.entries()` method for asynchronously iterating over map keys and values + docs.
 
 ### Fixed
 
@@ -16,11 +20,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Some JSDoc typos & unnecessary spaces.
 - SharedMap keys containing unnecessary commas that take up extra space.
 
+### Removed
+
+- Empty **Examples** section in README.
+- Replaced content in README **License** section with a link to the license in the GitHub repository.
+
 ## [0.4.2] - 2023-8-2
 
 ### Changed
 
-- Minor refactors.
+- Minor refactors & performance improvements.
 - README image.
 
 ### Added
