@@ -188,7 +188,7 @@ export class Messenger {
      * @param metaData Any specific data about the stream that should be accessible when
      * using it.
      */
-    createStream(metaData?: Record<any, any>) {
+    createStream(metaData?: Record<string | number, any>) {
         return prepareWritableToPortStream(this.#messagableInterop, metaData ?? {});
     }
 
