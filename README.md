@@ -531,7 +531,9 @@ const { data: readStream } = await axios.get<Readable>(
 );
 
 // Send the stream to the service thread to be handled.
-readStream.pipe(await service.createStream());
+// We pass in our own custom data to the created stream so that the
+// receiving thread has some information about what it is.
+readStream.pipe(await service.createStream({ scissorhands: true }));
 ```
 
 When using `Messenger`, things work a bit differently. The `.onStream()` method takes a different type of callback that must first accept the stream before handling it. This is because with messengers, there are multiple possible recipients, and not all of them might want to accept the stream.
@@ -553,7 +555,7 @@ export const worker = await define({
             // If the metadata of the stream matches what we
             // want, we will continue. Otherwise we'll decline
             // the stream by doing nothing.
-            if (metaData.scissorhands !== true) return;
+            if (!metaData.scissorhands) return;
 
             // Retrieve the stream by calling the "accept" function.
             const stream = accept();
