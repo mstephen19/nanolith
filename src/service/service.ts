@@ -224,14 +224,14 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
-     * Create a {@link Writable} instance that can be piped into in order to stream data to
+     * Create a `Writable` instance that can be piped into in order to stream data to
      * the service. The service can listen for incoming streams with the
      * `parent.onStream()` listener.
      *
      * @param metaData Any specific data about the stream that should be accessible when
      * using it.
      */
-    createStream(metaData?: Record<any, any>) {
+    createStream(metaData?: Record<string | number, any>) {
         this.#assertIsNotTerminated();
 
         return prepareWritableToPortStream(this.#worker, metaData ?? {});

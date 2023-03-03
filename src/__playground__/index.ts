@@ -1,8 +1,14 @@
-import { SharedMap } from '@shared_map';
+import { Readable } from 'stream';
+import { worker } from './worker.js';
 
-const map = new SharedMap({ a: 'a' });
+const data = ['foo', 'bar', 'baz'];
 
-// @ts-ignore
-await map.set('a', undefined);
+const readable = new Readable({
+    read() {
+        this.push(data.shift() ?? null);
+    },
+});
 
-console.log(await map.get('a'));
+const service = await worker.launchService();
+
+readable.pipe(await service.createStream({ foo: 'bar' }));
