@@ -1,8 +1,3 @@
-import { SharedMap } from '@shared_map';
+import { worker } from './worker.js';
 
-const map = new SharedMap({ a: 'a' });
-
-// @ts-ignore
-await map.set('a', undefined);
-
-console.log(await map.get('a'));
+await worker({ name: 'wait', reffed: false, shareEnv: false });

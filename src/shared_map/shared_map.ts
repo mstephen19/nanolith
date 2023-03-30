@@ -4,7 +4,7 @@ import * as Keys from './keys.js';
 import { Bytes, NULL_ENCODED, ENCODER, DECODER, NULL } from '@constants/shared_map.js';
 import { createMutex, lockMutex, unlockMutex } from '@utilities';
 
-import type { Key, SharedMapRawData, SharedMapOptions, SetWithPreviousHandler } from '@typing/shared_map.js';
+import type { Key, SharedMapRawData, SharedMapOptions, SetWithPreviousHandler, KeyData } from '@typing/shared_map.js';
 import type { Mutex } from '@utilities';
 import type { CleanKeyOf } from '@typing/utilities.js';
 
@@ -58,34 +58,6 @@ export class SharedMap<Data extends Record<string, any>> {
             __identifier: this.#identifier,
             __mutex: this.#mutex,
         });
-    }
-
-    /**
-     * Returns an {@link AsyncGenerator} that iterates through
-     * the keys and values of the map.
-     *
-     * @example
-     * const map = new SharedMap({ a: 1, b: 2, c: 3 });
-     *
-     * for await (const [key, value] of map.entries()) {
-     *     console.log(key, value);
-     * }
-     * // Output:
-     * // 'a', '1'
-     * // 'b', '2'
-     * // 'c', '3'
-     */
-    async *entries() {
-        const keysDecoded = await this.#run(() => {
-            return DECODER.decode(this.#keys);
-        });
-
-        const keys = keysDecoded.match(/(?<=^|;)[^;]+(?=\()/g) ?? [];
-
-        for (const key of keys) {
-            const value = await this.get(key as Extract<keyof (Data extends SharedMapRawData<infer Type> ? Type : Data), string>);
-            yield [key, value] as [string, string | null];
-        }
     }
 
     constructor(data: Data, options?: SharedMapOptions);
@@ -178,6 +150,36 @@ export class SharedMap<Data extends Record<string, any>> {
         return data;
     }
 
+    /**
+     * Returns an {@link AsyncGenerator} that iterates through
+     * the keys and values of the map.
+     *
+     * @example
+     * const map = new SharedMap({ a: 1, b: 2, c: 3 });
+     *
+     * for await (const [key, value] of map.entries()) {
+     *     console.log(key, value);
+     * }
+     * // Output:
+     * // 'a', '1'
+     * // 'b', '2'
+     * // 'c', '3'
+     */
+    async *entries() {
+        const keysDecoded = await this.#run(() => {
+            return DECODER.decode(this.#keys);
+        });
+
+        const keys = keysDecoded.match(/[^;]+\(\d+,\d+\);/g) ?? [];
+
+        for (const key of keys) {
+            // const value = await this.get(key as Extract<keyof (Data extends SharedMapRawData<infer Type> ? Type : Data), string>);
+            // yield [key, value] as [string, string | null];
+            const data = Keys.parseKey(key as Key);
+            yield [data.name, this.#getFromKeyData(data)] as [string, string | null];
+        }
+    }
+
     #getKey<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
         const decodedKeys = DECODER.decode(this.#keys);
         const match = Keys.matchKey(decodedKeys, name);
@@ -185,11 +187,7 @@ export class SharedMap<Data extends Record<string, any>> {
         return match;
     }
 
-    #get<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
-        const match = this.#getKey(name);
-        if (!match) return null;
-
-        const { start, end } = Keys.parseKey(match as Key);
+    #getFromKeyData({ start, end }: KeyData) {
         if (start === undefined || end === undefined) throw new Error('Failed to parse key');
 
         const data = this.#values.subarray(start, end + 1);
@@ -198,6 +196,13 @@ export class SharedMap<Data extends Record<string, any>> {
 
         const decoded = DECODER.decode(this.#values.subarray(start, end + 1));
         return decoded;
+    }
+
+    #get<KeyName extends CleanKeyOf<Data extends SharedMapRawData<infer Type> ? Type : Data>>(name: KeyName) {
+        const match = this.#getKey(name);
+        if (!match) return null;
+
+        return this.#getFromKeyData(Keys.parseKey(match as Key));
     }
 
     #isNull(data: Uint8Array) {

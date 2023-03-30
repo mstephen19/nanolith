@@ -53,7 +53,6 @@ Here's a quick rundown of everything you can do in Nanolith:
   - [Between all threads](#between-all-threads)
 - [📡 Streaming data between threads](#-streaming-data-between-threads)
 - [💾 Sharing memory between threads](#-sharing-memory-between-threads)
-- [🧑‍🏫 Examples](#-examples)
 - [📜 License](#-license)
 
 ## 💾 Installation
@@ -151,8 +150,9 @@ The new thread's process is shut down after the task finishes.
 |-|-|-|
 | `name` | **string** | The name of the task to call. Must be present on the set of definitions. |
 | `params` | **any[]** | The arguments for the task in array form. |
-| `priority` | **boolean** | Whether or not to treat the task's worker as priority over others when being queued into the `pool`. |
-| `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
+| `priority` | **boolean** | Whether or not to treat the task's worker as priority over others when being queued into the `pool`. Defaults to `false`. |
+| `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `true`. |
+| `sharedEnv` | **boolean** | Whether or not to shared environment variables between the parent thread (current) and the child thread to be created. Defaults to `true`. |
 | `messengers` | [**Messenger**](#between-all-threads)**[]** | The [`Messenger`](#between-all-threads)s that should be accessible to the task. |
 | `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
@@ -195,8 +195,9 @@ The configurations for `Nanolith.launchService()` are nearly identical to the [t
 | Name | Type | About |
 |-|-|-|
 | `exceptionHandler` | **function** | An optional but _highly recommended_ option that allows you to catch uncaught exceptions within the service. |
-| `priority` | **boolean** | Whether or not to treat the service's worker as priority over others when being queued into the `pool`. |
-| `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
+| `priority` | **boolean** | Whether or not to treat the service's worker as priority over others when being queued into the `pool`. Defaults to `false`. |
+| `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `true`. |
+| `sharedEnv` | **boolean** | Whether or not to shared environment variables between the parent thread (current) and the child thread to be created. Defaults to `true`. |
 | `messengers` | [**Messenger**](#between-all-threads)**[]** | The [`Messenger`](#between-all-threads)s that should be accessible to the service. |
 | `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
@@ -532,7 +533,9 @@ const { data: readStream } = await axios.get<Readable>(
 );
 
 // Send the stream to the service thread to be handled.
-readStream.pipe(await service.createStream());
+// We pass in our own custom data to the created stream so that the
+// receiving thread has some information about what it is.
+readStream.pipe(await service.createStream({ scissorhands: true }));
 ```
 
 When using `Messenger`, things work a bit differently. The `.onStream()` method takes a different type of callback that must first accept the stream before handling it. This is because with messengers, there are multiple possible recipients, and not all of them might want to accept the stream.
@@ -554,7 +557,7 @@ export const worker = await define({
             // If the metadata of the stream matches what we
             // want, we will continue. Otherwise we'll decline
             // the stream by doing nothing.
-            if (metaData.scissorhands !== true) return;
+            if (!metaData.scissorhands) return;
 
             // Retrieve the stream by calling the "accept" function.
             const stream = accept();

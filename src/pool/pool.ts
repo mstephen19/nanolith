@@ -104,8 +104,7 @@ class Pool {
         incr(this.#active);
 
         const item = this.#queue.shift()!;
-
-        const { file, workerData, options, reffed } = item.options;
+        const { file, workerData, options, reffed, shareEnv } = item.options;
 
         const worker = new Worker(file, {
             ...options,
@@ -116,7 +115,7 @@ class Pool {
                     concurrency: this.#concurrency,
                 } satisfies PoolData,
             },
-            env: SHARE_ENV,
+            ...(shareEnv ? { env: SHARE_ENV } : undefined),
         });
 
         // If the worker should be reffed according to the config options,
@@ -135,6 +134,6 @@ class Pool {
 }
 
 /**
- * The single global instance of {@link Pool} that manages all Nanolith workers 💪
+ * The single cross-thread global instance of {@link Pool} that manages all Nanolith workers 💪
  */
 export const pool = Object.seal(new Pool());

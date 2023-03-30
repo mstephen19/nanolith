@@ -184,6 +184,14 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
+     * By default, the service's underlying {@link Worker} is unreffed. Use this method to change that.
+     */
+    setRef(option: boolean) {
+        if (option) return this.#worker.ref();
+        this.#worker.unref();
+    }
+
+    /**
      * Terminates the worker, ending its process and marking the {@link Service} instance as `closed`.
      */
     async close(code?: ExitCode) {
@@ -197,7 +205,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         //     code: code ?? WorkerExitCode.Ok,
         // };
 
-        // this
         // return promise;
         this.#worker.emit('exit', code ?? WorkerExitCode.Ok);
         return void (await this.#worker.terminate());
@@ -224,14 +231,14 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
-     * Create a {@link Writable} instance that can be piped into in order to stream data to
+     * Create a `Writable` instance that can be piped into in order to stream data to
      * the service. The service can listen for incoming streams with the
      * `parent.onStream()` listener.
      *
      * @param metaData Any specific data about the stream that should be accessible when
      * using it.
      */
-    createStream(metaData?: Record<any, any>) {
+    createStream(metaData?: Record<string | number, any>) {
         this.#assertIsNotTerminated();
 
         return prepareWritableToPortStream(this.#worker, metaData ?? {});

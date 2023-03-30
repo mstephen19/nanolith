@@ -6,9 +6,7 @@ import type { BaseWorkerData } from '@typing/worker_data.js';
 
 export const applyMessengerTransferObjects = (messengerTransfers: MessengerRawData[]) => {
     (workerData as BaseWorkerData).messengers = messengerTransfers.reduce((acc, transfer) => {
-        return {
-            ...acc,
-            [transfer.__messengerID]: new Messenger(transfer),
-        };
+        acc[transfer.__messengerID] = new Messenger(transfer);
+        return acc;
     }, {} as Record<string, Messenger>);
 };

@@ -1,5 +1,9 @@
-import { define } from 'nanolith';
+import { createWriteStream } from 'fs';
+import { ParentThread, define } from 'nanolith';
 
 export const worker = await define({
-    __beforeTask(ctx) {},
+    async wait() {
+        await new Promise((r) => setTimeout(r, 5e3));
+        console.log('done');
+    },
 });

@@ -33,7 +33,7 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
 
                 const service = Object.seal(new Service(worker));
                 // Register the listener for the exception handler
-                if (exceptionHandler && typeof exceptionHandler === 'function') {
+                if (typeof exceptionHandler === 'function') {
                     worker.on('message', async (body: WorkerBaseMessageBody) => {
                         if (body.type !== WorkerMessageType.WorkerException) return;
                         await exceptionHandler({
@@ -43,12 +43,13 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
                     });
                 }
 
+                // Clean up listeners before resolving to handle edge-case
+                // slight performance decreases.
+                worker.off('message', handleInitialization);
+                worker.off('error', reject);
+
                 // Resolve with a Service API instance
                 resolve(service);
-
-                // Clean up listeners
-                worker.off('error', reject);
-                worker.off('message', handleInitialization);
             };
 
             worker.on('message', handleInitialization);

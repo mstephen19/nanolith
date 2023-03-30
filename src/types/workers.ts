@@ -48,12 +48,17 @@ export type BaseWorkerOptions = {
     /**
      * When `true`, [`worker.ref()`](https://nodejs.org/api/worker_threads.html#workerref) will be called.
      * When `false`, [`worker.unref()`](https://nodejs.org/api/worker_threads.html#workerunref) will be called.
+     * Defaults to `true`.
      */
     reffed?: boolean;
     /**
      * An array of {@link Messenger}s that should be accessible to the worker when it is running.
      */
     messengers?: Messenger[];
+    /**
+     * Whether or not environment variables should be shared between the parent thread and the child that will be created. Defaults to `true`.
+     */
+    shareEnv?: boolean;
 };
 
 /**

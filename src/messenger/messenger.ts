@@ -24,6 +24,7 @@ import type { RemoveListenerFunction } from '@typing/messages.js';
  * as between the main thread and workers. Supported seamlessly by the rest of Nanolith.
  */
 export class Messenger {
+    #closed = false;
     #channel: BroadcastChannel;
     #listenerCallbacks: ((data: any) => Awaitable<void>)[] = [];
     #streamEventCallbacks: Set<ConfirmStreamCallback<Messagable>> = new Set();
@@ -62,6 +63,10 @@ export class Messenger {
         },
     };
     #acceptStreams = false;
+
+    get closed() {
+        return this.#closed;
+    }
 
     /**
      * @param identifier An optional (but recommended) name for the `Messenger` that can be used
@@ -118,7 +123,7 @@ export class Messenger {
             switch (body?.type) {
                 // Handle "closeAll" calls
                 case MessengerMessageType.Close: {
-                    return this.#channel.close();
+                    return this.close();
                 }
                 case MessengerMessageType.StreamMessage: {
                     if (body.sender === this.#key) return;
@@ -188,7 +193,7 @@ export class Messenger {
      * @param metaData Any specific data about the stream that should be accessible when
      * using it.
      */
-    createStream(metaData?: Record<any, any>) {
+    createStream(metaData?: Record<string | number, any>) {
         return prepareWritableToPortStream(this.#messagableInterop, metaData ?? {});
     }
 
@@ -251,7 +256,6 @@ export class Messenger {
         const index = this.#listenerCallbacks.indexOf(callback);
         // If it's -1, the item wasn't found
         if (index <= -1) return;
-
         this.#listenerCallbacks.splice(index, 1);
     }
 
@@ -286,7 +290,7 @@ export class Messenger {
     }
 
     /**
-     * By default, the {@link BroadcastChannel} is unreffed. Call this function to change that.
+     * By default, the {@link BroadcastChannel} is unreffed. Use this method to change that.
      * When `true`, [`ref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelref) will be called.
      * When `false`, [`unref()`](https://nodejs.org/api/worker_threads.html#broadcastchannelunref) will be called.
      */
@@ -300,6 +304,7 @@ export class Messenger {
      * Does not close all Messenger objects. Use `messenger.closeAll()` instead for that.
      */
     close() {
+        this.#closed = true;
         this.#channel.close();
         // Early cleanup
         this.#listenerCallbacks = [];
@@ -318,5 +323,6 @@ export class Messenger {
         };
 
         this.#channel.postMessage(body);
+        this.close();
     }
 }
