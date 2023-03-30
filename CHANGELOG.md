@@ -9,11 +9,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 
 - `createStream()` method on `Service` and `Messenger` to accept `Record<string | number, any>` metadata instead of `Record<any, any>`.
-- `entries()` generator method on `SharedMap` to be more performant.
 
 ### Added
 
 - More info about `metaData` to **Streaming data between threads** section of README.
+
+### Fixed
+
+- `entries()` generator method on `SharedMap` to be more performant.
 
 ## [0.4.3] 2023-2-3
 
