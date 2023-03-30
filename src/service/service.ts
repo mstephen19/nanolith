@@ -197,7 +197,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         //     code: code ?? WorkerExitCode.Ok,
         // };
 
-        // this
         // return promise;
         this.#worker.emit('exit', code ?? WorkerExitCode.Ok);
         return void (await this.#worker.terminate());
