@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 
 - `createStream()` method on `Service` and `Messenger` to accept `Record<string | number, any>` metadata instead of `Record<any, any>`.
+- `entries()` generator method on `SharedMap` to be more performant.
 
 ### Added
 

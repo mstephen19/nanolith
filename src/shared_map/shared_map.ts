@@ -173,8 +173,6 @@ export class SharedMap<Data extends Record<string, any>> {
         const keys = keysDecoded.match(/[^;]+\(\d+,\d+\);/g) ?? [];
 
         for (const key of keys) {
-            // const value = await this.get(key as Extract<keyof (Data extends SharedMapRawData<infer Type> ? Type : Data), string>);
-            // yield [key, value] as [string, string | null];
             const data = Keys.parseKey(key as Key);
             yield [data.name, this.#getFromKeyData(data)] as [string, string | null];
         }
