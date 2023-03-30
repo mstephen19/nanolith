@@ -24,6 +24,7 @@ import type { RemoveListenerFunction } from '@typing/messages.js';
  * as between the main thread and workers. Supported seamlessly by the rest of Nanolith.
  */
 export class Messenger {
+    #closed = false;
     #channel: BroadcastChannel;
     #listenerCallbacks: ((data: any) => Awaitable<void>)[] = [];
     #streamEventCallbacks: Set<ConfirmStreamCallback<Messagable>> = new Set();
@@ -62,6 +63,10 @@ export class Messenger {
         },
     };
     #acceptStreams = false;
+
+    get closed() {
+        return this.#closed;
+    }
 
     /**
      * @param identifier An optional (but recommended) name for the `Messenger` that can be used
@@ -118,7 +123,7 @@ export class Messenger {
             switch (body?.type) {
                 // Handle "closeAll" calls
                 case MessengerMessageType.Close: {
-                    return this.#channel.close();
+                    return this.close();
                 }
                 case MessengerMessageType.StreamMessage: {
                     if (body.sender === this.#key) return;
@@ -300,6 +305,7 @@ export class Messenger {
      * Does not close all Messenger objects. Use `messenger.closeAll()` instead for that.
      */
     close() {
+        this.#closed = true;
         this.#channel.close();
         // Early cleanup
         this.#listenerCallbacks = [];
@@ -318,5 +324,6 @@ export class Messenger {
         };
 
         this.#channel.postMessage(body);
+        this.close();
     }
 }

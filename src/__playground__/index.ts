@@ -1,14 +1,10 @@
-import { Readable } from 'stream';
-import { worker } from './worker.js';
+import { Messenger } from '@messenger';
 
-const data = ['foo', 'bar', 'baz'];
+const m1 = new Messenger();
+const m2 = new Messenger(m1.raw);
 
-const readable = new Readable({
-    read() {
-        this.push(data.shift() ?? null);
-    },
-});
+m1.closeAll();
 
-const service = await worker.launchService();
+await new Promise((r) => setTimeout(r, 5e3));
 
-readable.pipe(await service.createStream({ foo: 'bar' }));
+console.log(m2.closed, m1.closed);

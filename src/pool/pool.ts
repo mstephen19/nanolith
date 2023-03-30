@@ -104,7 +104,6 @@ class Pool {
         incr(this.#active);
 
         const item = this.#queue.shift()!;
-
         const { file, workerData, options, reffed } = item.options;
 
         const worker = new Worker(file, {

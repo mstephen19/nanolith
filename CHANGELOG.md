@@ -13,10 +13,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - More info about `metaData` to **Streaming data between threads** section of README.
+- `Messenger.closed` getter.
 
 ### Fixed
 
 - `entries()` generator method on `SharedMap` to be more performant.
+- `Messenger.closeAll()` not closing the current messenger instance as well.
 
 ## [0.4.3] 2023-2-3
 
