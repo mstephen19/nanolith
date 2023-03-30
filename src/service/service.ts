@@ -184,6 +184,14 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
+     * By default, the service's underlying {@link Worker} is unreffed. Use this method to change that.
+     */
+    setRef(option: boolean) {
+        if (option) return this.#worker.ref();
+        this.#worker.unref();
+    }
+
+    /**
      * Terminates the worker, ending its process and marking the {@link Service} instance as `closed`.
      */
     async close(code?: ExitCode) {
