@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - More info about `metaData` to **Streaming data between threads** section of README.
 - `Messenger.closed` getter.
 - `Service.setRef()` method.
+- `shareEnv` option for task & service workers, defaulting to `true`.
 
 ### Fixed
 

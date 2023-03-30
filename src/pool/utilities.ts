@@ -14,6 +14,7 @@ export const cleanPoolConfig = <Options extends PoolItemConfig>({
     options = {},
     reffed = true,
     messengers = [],
+    shareEnv = true,
 }: Options): PoolItemOptions => {
     if (!file) throw new Error('Filename not provided.');
 
@@ -27,6 +28,7 @@ export const cleanPoolConfig = <Options extends PoolItemConfig>({
         priority,
         options,
         reffed,
+        shareEnv,
     };
 };
 

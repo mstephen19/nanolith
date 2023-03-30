@@ -51,4 +51,5 @@ export type PoolItemOptions = {
     options: WorkerOptions;
     priority: boolean;
     reffed: boolean;
+    shareEnv: boolean;
 } & BasePoolItemConfig;
