@@ -150,8 +150,9 @@ The new thread's process is shut down after the task finishes.
 |-|-|-|
 | `name` | **string** | The name of the task to call. Must be present on the set of definitions. |
 | `params` | **any[]** | The arguments for the task in array form. |
-| `priority` | **boolean** | Whether or not to treat the task's worker as priority over others when being queued into the `pool`. |
-| `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
+| `priority` | **boolean** | Whether or not to treat the task's worker as priority over others when being queued into the `pool`. Defaults to `false`. |
+| `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `true`. |
+| `sharedEnv` | **boolean** | Whether or not to shared environment variables between the parent thread (current) and the child thread to be created. Defaults to `true`. |
 | `messengers` | [**Messenger**](#between-all-threads)**[]** | The [`Messenger`](#between-all-threads)s that should be accessible to the task. |
 | `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
@@ -194,8 +195,9 @@ The configurations for `Nanolith.launchService()` are nearly identical to the [t
 | Name | Type | About |
 |-|-|-|
 | `exceptionHandler` | **function** | An optional but _highly recommended_ option that allows you to catch uncaught exceptions within the service. |
-| `priority` | **boolean** | Whether or not to treat the service's worker as priority over others when being queued into the `pool`. |
-| `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `false`. |
+| `priority` | **boolean** | Whether or not to treat the service's worker as priority over others when being queued into the `pool`. Defaults to `false`. |
+| `reffed` | **boolean** | When `true`, the underlying `Worker` instance is [reffed](https://nodejs.org/api/worker_threads.html#workerref). Defaults to `true`. |
+| `sharedEnv` | **boolean** | Whether or not to shared environment variables between the parent thread (current) and the child thread to be created. Defaults to `true`. |
 | `messengers` | [**Messenger**](#between-all-threads)**[]** | The [`Messenger`](#between-all-threads)s that should be accessible to the service. |
 | `options` | **object** | An object containing _most_ of the options available on the [`Worker` constructor](https://nodejs.org/api/worker_threads.html#new-workerfilename-options). |
 
