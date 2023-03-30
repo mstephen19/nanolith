@@ -20,7 +20,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `entries()` generator method on `SharedMap` to be more performant.
 - `Messenger.closeAll()` not closing the current messenger instance.
 - Improved general performance for services.
--
 
 ## [0.4.3] 2023-2-3
 
