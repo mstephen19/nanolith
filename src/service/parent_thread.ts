@@ -135,7 +135,7 @@ function onStream(callback: OnStreamCallback<Exclude<typeof parentPort, null>>) 
  * @param metaData Any specific data about the stream that should be accessible when
  * using it.
  */
-async function createStream(metaData?: Record<any, any>) {
+async function createStream(metaData?: Record<string | number, any>) {
     assertIsNotMainThread('ParentThread.stream');
 
     return prepareWritableToPortStream(parentPort!, metaData ?? {});

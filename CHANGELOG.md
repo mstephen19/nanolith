@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- `createStream()` method on `Service` and `Messenger` to accept `Record<string | number, any>` metadata instead of `Record<any, any>`.
+- `createStream()` method on `Service`, `Messenger`, and `ParentThread` to accept `Record<string | number, any>` metadata instead of `Record<any, any>`.
 
 ### Added
 
