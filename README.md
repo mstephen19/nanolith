@@ -140,7 +140,7 @@ console.log(result); // -> 5
 
 The new thread's process is shut down after the task finishes.
 
-> **📝 Note:** Notice that even with the synchronous `add()` function, it is now asynchronous when being multithreaded.
+> **📝 Note:** Notice that even with the synchronous `add()` function, it is now asynchronous when being run on a child thread.
 
 ### Task function options
 
@@ -158,7 +158,7 @@ The new thread's process is shut down after the task finishes.
 
 ## 🎩 Understanding services
 
-**Services** are Nanolith's flagship feature. Running a task on a service works similarly to [running a task](#-running-a-task) normally; however, the key difference is that the thread only shuts down when you tell it to. This means that you can run multiple tasks on the same thread rather than spawning up a new one for each call.
+**Services** are Nanolith's flagship feature. Running a task on a service works similarly to [running a task](#-running-a-task) normally; however, the key difference is that the thread only shuts down when you tell it to. This means that you can run multiple tasks on the same thread rather than spawning up a new one for each call, which is where the real benefits of multithreading in Node.js can be seen.
 
 Considering the definitions we created [here](#-defining-your-tasks), here is how a service would be launched and a task would be called on it.
 
@@ -257,6 +257,8 @@ console.log(result);
 await cluster.closeAll();
 ```
 
+> **Note:** Service clusters can be treated like a sort of task queue, as all services are managed by the [pool](#-managing-concurrency), and all task calls are managed by the cluster itself.
+
 For simplicity of the above example, we are only running a single task. However, `ServiceCluster` can be used to run a large amount of heavy operations in true parallel on multiple services.
 
 > **Tip:** To automatically re-launch services on a cluster when they exit with a non-zero code, look into the `autoRenew` option.
@@ -344,7 +346,7 @@ Access to the pool's default concurrency for the current machine's resources can
 ```typescript
 import { getDefaultPoolConcurrency } from 'nanolith';
 
-console.log(getDefaultPoolConcurrency)
+console.log(getDefaultPoolConcurrency());
 ```
 
 ### `pool` properties & methods
