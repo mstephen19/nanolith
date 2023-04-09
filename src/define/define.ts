@@ -77,12 +77,9 @@ export async function define<Definitions extends TaskDefinitions>(
         // don't use this set of definitions - they are trying to use a different set.
         if ((workerData as BaseWorkerData).identifier !== identifierToUse) return api;
 
-        // Resolve immediately with the API so it can be accessed. Then run the worker handler on
-        // the event loop, but without awaiting it before resolving with the API.
-        return new Promise((resolve) => {
-            resolve(api);
-            workerHandler(definitions);
-        });
+        // Run the worker handler on the event loop, but
+        // without awaiting it before resolving with the API.
+        workerHandler(definitions);
     }
 
     return api;
