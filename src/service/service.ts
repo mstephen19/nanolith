@@ -152,7 +152,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         this.#assertIsNotTerminated();
 
         const key = v4();
-
         // Increase the current number of active calls
         this.#active++;
 
@@ -184,9 +183,9 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         // child thread.
         this.#worker.postMessage(message, transferList);
 
-        const data = await promise;
-        this.#active--;
-        return data;
+        // Always decrease the active count regardless of whether the promise
+        // rejects or resolves
+        return promise.finally(() => this.#active--);
     }
 
     #addCallbacks({ key, ...rest }: { key: string; resolve: (value: any) => void; reject: (value: any) => void }) {

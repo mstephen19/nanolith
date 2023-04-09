@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `define()` waiting to run the worker before resolving with the Nanolith API object.
 - Missing `workerData.identifier` property in `PoolItemOptions` type.
 - `Service.call()` not cleaning up callbacks.
+- `Service.call()` not decreasing active count upon promise rejection.
 
 ### Added
 
