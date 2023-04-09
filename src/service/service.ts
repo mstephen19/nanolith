@@ -168,7 +168,16 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
             // Add the data to the callbacks map. The promise
             // will be resolved when the corresponding message
             // is received.
-            this.#addCallbacks({ key, resolve, reject });
+            const cleanup = this.#addCallbacks({
+                key,
+                resolve: (data: any) => {
+                    resolve(data);
+                    // Once resolve has been called, remove
+                    // the callbacks from the map.
+                    cleanup();
+                },
+                reject,
+            });
         }) as Promise<CleanReturnType<Definitions[Name]>>;
 
         // Then call the task by posting the message to the
