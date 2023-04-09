@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `Service.close()` not doing early cleanup for callbacks.
 - `Messenger.close()` not doing early cleanup for stream event callbacks.
 - `define()` waiting to run the worker before resolving with the Nanolith API object.
+- Missing `workerData.identifier` property in `PoolItemOptions` type.
 
 ### Added
 
