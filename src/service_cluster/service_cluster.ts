@@ -8,7 +8,7 @@ import type { Nanolith } from '@typing/nanolith.js';
 import type { ServiceWorkerOptions } from '@typing/workers.js';
 import type { TaskDefinitions } from '@typing/definitions.js';
 import type { PositiveWholeNumber } from '@typing/utilities.js';
-import type { ServiceClusterMap, ServiceClusterOptions } from '@typing/service_cluster.js';
+import type { ServiceClusterMap, ServiceClusterMapEntry, ServiceClusterOptions } from '@typing/service_cluster.js';
 
 /**
  * A lightweight API for managing multiple services using the same set
@@ -46,7 +46,10 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * The number of currently active task calls on all services on the cluster.
      */
     get activeServiceCalls() {
-        return [...this.#serviceMap.values()].reduce((acc, curr) => acc + curr.service.activeCalls, 0);
+        let total = 0;
+        this.#serviceMap.forEach(({ service }) => (total += service.activeCalls));
+        return total;
+        // return [...this.#serviceMap.values()].reduce((acc, curr) => acc + curr.service.activeCalls, 0);
     }
 
     /**
@@ -79,7 +82,6 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
     async launch<Count extends number, Options extends ServiceWorkerOptions>(count?: PositiveWholeNumber<Count>, options = {} as Options) {
         // Don't allow more services to be added if it exceeds the pool's `maxConcurrency`
         if (!count || count === 1) return [await this.#launchService(options)];
-
         const promises: Promise<Service<Definitions> | undefined>[] = [];
 
         for (let i = 1; i <= count; i++) {
@@ -159,10 +161,15 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
 
         if (!this.#serviceMap.size) throw new Error('No running services found on this ServiceCluster!');
 
+        const iterator = this.#serviceMap.values();
+
+        // Don't bother iterating the whole way through if there's just one service
+        if (this.#serviceMap.size === 1) {
+            return (iterator.next().value as ServiceClusterMapEntry<Definitions>).service;
+        }
+
         // Default behavior - find the least active service.
-        const values = [...this.#serviceMap.values()];
-        // Don't bother looping at all if there's just one service running on the cluster
-        if (values.length === 1) return values[0].service;
+        const values = [...iterator];
 
         // Retrieve and return the least busy service in the map
         return values.reduce((acc, curr) => {
@@ -193,7 +200,8 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * Close all active services on the cluster.
      */
     closeAll() {
-        const promises = [...this.#serviceMap.values()].map(({ service }) => service.close());
+        const promises: Promise<void>[] = [];
+        this.#serviceMap.forEach(({ service }) => promises.push(service.close()));
         return Promise.all(promises);
     }
 
@@ -201,10 +209,10 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * Close all service instances on the cluster that are currently doing nothing (not running any tasks).
      */
     closeAllIdle() {
-        const promises = [...this.#serviceMap.values()].reduce((acc, { service }) => {
-            if (service.activeCalls <= 0) acc.push(service.close());
-            return acc;
-        }, [] as Promise<void>[]);
+        const promises: Promise<void>[] = [];
+        this.#serviceMap.forEach(({ service }) => {
+            if (service.activeCalls <= 0) promises.push(service.close());
+        });
 
         return Promise.all(promises);
     }

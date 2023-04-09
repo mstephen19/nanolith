@@ -11,6 +11,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - Not calling `getDefaultPoolConcurrency` in README example.
+- Improved performance for `ServiceCluster` methods `closeAll()`, `closeAllIdle()`, `use()`, and `activeServiceCalls()`.
+- `Service.close()` not doing early cleanup for callbacks.
+- `Messenger.close()` not doing early cleanup for stream event callbacks.
+
+### Added
+
+- New tests for `ServiceCluster.use()`.
 
 ## [0.4.4] - 2023-30-3
 

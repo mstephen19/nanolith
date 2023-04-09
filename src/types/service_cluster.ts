@@ -1,13 +1,12 @@
 import type { TaskDefinitions } from '@typing/definitions.js';
 import type { Service } from '@service';
 
-export type ServiceClusterMap<Definitions extends TaskDefinitions> = Map<
-    string,
-    {
-        service: Service<Definitions>;
-        identifier: string;
-    }
->;
+export type ServiceClusterMapEntry<Definitions extends TaskDefinitions> = {
+    service: Service<Definitions>;
+    identifier: string;
+};
+
+export type ServiceClusterMap<Definitions extends TaskDefinitions> = Map<string, ServiceClusterMapEntry<Definitions>>;
 
 export type ServiceClusterOptions = {
     /**

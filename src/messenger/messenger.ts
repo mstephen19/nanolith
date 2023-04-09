@@ -308,6 +308,7 @@ export class Messenger {
         this.#channel.close();
         // Early cleanup
         this.#listenerCallbacks = [];
+        this.#streamEventCallbacks.clear();
     }
 
     /**
