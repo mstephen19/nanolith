@@ -40,6 +40,8 @@ export async function define<Definitions extends TaskDefinitions>(
     // Determine the file of the worker if it was not provided in the options.
     // Use a dynamic import here to
     const file = fileFromOptions ?? getCurrentFile();
+
+    // Regardless of thread, return the API.
     const api = Object.freeze(
         Object.assign(
             async <Name extends CleanKeyOf<Tasks<Definitions>>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
@@ -75,13 +77,12 @@ export async function define<Definitions extends TaskDefinitions>(
         // don't use this set of definitions - they are trying to use a different set.
         if ((workerData as BaseWorkerData).identifier !== identifierToUse) return api;
 
-        // Otherwise, this is the set of definitions that is meant to be used, and the worker
-        // can be handled accordingly.
-        await workerHandler(definitions);
-        // Since we're not running on the main thread, we can safely coerce "undefined" into
-        // our Nanolith API type. Worker handler will always exit the process anyways, so this
-        // is only here to make the TypeScript compiler happy.
-        return api;
+        // Resolve immediately with the API so it can be accessed. Then run the worker handler on
+        // the event loop, but without awaiting it before resolving with the API.
+        return new Promise((resolve) => {
+            resolve(api);
+            workerHandler(definitions);
+        });
     }
 
     return api;

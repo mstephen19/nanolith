@@ -54,6 +54,11 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
                     return resolve(undefined);
                 }
 
+                // ? Why isn't "key" present directly in the the WorkerMessageBody type
+                // ? that is used by services? Is it not present everywhere in runtime?
+                // todo: ^^ Look into this. If it is always going to be present in the
+                // todo: body, then looping through the callbacks won't even be necessary
+                // todo: and they can just be accessed normally with map.get().
                 // If the message is for a call with a different key, also ignore the message.
                 if ((body as WorkerBaseMessageBody & { key: string }).key !== key) return;
 
@@ -95,14 +100,14 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
 
     /**
      * Whether or not the underlying {@link Worker} has exited its process.
-     * This will be `true` after calling `await service.close()`
+     * This will be `true` after calling `await service.close()`.
      */
     get closed() {
         return this.#terminated;
     }
 
     /**
-     * The thread ID of the underlying worker for the `Service` instance.
+     * The thread ID of the underlying worker for the Service` instance.
      */
     get threadID() {
         return this.#worker.threadId;
