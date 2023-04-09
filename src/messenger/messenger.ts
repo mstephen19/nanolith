@@ -131,9 +131,7 @@ export class Messenger {
                     // accept streams on this Messenger instance on the channel, and we should only
                     // accept the "Ready" message type in cases where we are sending a stream.
                     if (
-                        [StreamMessageType.Start, StreamMessageType.Chunk, StreamMessageType.End].includes(
-                            ((body as MessengerStreamMessageBody)?.data as StreamBaseMessageBody)?.type
-                        ) &&
+                        ((body as MessengerStreamMessageBody)?.data as StreamBaseMessageBody)?.type !== StreamMessageType.Ready &&
                         !this.#acceptStreams
                     ) {
                         return;

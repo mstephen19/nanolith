@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Missing `workerData.identifier` property in `PoolItemOptions` type.
 - `Service.call()` not cleaning up callbacks.
 - `Service.call()` not decreasing active count upon promise rejection.
+- Minor performance improvement for `Messenger` with streams.
 
 ### Added
 

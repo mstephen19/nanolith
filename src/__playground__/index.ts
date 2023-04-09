@@ -1,3 +1,13 @@
 import { worker } from './worker.js';
 
-await worker({ name: 'wait', reffed: false, shareEnv: false });
+const service = await worker.launchService();
+
+try {
+    await service.call({ name: 'throw' });
+} catch (error) {}
+
+try {
+    await service.call({ name: 'throw' });
+} catch (error) {}
+
+console.log(service.activeCalls);
