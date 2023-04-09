@@ -150,10 +150,9 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         transferList,
     }: ServiceCallOptions<Name, Parameters<Definitions[Name]>>) {
         this.#assertIsNotTerminated();
-
-        const key = v4();
         // Increase the current number of active calls
         this.#active++;
+        const key = v4();
 
         const message: ParentThreadCallMessageBody = {
             type: ParentThreadMessageType.Call,
