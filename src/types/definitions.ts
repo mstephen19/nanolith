@@ -30,6 +30,8 @@ type AcceptableArray = Acceptable[];
  */
 export type Acceptable = AcceptableValue | AcceptableObject | AcceptableArray;
 
+// todo: Maybe because of TypeScript v5.0, we can try to use const
+// todo: generics again to make strongly typed task functions work.
 /**
  * A function that can be used in the `define` function when defining
  * a collection of tasks.
