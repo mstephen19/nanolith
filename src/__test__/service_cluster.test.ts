@@ -56,6 +56,16 @@ describe('ServiceCluster', () => {
     });
 
     describe('use', () => {
+        it('Should throw an error if there are no active services', () => {
+            expect(() => cluster.use()).toThrowError(new Error('No running services found on this ServiceCluster!'));
+        });
+
+        it('Should return the single service on the cluster if there is only one service', async () => {
+            const service = await clusterTester.launchService();
+            cluster.addService(service);
+            expect(cluster.use()).toEqual(service);
+        });
+
         it('Should choose the least active service', async () => {
             await cluster.launch(2);
 

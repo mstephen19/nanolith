@@ -42,6 +42,7 @@ export type PoolItemConfig<Type extends WorkerType = WorkerType> = {
  */
 export type PoolItemOptions = {
     workerData: {
+        identifier: string;
         type: WorkerType;
         name?: string;
         params?: any[];

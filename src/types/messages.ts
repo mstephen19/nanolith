@@ -18,8 +18,6 @@ export type ParentThreadCallMessageBody = {
     params: any[];
 } & ParentThreadBaseMessageBody<ParentThreadMessageType.Call>;
 
-export type ParentThreadTerminateMessageBody = { code: ExitCode } & ParentThreadBaseMessageBody<ParentThreadMessageType.Terminate>;
-
 export type ParentThreadMessengerTransferBody = {
     data: MessengerRawData;
 } & ParentThreadBaseMessageBody<ParentThreadMessageType.MessengerTransfer>;

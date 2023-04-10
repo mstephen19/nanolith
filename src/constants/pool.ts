@@ -38,7 +38,7 @@ export enum ConcurrencyOption {
 }
 
 /**
- * The set values to be used when multiplying the number of
+ * Set values to be used when multiplying the number of
  * CPUs on the machine to generate a pool concurrency value.
  */
 export const concurrencyOptionMultipliers = {
@@ -46,7 +46,7 @@ export const concurrencyOptionMultipliers = {
     [ConcurrencyOption.Half]: 0.5,
     [ConcurrencyOption.x1]: 1,
     [ConcurrencyOption.Default]: 2,
-    [ConcurrencyOption.x2]: 2,
+    // [ConcurrencyOption.x2]: 2,
     [ConcurrencyOption.x4]: 4,
     [ConcurrencyOption.x6]: 6,
     [ConcurrencyOption.x8]: 8,

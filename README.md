@@ -8,18 +8,18 @@
     <img src="https://user-images.githubusercontent.com/87805115/217611158-14822948-f312-4fb6-af0e-83d534ce854f.png" width="550">
 </center>
 
-> _(More intuitive and feature-rich than [Piscina](https://www.npmjs.com/package/piscina)!)_
+> _More intuitive and feature-rich than [Piscina](https://www.npmjs.com/package/piscina)!_
 
 ## ❔ About
 
-✨**Nanolith**✨ is a scalable, reliable, easy-to-use, and well-documented multithreading library that allows you to easily vertically scale your Node.js applications. It serves to not only build upon, but entirely replace the _(deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
+✨**Nanolith**✨ is a scalable, reliable, easy-to-use, and well-documented multithreading library that allows you to easily vertically scale your Node.js applications. Based on [worker_threads](https://nodejs.org/api/worker_threads.html), it serves to not only build upon, but entirely replace the _(deprecated)_ [Threadz](https://github.com/mstephen19/threadz) library.
 
 There have always been a few main goals for Nanolith:
 
 1. Performance & scalability 🏃
 2. Ease-of-use 😇
 3. Seamless TypeScript support 😎
-4. Modern [ESModules](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/)-only support 📈
+4. Modern [ESModules](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/) support 📈
 5. Steady updates with new features & fixes 🚀
 
 ### So what can you do with it?
@@ -27,10 +27,10 @@ There have always been a few main goals for Nanolith:
 Here's a quick rundown of everything you can do in Nanolith:
 
 - Offload expensive tasks to separate threads.
-- Spawn up separate-threaded "nanoservices" that can run any tasks you want.
-- Communicate back and forth between threads by sending messages.
+- Spawn separate-threaded "nanoservices" that can run any tasks you want.
+- Communicate back and forth between threads through events.
 - Stream data between threads with the already familiar [`node:stream`](https://nodejs.org/api/stream.html) API.
-- Share memory between threads using the familiar-feeling [`SharedMap`](#-sharing-memory-between-threads) class.
+- Share memory between threads using the familiar-feeling [`SharedMap`](#-sharing-memory-between-threads).
 
 ## 📖 Table of contents
 
@@ -140,7 +140,7 @@ console.log(result); // -> 5
 
 The new thread's process is shut down after the task finishes.
 
-> **📝 Note:** Notice that even with the synchronous `add()` function, it is now asynchronous when being multithreaded.
+> **📝 Note:** Notice that even with the synchronous `add()` function, it is now asynchronous when being run on a child thread.
 
 ### Task function options
 
@@ -158,7 +158,7 @@ The new thread's process is shut down after the task finishes.
 
 ## 🎩 Understanding services
 
-**Services** are Nanolith's flagship feature. Running a task on a service works similarly to [running a task](#-running-a-task) normally; however, the key difference is that the thread only shuts down when you tell it to. This means that you can run multiple tasks on the same thread rather than spawning up a new one for each call.
+**Services** are Nanolith's flagship feature. Running a task on a service works similarly to [running a task](#-running-a-task) normally; however, the key difference is that the thread only shuts down when you tell it to. This means that you can run multiple tasks on the same thread rather than spawning up a new one for each call, which is where the real benefits of multithreading in Node.js can be seen.
 
 Considering the definitions we created [here](#-defining-your-tasks), here is how a service would be launched and a task would be called on it.
 
@@ -222,7 +222,7 @@ Along with `.call()`, `Service` offers many other properties and methods:
 
 ## 🎬 Coordinating services
 
-In a scalable application utilizing multiple identical [services](#launchservice-options), it is possible to optimize them by treating the main/parent thread as an orchestrator and managing the workloads on each service. Nanolith's `ServiceCluster` automatically does this for you.
+In a scalable application utilizing multiple identical [services](#launchservice-options), it is possible to optimize them by treating the parent thread as an orchestrator and managing the workloads on each service. Nanolith's `ServiceCluster` automatically does this for you.
 
 ```TypeScript
 // 💡 index.ts
@@ -240,7 +240,7 @@ const cluster = await worker.clusterize(6, {
     priority: true;
 });
 
-// Use the least busy service on the cluster.
+// Find the least busy service on the cluster.
 // This is the service that is currently running
 // the least amount of task calls.
 const service = cluster.use();
@@ -256,6 +256,8 @@ console.log(result);
 // Close all services on the cluster.
 await cluster.closeAll();
 ```
+
+> **Note:** Service clusters can be treated like a sort of task queue, as all services are managed by the [pool](#-managing-concurrency), and all task calls are managed by the cluster itself.
 
 For simplicity of the above example, we are only running a single task. However, `ServiceCluster` can be used to run a large amount of heavy operations in true parallel on multiple services.
 
@@ -292,14 +294,14 @@ export const worker = await define({
     __initializeService(threadId) {
         console.log(`Initializing service on thread: ${threadId}`);
     },
-    // Runs before a task is called.
+    // Runs before any task is called.
     __beforeTask({ name, inService }) {
         console.log(`Running task ${name}.`);
         // You have access to "inService", which tells you if the
         // task will run standalone, or within a service.
         console.log(`${inService ? 'Is' : 'Is not'} in a service.`);
     },
-    // Runs after a task is called.
+    // Runs after any task is called.
     __afterTask({ name, inService }) {
         console.log(`Finished task ${name}`);
     },
@@ -344,7 +346,7 @@ Access to the pool's default concurrency for the current machine's resources can
 ```typescript
 import { getDefaultPoolConcurrency } from 'nanolith';
 
-console.log(getDefaultPoolConcurrency)
+console.log(getDefaultPoolConcurrency());
 ```
 
 ### `pool` properties & methods
@@ -370,7 +372,7 @@ There are two ways of communicating between threads in Nanolith.
 
 When using [services](#-understanding-services), you are automatically able to communicate between the service and main (or a parent) thread with no extra work.
 
-The [`__initializeService()` hook](#-hooks) can be used to register listeners on the `ParentThread`:
+The [`__initializeService()` hook](#-hooks) can be used as a place to register listeners on the `ParentThread`:
 
 ```TypeScript
 // worker.ts 💼

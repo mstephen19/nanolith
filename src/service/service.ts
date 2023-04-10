@@ -54,6 +54,11 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
                     return resolve(undefined);
                 }
 
+                // ? Why isn't "key" present directly in the the WorkerMessageBody type
+                // ? that is used by services? Is it not present everywhere in runtime?
+                // todo: ^^ Look into this. If it is always going to be present in the
+                // todo: body, then looping through the callbacks won't even be necessary
+                // todo: and they can just be accessed normally with map.get().
                 // If the message is for a call with a different key, also ignore the message.
                 if ((body as WorkerBaseMessageBody & { key: string }).key !== key) return;
 
@@ -95,14 +100,14 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
 
     /**
      * Whether or not the underlying {@link Worker} has exited its process.
-     * This will be `true` after calling `await service.close()`
+     * This will be `true` after calling `await service.close()`.
      */
     get closed() {
         return this.#terminated;
     }
 
     /**
-     * The thread ID of the underlying worker for the `Service` instance.
+     * The thread ID of the underlying worker for the Service` instance.
      */
     get threadID() {
         return this.#worker.threadId;
@@ -145,11 +150,9 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
         transferList,
     }: ServiceCallOptions<Name, Parameters<Definitions[Name]>>) {
         this.#assertIsNotTerminated();
-
-        const key = v4();
-
         // Increase the current number of active calls
         this.#active++;
+        const key = v4();
 
         const message: ParentThreadCallMessageBody = {
             type: ParentThreadMessageType.Call,
@@ -163,16 +166,25 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
             // Add the data to the callbacks map. The promise
             // will be resolved when the corresponding message
             // is received.
-            this.#addCallbacks({ key, resolve, reject });
+            const cleanup = this.#addCallbacks({
+                key,
+                resolve: (data: any) => {
+                    resolve(data);
+                    // Once resolve has been called, remove
+                    // the callbacks from the map.
+                    cleanup();
+                },
+                reject,
+            });
         }) as Promise<CleanReturnType<Definitions[Name]>>;
 
         // Then call the task by posting the message to the
         // child thread.
         this.#worker.postMessage(message, transferList);
 
-        const data = await promise;
-        this.#active--;
-        return data;
+        // Always decrease the active count regardless of whether the promise
+        // rejects or resolves
+        return promise.finally(() => this.#active--);
     }
 
     #addCallbacks({ key, ...rest }: { key: string; resolve: (value: any) => void; reject: (value: any) => void }) {
@@ -196,17 +208,8 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      */
     async close(code?: ExitCode) {
         this.#terminated = true;
-        // const promise = new Promise((resolve) => {
-        //     this.#worker.once('exit', resolve);
-        // }) as Promise<ExitCode>;
-
-        // const body: ParentThreadTerminateMessageBody = {
-        //     type: ParentThreadMessageType.Terminate,
-        //     code: code ?? WorkerExitCode.Ok,
-        // };
-
-        // return promise;
         this.#worker.emit('exit', code ?? WorkerExitCode.Ok);
+        this.#callbacks.clear();
         return void (await this.#worker.terminate());
     }
 
