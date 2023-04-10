@@ -18,9 +18,6 @@ export type ParentThreadCallMessageBody = {
     params: any[];
 } & ParentThreadBaseMessageBody<ParentThreadMessageType.Call>;
 
-// todo: Can this type be safely removed?
-export type ParentThreadTerminateMessageBody = { code: ExitCode } & ParentThreadBaseMessageBody<ParentThreadMessageType.Terminate>;
-
 export type ParentThreadMessengerTransferBody = {
     data: MessengerRawData;
 } & ParentThreadBaseMessageBody<ParentThreadMessageType.MessengerTransfer>;

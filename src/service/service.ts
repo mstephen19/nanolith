@@ -208,19 +208,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      */
     async close(code?: ExitCode) {
         this.#terminated = true;
-        // ! This was the old implementation. Telling the worker to exit,
-        // ! then waiting for it to exit. This is pretty much what worker.terminate
-        // ! already does, so this custom implementation is useless.
-        // const promise = new Promise((resolve) => {
-        //     this.#worker.once('exit', resolve);
-        // }) as Promise<ExitCode>;
-
-        // const body: ParentThreadTerminateMessageBody = {
-        //     type: ParentThreadMessageType.Terminate,
-        //     code: code ?? WorkerExitCode.Ok,
-        // };
-
-        // return promise;
         this.#worker.emit('exit', code ?? WorkerExitCode.Ok);
         this.#callbacks.clear();
         return void (await this.#worker.terminate());

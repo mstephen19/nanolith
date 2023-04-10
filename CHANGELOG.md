@@ -24,6 +24,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - New tests for `ServiceCluster.use()`.
 
+### Removed
+
+- `ParentThreadTerminateMessageBody` type eliminated.
+
 ## [0.4.4] - 2023-30-3
 
 ### Changed

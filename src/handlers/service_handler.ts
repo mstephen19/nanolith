@@ -2,7 +2,6 @@ import { parentPort, workerData, threadId } from 'worker_threads';
 import { ParentThreadMessageType, WorkerMessageType } from '@constants/messages.js';
 import { applyMessengerTransferObjects } from './utilities.js';
 import { Messenger } from '@messenger';
-import { WorkerExitCode } from '@constants/workers.js';
 
 import type { TaskDefinitions } from '@typing/definitions.js';
 import type {
@@ -14,7 +13,6 @@ import type {
     WorkerMessengerTransferSuccessBody,
     WorkerExceptionMessageBody,
     WorkerInitializedMessageBody,
-    ParentThreadTerminateMessageBody,
     WorkerExitMessageBody,
 } from '@typing/messages.js';
 import type { ServiceWorkerData } from '@typing/worker_data.js';
@@ -45,13 +43,6 @@ export async function serviceWorkerHandler<Definitions extends TaskDefinitions>(
     parentPort!.on('message', async (body: ParentThreadBaseMessageBody) => {
         try {
             switch (body?.type) {
-                // Exit the worker's process when the terminate message is sent
-                case ParentThreadMessageType.Terminate: {
-                    const { code } = body as ParentThreadTerminateMessageBody;
-
-                    process.exit(code ?? WorkerExitCode.Ok);
-                    break;
-                }
                 // Handle calling a task within a service worker with message passing
                 case ParentThreadMessageType.Call: {
                     const { name, params, key } = body as ParentThreadCallMessageBody;
