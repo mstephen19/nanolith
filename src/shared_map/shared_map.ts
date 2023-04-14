@@ -187,6 +187,9 @@ export class SharedMap<Data extends Record<string, any>> {
         return match;
     }
 
+    /**
+     * Retrieve a value from the values array via a KeyData object.
+     */
     #getFromKeyData({ start, end }: KeyData) {
         if (start === undefined || end === undefined) throw new Error('Failed to parse key');
 
@@ -206,12 +209,10 @@ export class SharedMap<Data extends Record<string, any>> {
     }
 
     #isNull(data: Uint8Array) {
+        // If the data is not null length, it can't be null
         if (data.length !== NULL_ENCODED.length) return false;
-
-        for (let i = 0; i < NULL_ENCODED.length; i++) {
-            if (NULL_ENCODED[i] !== data[i]) return false;
-        }
-
+        // If the data doesn't exactly match null, it can't be null
+        if (NULL_ENCODED.some((val, i) => val !== data[i])) return false;
         return true;
     }
 
@@ -271,7 +272,6 @@ export class SharedMap<Data extends Record<string, any>> {
         // If we aren't modifying the final value, rewrite the old data to the new offset so
         // it's not nastily overwritten
         if (previousValueEnd !== +finalPosition) {
-            // ? Potentially use .subarray here instead?
             const slice = this.#values.subarray(previousValueEnd + 1, +finalPosition + 1);
             this.#values.set(slice, valueEnd);
         }
