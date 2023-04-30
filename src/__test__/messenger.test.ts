@@ -103,6 +103,8 @@ describe('Messenger', () => {
             await service1.close();
             await service2.close();
         });
+
+        // todo: Add test for waitForMessage
     });
 
     describe('MessengerList', () => {

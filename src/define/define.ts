@@ -32,11 +32,13 @@ import type { ServiceClusterOptions } from '@typing/service_cluster.js';
  */
 export async function define<Definitions extends TaskDefinitions>(
     definitions: Definitions,
-    { identifier, file: fileFromOptions, safeMode = true }: DefineOptions = {}
+    {
+        // If a custom identifier was provided, use that. Otherwise, use the auto-generated one.
+        identifier = getAutoIdentifier(definitions),
+        file: fileFromOptions,
+        safeMode = true,
+    }: DefineOptions = {}
 ): Promise<Nanolith<Definitions>> {
-    // If a custom identifier was provided, use that. Otherwise, use the auto-generated one.
-    const identifierToUse = identifier || getAutoIdentifier(definitions);
-
     // Determine the file of the worker if it was not provided in the options.
     // Use a dynamic import here to
     const file = fileFromOptions ?? getCurrentFile();
@@ -46,12 +48,12 @@ export async function define<Definitions extends TaskDefinitions>(
         Object.assign(
             async <Name extends CleanKeyOf<Tasks<Definitions>>>(options: TaskWorkerOptions<Name, Parameters<Definitions[Name]>>) => {
                 if (safeMode) assertCurrentFileNotEqual(file);
-                return runTaskWorker(file, identifierToUse, options as TaskWorkerOptions) as Promise<CleanReturnType<Definitions[Name]>>;
+                return runTaskWorker(file, identifier, options as TaskWorkerOptions) as Promise<CleanReturnType<Definitions[Name]>>;
             },
             {
                 launchService: Object.freeze(async <Options extends ServiceWorkerOptions>(options = {} as Options) => {
                     if (safeMode) assertCurrentFileNotEqual(file);
-                    return runServiceWorker<Definitions, Options>(file, identifierToUse, options);
+                    return runServiceWorker<Definitions, Options>(file, identifier, options);
                 }),
                 clusterize: Object.freeze(async function <Count extends number, Options extends ServiceWorkerOptions>(
                     this: Nanolith<Definitions>,
@@ -64,19 +66,18 @@ export async function define<Definitions extends TaskDefinitions>(
                     return cluster;
                 }),
                 file,
-                identifier: identifierToUse,
+                identifier,
             }
         )
     ) satisfies Nanolith<Definitions>;
 
     // If we are not on the main thread, run the worker.
-    if (!isMainThread) {
-        // If the identifier in the workerData is not equal to the identifier provided
-        // in the options of the "define" function, return out immediately.
-        // If the identifier for the call is not equal to the one passed into this set of definitions,
-        // don't use this set of definitions - they are trying to use a different set.
-        if ((workerData as BaseWorkerData).identifier !== identifierToUse) return api;
-
+    // and
+    // If the identifier in the workerData is not equal to the identifier provided
+    // in the options of the "define" function, return out immediately.
+    // If the identifier for the call is not equal to the one passed into this set of definitions,
+    // don't use this set of definitions - they are trying to use a different set.
+    if (!isMainThread && (workerData as BaseWorkerData).identifier === identifier) {
         // Run the worker handler on the event loop, but
         // without awaiting it before resolving with the API.
         workerHandler(definitions);

@@ -8,6 +8,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.4.6] - 2023-30-4
+
+### Changed
+
+- Updated concurrency multipliers to exclude `ConcurrencyOption.Default`.
+- Refactored `SharedMap.#isNull()`.
+- The `taskHandler` used within `Service` to avoid unnecessary looping. Minor performance improvement.
+- `ServiceCluster.use()` implementation to be more logical and performant.
+- Minor refactors for `define()`.
+- Minor refactors for `Pool`.
+
+### Added
+
+- Extra test for `autoRenew` option on `ServiceCluster`.
+- Tests for `__beforeTask` and `__afterTask` hooks with services & task workers.
+
+### Fixed
+
+- Incorrect timeout error for creating writable streams.
+- `ParentThread` in-editor docs.
+
+### Removed
+
+- Unnecessary `threadID` getter on `Service`. Can just do `Service.worker.threadId`.
+
+## [0.4.5] - 2023-09-4
+
 ### Fixed
 
 - Not calling `getDefaultPoolConcurrency` in README example.

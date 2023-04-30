@@ -46,35 +46,34 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
 
         // Only attach one listener onto the worker instead of attaching a listener for each task called.
         const taskHandler = (body: WorkerBaseMessageBody) => {
-            this.#callbacks.forEach(({ resolve, reject }, key) => {
-                // Handle early exits
-                if (body.type === WorkerMessageType.Exit) {
+            // Handle early exits. If there's an early exit, then
+            // any active callers should be notified.
+            if (body.type === WorkerMessageType.Exit) {
+                return this.#callbacks.forEach(({ resolve, reject }) => {
                     const { code } = body as WorkerExitMessageBody;
                     if (code !== 0) return reject(new Error(`Worker exited early with code ${code}!`));
                     return resolve(undefined);
-                }
+                });
+            }
 
-                // ? Why isn't "key" present directly in the the WorkerMessageBody type
-                // ? that is used by services? Is it not present everywhere in runtime?
-                // todo: ^^ Look into this. If it is always going to be present in the
-                // todo: body, then looping through the callbacks won't even be necessary
-                // todo: and they can just be accessed normally with map.get().
-                // If the message is for a call with a different key, also ignore the message.
-                if ((body as WorkerBaseMessageBody & { key: string }).key !== key) return;
+            // Otherwise, use the set of callbacks associated with
+            // the specified caller key.
+            const key = (body as WorkerBaseMessageBody & { key: string }).key;
+            if (!key) return;
+            const { resolve, reject } = this.#callbacks.get(key)!;
 
-                switch (body.type) {
-                    case WorkerMessageType.CallReturn: {
-                        resolve((body as WorkerCallReturnMessageBody).data);
-                        break;
-                    }
-                    case WorkerMessageType.CallError: {
-                        reject((body as WorkerCallErrorMessageBody).data);
-                        break;
-                    }
-                    default:
-                        return;
+            switch (body.type) {
+                case WorkerMessageType.CallReturn: {
+                    resolve((body as WorkerCallReturnMessageBody).data);
+                    break;
                 }
-            });
+                case WorkerMessageType.CallError: {
+                    reject((body as WorkerCallErrorMessageBody).data);
+                    break;
+                }
+                default:
+                    return;
+            }
         };
 
         this.#worker.on('message', taskHandler);
@@ -104,13 +103,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      */
     get closed() {
         return this.#terminated;
-    }
-
-    /**
-     * The thread ID of the underlying worker for the Service` instance.
-     */
-    get threadID() {
-        return this.#worker.threadId;
     }
 
     /**
@@ -252,7 +244,7 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
      *
      * @param callback The callback to run once the stream has been initialized and is ready to consume.
      */
-    onStream(callback: OnStreamCallback<typeof this['worker']>) {
+    onStream(callback: OnStreamCallback<(typeof this)['worker']>) {
         this.#assertIsNotTerminated();
 
         return listenForStream(this.#worker, callback);

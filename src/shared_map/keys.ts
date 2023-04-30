@@ -4,7 +4,7 @@ export const createKey = ({ name, start, end }: KeyData): Key => `${name}(${star
 
 export const parseKey = (key: Key): KeyData => {
     const [start, end] = key.match(/(?<=\()\d+|\d+(?=\))/g)!;
-    const name = key.match(/.*(?=\(\d+,\d+\);)/)![0];
+    const [name] = key.match(/.*(?=\(\d+,\d+\);)/)!;
 
     return {
         name,

@@ -17,8 +17,6 @@ export const lockMutexSync = (mutex: Mutex): void => {
     }
     // Otherwise, wait for the status to be changed to something other than
     // locked.
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     Atomics.wait(mutex, 0, LockStatus.Locked, Infinity);
     lockMutexSync(mutex);
 };
