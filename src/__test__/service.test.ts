@@ -39,6 +39,8 @@ describe('Service', () => {
         expect(callback).toReturnWith('message received');
     });
 
+    // todo: Add test for waitForMessage
+
     describe('call', () => {
         it("Should return a promise resolving with the definition's return value", async () => {
             const promise = service.call({
