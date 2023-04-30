@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - **How easy is scalable multithreading with Nanolith?** portion to README.
 
+### Fixed
+
+- `SharedMap.entries()` not using mutex.
+
 ## [0.4.6] - 2023-30-4
 
 ### Changed
