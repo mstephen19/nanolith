@@ -36,14 +36,9 @@ export const definitions = {
 
 export const api = await define(definitions);
 
-export const api2 = await define(
-    {
-        hello: () => 'hello',
-    },
-    {
-        identifier: '1234',
-    }
-);
+export const api2 = await define({
+    hello: () => 'hello',
+});
 
 export const dummy = await define({}, { file: 'foo', identifier: 'foo' });
 
@@ -107,17 +102,14 @@ export const testServiceInitializer = await define({
     },
 });
 
-export const hookTester = await define(
-    {
-        __beforeTask() {
-            process.exit(1);
-        },
-        add() {
-            return 1 + 1;
-        },
+export const hookTester = await define({
+    __beforeTask() {
+        process.exit(1);
     },
-    { identifier: 'hook-tester-123' }
-);
+    add() {
+        return 1 + 1;
+    },
+});
 
 export const streamDefinitions = {
     receiveStream() {
@@ -167,5 +159,21 @@ export const sharedMapTester = await define({
         for (let i = 1; i <= 1e3; i++) {
             await map.set('count', (prev) => +prev + 1);
         }
+    },
+});
+
+export const taskHookTester = await define({
+    async __beforeTask() {
+        const m = await MessengerList.use('receiver');
+        console.log(m);
+        m.sendMessage('before');
+    },
+    async __afterTask() {
+        const m = await MessengerList.use('receiver');
+        console.log(m);
+        m.sendMessage('after');
+    },
+    foo() {
+        return 'bar';
     },
 });

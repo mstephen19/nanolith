@@ -1,17 +1,11 @@
+import { Messenger } from '@messenger';
 import { worker } from './worker.js';
 
-const service = await worker.launchService();
+const receiver = new Messenger('receiver');
 
-try {
-    await service.call({ name: 'exit' });
-} catch (err) {
-    console.log('caught', err);
-}
+const p = receiver.waitForMessage<string>((msg) => {
+    return msg === 'before';
+});
 
-try {
-    await service.call({ name: 'exit' });
-} catch (err) {
-    console.log('caught', err);
-}
-
-console.log(service.activeCalls);
+await worker({ name: 'foo', messengers: [receiver] });
+await p;

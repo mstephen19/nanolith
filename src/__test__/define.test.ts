@@ -1,8 +1,11 @@
+import { jest } from '@jest/globals';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { define } from 'nanolith';
+import { Messenger, define } from 'nanolith';
 import { Service } from '../service/index.js';
-import { api2, api, dummy, hookTester, exitTester } from './worker.js';
+import { api2, api, dummy, hookTester, exitTester, taskHookTester } from './worker.js';
+
+jest.setTimeout(25e3);
 
 describe('define', () => {
     it('Should contain the anticipated properties', () => {
@@ -11,8 +14,14 @@ describe('define', () => {
         expect(api).toHaveProperty('file');
         expect(typeof api.file).toBe('string');
 
+        expect(api).toHaveProperty('identifier');
+        expect(typeof api.file).toBe('string');
+
         expect(api).toHaveProperty('launchService');
         expect(typeof api.launchService).toBe('function');
+
+        expect(api).toHaveProperty('clusterize');
+        expect(typeof api.clusterize).toBe('function');
     });
 
     it('Should not not clash with other sets of definitions when assigned a unique identifier', async () => {
@@ -75,10 +84,27 @@ describe('define', () => {
         });
     });
 
-    // todo: Test hooks for tasks
-    // describe('Hooks', () => {
-    //     describe('__beforeTask', () => {
-    //         it('Should run before a task is run', ())
-    //     });
-    // });
+    describe('Hooks', () => {
+        describe('__beforeTask', () => {
+            it('Should run before a task is run', async () => {
+                const m = new Messenger('receiver');
+
+                const p = m.waitForMessage<string>((data) => data === 'before');
+                await taskHookTester({ name: 'foo', messengers: [m] });
+
+                expect(p).resolves.toBe('before');
+            });
+        });
+
+        describe('__afterTask', () => {
+            it('Should run before a task is run', async () => {
+                const m = new Messenger('receiver');
+
+                const p = m.waitForMessage<string>((data) => data === 'after');
+                await taskHookTester({ name: 'foo', messengers: [m] });
+
+                expect(p).resolves.toBe('after');
+            });
+        });
+    });
 });

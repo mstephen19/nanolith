@@ -1,4 +1,4 @@
-import { define } from 'nanolith';
+import { MessengerList, define } from 'nanolith';
 
 export const worker = await define({
     async throw() {
@@ -6,5 +6,18 @@ export const worker = await define({
     },
     exit() {
         process.exit(1);
+    },
+    async __beforeTask() {
+        const m = await MessengerList.use('receiver');
+        console.log(m);
+        m.sendMessage('before');
+    },
+    async __afterTask() {
+        const m = await MessengerList.use('receiver');
+        console.log(m);
+        m.sendMessage('after');
+    },
+    foo() {
+        return 'bar';
     },
 });
