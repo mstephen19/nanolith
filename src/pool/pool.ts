@@ -2,9 +2,7 @@ import { Worker, SHARE_ENV } from 'worker_threads';
 import { generateConcurrencyValue, getConcurrencyCounter, getActiveCounter } from './utilities.js';
 import { ConcurrencyOption } from '@constants/pool.js';
 import { PoolItem } from './pool_item.js';
-import { getCount, incr, decr, getValue, setValue } from '@utilities';
-
-import type { PoolData } from '@typing/pool.js';
+import { SharedCounter, SharedU32Integer } from '@utilities';
 
 /**
  * This is the big boy that manages all Nanolith workers 💪
@@ -23,14 +21,14 @@ class Pool {
      * on the machine being used. Can be changed with the `pool.setConcurrency` function
      */
     get maxConcurrency() {
-        return getValue(this.#concurrency);
+        return SharedU32Integer.getValue(this.#concurrency);
     }
 
     /**
      * Whether or not the pool has currently reached its max concurrency.
      */
     get maxed() {
-        return getCount(this.#active) >= getValue(this.#concurrency);
+        return SharedCounter.getCount(this.#active) >= SharedU32Integer.getValue(this.#concurrency);
     }
 
     /**
@@ -44,14 +42,14 @@ class Pool {
      * The current number of workers that are running under the pool.
      */
     get activeCount() {
-        return getCount(this.#active);
+        return SharedCounter.getCount(this.#active);
     }
 
     /**
      * A `boolean` indicating whether or not the pool is currently doing nothing.
      */
     get idle() {
-        return !getCount(this.#active);
+        return !SharedCounter.getCount(this.#active);
     }
 
     /**
@@ -72,7 +70,7 @@ class Pool {
     setConcurrency<Option extends ConcurrencyOption>(option: Option) {
         if (!Object.values(ConcurrencyOption).includes(option)) throw new Error(`${option} is not a valid and safe ConcurrencyOption!`);
 
-        setValue(this.#concurrency, () => generateConcurrencyValue(option));
+        SharedU32Integer.setValue(this.#concurrency, () => generateConcurrencyValue(option));
     }
 
     /**
@@ -101,7 +99,7 @@ class Pool {
         // has a length of zero, do nothing.
         if (this.maxed || !this.#queue.length) return;
 
-        incr(this.#active);
+        SharedCounter.incr(this.#active);
 
         const item = this.#queue.shift()!;
         const { file, workerData, options, reffed, shareEnv } = item.options;
@@ -113,9 +111,9 @@ class Pool {
                 pool: {
                     active: this.#active,
                     concurrency: this.#concurrency,
-                } satisfies PoolData,
+                },
             },
-            ...(shareEnv ? { env: SHARE_ENV } : undefined),
+            env: shareEnv ? SHARE_ENV : undefined,
         });
 
         // If the worker should be reffed according to the config options,
@@ -127,7 +125,7 @@ class Pool {
         item.emit('created', worker);
 
         worker.once('exit', () => {
-            decr(this.#active);
+            SharedCounter.decr(this.#active);
             this.#next();
         });
     }

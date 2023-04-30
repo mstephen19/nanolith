@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - The `taskHandler` used within `Service` to avoid unnecessary looping. Minor performance improvement.
 - `ServiceCluster.use()` implementation to be more logical and performant.
 - Minor refactors for `define()`.
+- Minor refactors for `Pool`.
 
 ### Added
 
