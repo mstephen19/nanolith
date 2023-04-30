@@ -17,10 +17,41 @@
 There have always been a few main goals for Nanolith:
 
 1. Performance & scalability 🏃
-2. Ease-of-use 😇
+2. Ease-of-use with great in-editor docs 😇
 3. Seamless TypeScript support 😎
-4. Modern [ESModules](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/) support 📈
-5. Steady updates with new features & fixes 🚀
+4. Tested and battle-ready. Always 🧪
+5. Modern [ESModules](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/) support 📈
+6. Steady updates with new features & fixes 🚀
+
+### How easy is scalable multithreading with Nanolith?
+
+This easy:
+
+```TypeScript
+// worker.ts
+import { define } from 'nanolith';
+
+export const worker = await define({
+    yourTask() {},
+});
+
+// index.ts
+import { pool } from 'nanolith';
+import { worker } from './worker.js';
+
+// Spawn multiple concurrent threads
+const cluster = await worker.clusterize(pool.maxConcurrency, {
+    autoRenew: true,
+    exceptionHandler({ error, terminate }) {
+        //
+    }
+});
+
+// Run your task on one of the threads
+await cluster.use().call({ name: 'yourTask' });
+```
+
+Nanolith cuts out the need to manually manage concurrency. Additionally, handling errors, managing nested threads, message-passing, and more are all intuitive.
 
 ### So what can you do with it?
 
