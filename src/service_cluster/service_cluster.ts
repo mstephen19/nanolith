@@ -141,7 +141,7 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
      * @returns The {@link Service} instance on the cluster that has the specified identifier. If
      * a service with the identifier is not found, the default behavior will be used.
      */
-    use(identifier: string): Service<Definitions>;
+    use(identifier: string): Service<Definitions> | undefined;
     /**
      * @returns The {@link Service} instance on the cluster that is currently the least active.
      * If no services are active, an error will be thrown.
@@ -162,20 +162,23 @@ export class ServiceCluster<Definitions extends TaskDefinitions> {
         if (!this.#serviceMap.size) throw new Error('No running services found on this ServiceCluster!');
 
         const iterator = this.#serviceMap.values();
+        let result = (iterator.next().value as ServiceClusterMapEntry<Definitions>).service;
 
-        // Don't bother iterating the whole way through if there's just one service
-        if (this.#serviceMap.size === 1) {
-            return (iterator.next().value as ServiceClusterMapEntry<Definitions>).service;
+        // Don't bother iterating the whole way through if there's just one service,
+        // or if the first service in the ServiceMap is currently inactive.
+        if (this.#serviceMap.size === 1 || result.activeCalls === 0) return result;
+
+        for (const { service } of iterator) {
+            // If the iterated service's active calls is zero, stop
+            // looping and return that one immediately.
+            if (service.activeCalls === 0) return service;
+            // Ignore any services that have a greater number of active
+            // calls than the currently selected one.
+            if (result.activeCalls < service.activeCalls) continue;
+            result = service;
         }
 
-        // Default behavior - find the least active service.
-        const values = [...iterator];
-
-        // Retrieve and return the least busy service in the map
-        return values.reduce((acc, curr) => {
-            if (curr.service.activeCalls < acc.service.activeCalls) return curr;
-            return acc;
-        }, values[0]).service;
+        return result;
     }
 
     /**
