@@ -9,7 +9,7 @@ export type SharedUint32 = {
     lock: Mutex;
 };
 
-export const createSharedUint32 = (): SharedUint32 => {
+export const create = (): SharedUint32 => {
     return {
         lock: createMutex(),
         value: new Uint32Array(new SharedArrayBuffer(4)),

@@ -7,7 +7,7 @@ import type { Messagable, StreamReadyMessageBody, StreamStartMessageBody } from 
 /**
  * Ensure the other thread is ready to start receiving data before resolving with a Writable stream.
  */
-export function prepareWritableToPortStream<Target extends Messagable>(target: Target, metaData: Record<any, any>, timeoutSecs = 15e3) {
+export function prepareWritableToPortStream<Target extends Messagable>(target: Target, metaData: Record<any, any>, timeoutMs = 15e3) {
     const id = v4();
 
     return new Promise((resolve, reject) => {
@@ -15,10 +15,12 @@ export function prepareWritableToPortStream<Target extends Messagable>(target: T
             reject.bind(
                 undefined,
                 new Error(
-                    'Stream creation failed after 15 seconds. Receiver failed to notify of its ready status. If you are using the Messenger API, make sure you are using the ".onStream()" listener on one of the receiving ends and that at least one receiver is accepting the stream with the "accept()" function.'
+                    `Stream creation failed after ${
+                        timeoutMs / 1e3
+                    }s. Receiver failed to notify of its ready status. If you are using the Messenger API, make sure you are using the ".onStream()" listener on one of the receiving ends and that at least one receiver is accepting the stream with the "accept()" function.`
                 )
             ),
-            timeoutSecs
+            timeoutMs
         );
 
         // When the target notifies that it is ready to start receiving

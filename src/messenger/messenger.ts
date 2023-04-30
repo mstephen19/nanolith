@@ -238,7 +238,6 @@ export class Messenger {
             const handler = async (data: Data) => {
                 if (await callback(data)) {
                     resolve(data);
-
                     this.#offMessage(handler);
                 }
             };

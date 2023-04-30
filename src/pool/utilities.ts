@@ -2,7 +2,7 @@ import { cpus } from 'os';
 import { concurrencyOptionMultipliers } from '@constants/pool.js';
 import { ConcurrencyOption } from '@constants/pool.js';
 import { isMainThread, workerData } from 'worker_threads';
-import { createCounter, createSharedUint32, setValue } from '@utilities';
+import { SharedCounter, SharedU32Integer } from '@utilities';
 
 import type { BaseWorkerData } from '@typing/worker_data.js';
 import type { PoolItemOptions, PoolItemConfig } from '@typing/pool.js';
@@ -42,7 +42,7 @@ export const getDefaultPoolConcurrency = () => generateConcurrencyValue(Concurre
 export const getActiveCounter = () => {
     // Create the initial instance of the counter on the
     // main thread
-    if (isMainThread) return createCounter();
+    if (isMainThread) return SharedCounter.create();
 
     // Any subsequent threads will use the counter data added
     // to the workerData
@@ -53,8 +53,8 @@ export const getActiveCounter = () => {
 
 export const getConcurrencyCounter = () => {
     if (isMainThread) {
-        const count = createSharedUint32();
-        setValue(count, () => getDefaultPoolConcurrency());
+        const count = SharedU32Integer.create();
+        SharedU32Integer.setValue(count, () => getDefaultPoolConcurrency());
         return count;
     }
 

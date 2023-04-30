@@ -1,6 +1,6 @@
 import { ServiceCluster } from '../index.js';
 import { jest } from '@jest/globals';
-import { clusterTester, clusterTesterDefinitions } from './worker.js';
+import { clusterTester, clusterTesterDefinitions, exitTester } from './worker.js';
 import { Service } from '@service';
 
 describe('ServiceCluster', () => {
@@ -142,9 +142,27 @@ describe('ServiceCluster', () => {
             await Promise.all([c.closeAll(), cluster.closeAll()]);
         });
 
-        // todo: Add autoRenew test for a service that closes with process.exit() and
-        // todo: the error is caught on the parent thread. It should still start up a
-        // todo: new service.
+        it('Should re-open services if autoRenew is enabled and the process is exited within the service', async () => {
+            const c = await exitTester.clusterize(5, {
+                autoRenew: true,
+            });
+
+            try {
+                await c.use().call({ name: 'exit1' });
+                await c.use().call({ name: 'exit1' });
+                await c.use().call({ name: 'exit1' });
+            } catch (error) {
+                // ignore
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 2e3));
+            expect(c.activeServices).toBe(5);
+
+            await c.use().call({ name: 'exit0' });
+            await new Promise((resolve) => setTimeout(resolve, 2e3));
+            expect(c.activeServices).toBe(4);
+            await Promise.all([c.closeAll(), cluster.closeAll()]);
+        });
 
         it('Should NOT re-open new services if autoRenew is not enabled', async () => {
             const c = await clusterTester.clusterize(5, {

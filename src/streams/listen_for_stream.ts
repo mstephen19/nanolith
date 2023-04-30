@@ -40,15 +40,17 @@ export function listenForStream<Sender extends Messagable>(
             return stream;
         };
 
-        if (mode === ListenForStreamMode.AcceptAll) {
-            // Finally, once the data is flowing, run the provided callback with the
-            // expected stream instance passed in
-            await (callback as OnStreamCallback<Sender>)(createStream());
-            return;
-        }
-
-        if (mode === ListenForStreamMode.ConfirmFirst) {
-            await (callback as ConfirmStreamCallback<Sender>)({ metaData: data.meta, accept: () => createStream() });
+        switch (mode) {
+            default:
+                return;
+            case ListenForStreamMode.AcceptAll:
+                // Finally, once the data is flowing, run the provided callback with the
+                // expected stream instance passed in
+                await (callback as OnStreamCallback<Sender>)(createStream());
+                return;
+            case ListenForStreamMode.ConfirmFirst:
+                await (callback as ConfirmStreamCallback<Sender>)({ metaData: data.meta, accept: () => createStream() });
+                return;
         }
     };
 

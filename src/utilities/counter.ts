@@ -1,9 +1,9 @@
-import { createSharedUint32, getValue, setValue } from './shared_uint32.js';
+import { create as createSharedUint32, getValue, setValue } from './shared_uint32.js';
 import type { SharedUint32 } from './shared_uint32.js';
 
 export type Counter = SharedUint32;
 
-export const createCounter = (): Counter => {
+export const create = (): Counter => {
     return createSharedUint32();
 };
 
