@@ -1,34 +1,35 @@
 import type { Awaitable, Except } from './utilities.js';
 
-type AcceptableValue =
-    | string
-    | number
-    | boolean
-    | null
-    | undefined
-    | void
-    | SharedArrayBuffer
-    | ArrayBuffer
-    | Buffer
-    | Int8Array
-    | Int16Array
-    | Int32Array
-    | Uint8Array
-    | Uint16Array
-    | Uint32Array;
+// todo: Implement these types later
+// type AcceptableValue =
+//     | string
+//     | number
+//     | boolean
+//     | null
+//     | undefined
+//     | void
+//     | SharedArrayBuffer
+//     | ArrayBuffer
+//     | Buffer
+//     | Int8Array
+//     | Int16Array
+//     | Int32Array
+//     | Uint8Array
+//     | Uint16Array
+//     | Uint32Array;
 
-interface AcceptableObject {
-    [key: string | number]: Acceptable;
-}
+// interface AcceptableObject {
+//     [key: string | number]: Acceptable;
+// }
 
-type AcceptableArray = Acceptable[];
+// type AcceptableArray = Acceptable[];
 
-/**
- * A union of all the data types that can be sent across threads.
- *
- * **Note:** To be used in the future.
- */
-export type Acceptable = AcceptableValue | AcceptableObject | AcceptableArray;
+// /**
+//  * A union of all the data types that can be sent across threads.
+//  *
+//  * **Note:** To be used in the future.
+//  */
+// export type Acceptable = AcceptableValue | AcceptableObject | AcceptableArray;
 
 // todo: Maybe because of TypeScript v5.0, we can try to use const
 // todo: generics again to make strongly typed task functions work.
