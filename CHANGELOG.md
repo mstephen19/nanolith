@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Refactored `SharedMap.#isNull()`.
 - The `taskHandler` used within `Service` to avoid unnecessary looping. Minor performance improvement.
 
+### Added
+
+- Extra test for `autoRenew` option on `ServiceCluster`.
+
 ### Removed
 
 - Unnecessary `threadID` getter on `Service`. Can just do `Service.worker.threadId`.
