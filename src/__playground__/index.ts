@@ -1,11 +1,6 @@
-import { Messenger } from '@messenger';
+import { pool } from 'nanolith';
 import { worker } from './worker.js';
 
-const receiver = new Messenger('receiver');
-
-const p = receiver.waitForMessage<string>((msg) => {
-    return msg === 'before';
+const cluster = await worker.clusterize(pool.maxConcurrency, {
+    autoRenew: true,
 });
-
-await worker({ name: 'foo', messengers: [receiver] });
-await p;

@@ -17,13 +17,13 @@ import type { ServiceClusterMap, ServiceClusterMapEntry, ServiceClusterOptions }
 export class ServiceCluster<Definitions extends TaskDefinitions> {
     #nanolith: Nanolith<Definitions>;
     #serviceMap: ServiceClusterMap<Definitions> = new Map();
-    #autoRenew = false;
+    #autoRenew: boolean;
 
     /**
      * @param nanolith An instance of {@link Nanolith} API, returned by the `define()` function.
      */
-    constructor(nanolith: Nanolith<Definitions>, options?: ServiceClusterOptions) {
-        this.#autoRenew = !!options?.autoRenew;
+    constructor(nanolith: Nanolith<Definitions>, { autoRenew = false } = {} as ServiceClusterOptions) {
+        this.#autoRenew = autoRenew;
         this.#nanolith = nanolith;
     }
 
