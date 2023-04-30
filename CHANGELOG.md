@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - Extra test for `autoRenew` option on `ServiceCluster`.
+- Tests for `__beforeTask` and `__afterTask` hooks with services.
 
 ### Removed
 

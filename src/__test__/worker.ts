@@ -90,16 +90,22 @@ export const clusterTesterDefinitions = {
 
 export const clusterTester = await define(clusterTesterDefinitions, { identifier: 'clusterTester' });
 
-export const testServiceInitializer = await define(
-    {
-        __initializeService: () => {
-            ParentThread.onMessage(() => {
-                ParentThread.sendMessage('test test');
-            });
-        },
+export const testServiceInitializer = await define({
+    __initializeService: () => {
+        ParentThread.onMessage(() => {
+            ParentThread.sendMessage('test test');
+        });
     },
-    { identifier: 'foo-bar-baz-buzz' }
-);
+    __beforeTask: async () => {
+        ParentThread.sendMessage('before');
+    },
+    __afterTask: async () => {
+        ParentThread.sendMessage('after');
+    },
+    foo: () => {
+        return 'bar';
+    },
+});
 
 export const hookTester = await define(
     {

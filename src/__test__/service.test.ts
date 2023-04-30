@@ -150,7 +150,6 @@ describe('Service', () => {
         describe('__initializeService', () => {
             it('Should run immediately when the service is launched without being called manually', async () => {
                 const handler = jest.fn((data: string) => data);
-
                 const service = await testServiceInitializer.launchService();
 
                 service.onMessage(handler);
@@ -158,16 +157,35 @@ describe('Service', () => {
 
                 await new Promise((resolve) => setTimeout(resolve, 2e3));
 
-                await service.close();
-
                 expect(handler).toHaveBeenCalledTimes(1);
                 expect(handler).toHaveBeenCalledWith('test test');
+                await service.close();
             });
         });
-        // todo: Test hooks for tasks
-        // describe('__beforeTask', () => {
-        //     it('Should run before a task is run', ())
-        // });
+
+        describe('__beforeTask', () => {
+            it('Should run before a task is run', async () => {
+                const service = await testServiceInitializer.launchService();
+
+                const p = service.waitForMessage<string>((msg) => msg === 'before');
+                await service.call({ name: 'foo' });
+
+                expect(p).resolves.toBe('before');
+                await service.close();
+            });
+        });
+
+        describe('__afterTask', () => {
+            it('Should run before a task is run', async () => {
+                const service = await testServiceInitializer.launchService();
+
+                const p = service.waitForMessage<string>((msg) => msg === 'after');
+                await service.call({ name: 'foo' });
+
+                expect(p).resolves.toBe('after');
+                await service.close();
+            });
+        });
     });
 
     describe('listenerRemover', () => {
