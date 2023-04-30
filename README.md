@@ -209,7 +209,6 @@ Along with `.call()`, `Service` offers many other properties and methods:
 |-|-|-|
 | `activeCalls` | **Property** | The current number of active calls running on the `Service` instance. |
 | `closed` | **Property** | Whether or not the underlying `Worker` instance has exited its process. |
-| `threadID` | **Property** | The thread ID of the underlying `Worker`. |
 | `worker` | **Property** | The raw `Worker` instance being used by the service. |
 | `call()` | **Method** | Call a task to be run within the service worker. Usage is similar to [running a task normally](#-running-a-task) |
 | `close()` | **Method** | Terminates the worker, ending its process and marking the `Service` instance as `closed`. |

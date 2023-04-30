@@ -106,13 +106,6 @@ export class Service<Definitions extends TaskDefinitions> extends TypedEmitter<S
     }
 
     /**
-     * The thread ID of the underlying worker for the Service` instance.
-     */
-    get threadID() {
-        return this.#worker.threadId;
-    }
-
-    /**
      * Returns the raw underlying {@link Worker} instance being used by the service.
      */
     get worker() {
