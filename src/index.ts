@@ -13,3 +13,5 @@ export type { Nanolith } from '@typing/nanolith.js';
 export type { TaskWorkerOptions as LaunchTaskOptions, ServiceWorkerOptions as LaunchServiceOptions } from '@typing/workers.js';
 export type { SharedMapRawData } from '@typing/shared_map.js';
 export type { MessengerRawData } from '@typing/messenger.js';
+export type { Service } from '@service';
+export type { WritableToPort, ReadableFromPort } from '@streams';

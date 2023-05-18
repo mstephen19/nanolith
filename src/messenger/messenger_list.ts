@@ -43,15 +43,17 @@ function list() {
  *
  * messenger.onMessage<string>((data) => console.log(data, 'received!'));
  */
-export const MessengerList: MessengerListType = Object.create(
-    {
-        use,
-    },
-    {
-        list: {
-            get() {
-                return list();
-            },
+export const MessengerList: MessengerListType = Object.freeze(
+    Object.create(
+        {
+            use,
         },
-    }
+        {
+            list: {
+                get() {
+                    return list();
+                },
+            },
+        }
+    )
 );

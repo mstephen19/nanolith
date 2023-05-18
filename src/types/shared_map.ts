@@ -9,24 +9,6 @@ export type SharedMapRawData<Data = Record<string, any>> = {
     __mutex: Mutex;
 };
 
-export interface SharedMapWatch {
-    /**
-     * A boolean defining whether or not the value has changed
-     * since the last time it was accessed via `.current`
-     */
-    changed(): boolean;
-    /**
-     * A getter function for the current value.
-     */
-    current(): string | null;
-    /**
-     * A function that, when called, will stop the watch process.
-     * After calling `stopWatching()`, no further changes to the
-     * value will be reflected in the `changed` or `current` getters.
-     */
-    stopWatching(): void;
-}
-
 export type KeyData = {
     name: string;
     start: number;
