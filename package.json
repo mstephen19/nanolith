@@ -10,7 +10,8 @@
         "lint": "npx eslint \"src/**\"",
         "minify": "ts-node-esm -T scripts/minify.ts",
         "build": "npm run lint & tsc && tsc-alias && npm run minify && echo \"build succeeded\"",
-        "test": "nodemon --exec \"npm run build && NODE_OPTIONS=--experimental-vm-modules jest --runInBand\"",
+        "test:raw": "npm run build && NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
+        "test": "nodemon --exec npm run test:raw",
         "play": "nodemon --ignore ./src/__test__ --exec \"npm run build && node ./build/__playground__/index.js\"",
         "publish:latest": "npm run bump && ts-node-esm -T scripts/publish.ts latest",
         "publish:next": "ts-node-esm -T scripts/publish.ts next"
