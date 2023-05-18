@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Refresh functionality for `test` and `play` scripts.
 - **.prettierrc** file.
 - **DEV.md** file for contributors.
+- Type exports for `Service`, `ReadableFromPort`, and `WritableFromPort`.
 
 ### Fixed
 
@@ -23,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Removed
 
 - `build:clean` and `test:clean` scripts.
+- Deprecated `SharedMapWatch` type.
 
 ## [0.4.6] - 2023-30-4
 

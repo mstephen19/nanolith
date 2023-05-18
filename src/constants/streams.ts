@@ -1,5 +1,5 @@
 /**
- * Cross-thread streams communicate with a few different message types.
+ * Cross-thread streams communicate using a few different message types.
  */
 export const enum StreamMessageType {
     Ready = 'stream-ready-to-consume',

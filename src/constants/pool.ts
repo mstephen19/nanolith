@@ -45,7 +45,6 @@ export const concurrencyOptionMultipliers = {
     [ConcurrencyOption.Quarter]: 0.25,
     [ConcurrencyOption.Half]: 0.5,
     [ConcurrencyOption.x1]: 1,
-    // [ConcurrencyOption.Default]: 2,
     [ConcurrencyOption.x2]: 2,
     [ConcurrencyOption.x4]: 4,
     [ConcurrencyOption.x6]: 6,
