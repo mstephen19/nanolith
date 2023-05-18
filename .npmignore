@@ -19,6 +19,7 @@ nodemon.json
 tsconfig.json
 jest.config.js
 .eslintrc.json
+.prettierrc
 
 # Files
 **.tsbuildinfo
@@ -27,6 +28,7 @@ yarn.lock
 bun.lockb
 .gitignore
 CHANGELOG.md
+DEV.md
 
 # backup created by custom publish script
 package-backup.json

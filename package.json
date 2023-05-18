@@ -11,7 +11,7 @@
         "minify": "ts-node-esm -T scripts/minify.ts",
         "build": "npm run lint & tsc && tsc-alias && npm run minify && echo \"build succeeded\"",
         "test:raw": "npm run build && NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
-        "test": "nodemon --exec npm run test:raw",
+        "test": "nodemon --ignore ./src/__playground__ --exec npm run test:raw",
         "play": "nodemon --ignore ./src/__test__ --exec \"npm run build && node ./build/__playground__/index.js\"",
         "publish:latest": "npm run bump && ts-node-esm -T scripts/publish.ts latest",
         "publish:next": "ts-node-esm -T scripts/publish.ts next"
@@ -62,11 +62,9 @@
         "jest": "^29.1.2",
         "jsonminify": "^0.4.2",
         "minify": "^9.1.0",
-        "module-alias": "^2.2.2",
         "nodemon": "^2.0.22",
         "ts-node": "^10.9.1",
         "tsc-alias": "^1.8.2",
-        "tsconfig-paths": "^4.1.1",
         "typescript": "^4.9.5"
     },
     "dependencies": {
