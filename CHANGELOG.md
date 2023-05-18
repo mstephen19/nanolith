@@ -11,10 +11,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - **How easy is scalable multithreading with Nanolith?** portion to README.
+- Refresh functionality for `test` and `play` scripts.
+- **.prettierrc** file.
 
 ### Fixed
 
 - `SharedMap.entries()` not using mutex.
+- Improved performance for `build` script.
+
+### Removed
+
+- `build:clean` and `test:clean` scripts.
 
 ## [0.4.6] - 2023-30-4
 
