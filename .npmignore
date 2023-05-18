@@ -28,6 +28,7 @@ yarn.lock
 bun.lockb
 .gitignore
 CHANGELOG.md
+DEV.md
 
 # backup created by custom publish script
 package-backup.json

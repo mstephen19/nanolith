@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **How easy is scalable multithreading with Nanolith?** portion to README.
 - Refresh functionality for `test` and `play` scripts.
 - **.prettierrc** file.
+- **DEV.md** file for contributors.
 
 ### Fixed
 
