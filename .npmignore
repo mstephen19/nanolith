@@ -14,14 +14,17 @@ scripts
 .circleci
 .git
 
+# Config
+nodemon.json
+tsconfig.json
+jest.config.js
+.eslintrc.json
+
 # Files
 **.tsbuildinfo
-tsconfig.json
 package-lock.json
 yarn.lock
 bun.lockb
-jest.config.js
-.eslintrc.json
 .gitignore
 CHANGELOG.md
 
