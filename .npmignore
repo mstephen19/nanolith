@@ -14,16 +14,21 @@ scripts
 .circleci
 .git
 
+# Config
+nodemon.json
+tsconfig.json
+jest.config.js
+.eslintrc.json
+.prettierrc
+
 # Files
 **.tsbuildinfo
-tsconfig.json
 package-lock.json
 yarn.lock
 bun.lockb
-jest.config.js
-.eslintrc.json
 .gitignore
 CHANGELOG.md
+DEV.md
 
 # backup created by custom publish script
 package-backup.json

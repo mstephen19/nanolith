@@ -8,6 +8,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **How easy is scalable multithreading with Nanolith?** portion to README.
+- Refresh functionality for `test` and `play` scripts.
+- **.prettierrc** file.
+- **DEV.md** file for contributors.
+- Type exports for `Service`, `ReadableFromPort`, and `WritableFromPort`.
+
+### Fixed
+
+- `SharedMap.entries()` not using mutex.
+- Improved performance for `build` script.
+- Uncaught exceptions in `__initializeService` not able to be handled by `exceptionHandler()` in `Service`s (temporary solution without proper `terminate()` functionality).
+
+### Removed
+
+- `build:clean` and `test:clean` scripts.
+- Deprecated `SharedMapWatch` type.
+
 ## [0.4.6] - 2023-30-4
 
 ### Changed

@@ -24,6 +24,8 @@ export const ENCODER = new TextEncoder();
 
 export const DECODER = new TextDecoder();
 
+// Using a constant because the representation of null in
+// SharedMap may change in the future.
 export const NULL = null;
 
 export const NULL_ENCODED = encodeValue(ENCODER, NULL);

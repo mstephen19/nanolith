@@ -11,7 +11,7 @@ jobs:
             - node/install-packages:
                   pkg-manager: npm
             - run:
-                  command: npm run test
+                  command: npm run test:raw
                   name: Run tests
             - persist_to_workspace:
                   root: ~/project
