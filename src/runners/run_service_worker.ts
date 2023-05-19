@@ -25,13 +25,32 @@ export const runServiceWorker = async <Definitions extends TaskDefinitions, Opti
         item.once('created', (worker) => {
             worker.on('error', reject);
 
+            // ! temp - enable catching errors in the __initializeService
+            // ! hook. This is only temporary because the "terminate()" function
+            // ! doesn't actually do anything. Eventually, closing a service should
+            // ! be done with message passing for more flexibility.
+            const initErrHandler = async (body: WorkerBaseMessageBody) => {
+                if (body.type !== WorkerMessageType.WorkerException) return;
+                await exceptionHandler?.({
+                    error: (body as WorkerExceptionMessageBody).data,
+                    terminate: () => {
+                        //
+                    },
+                });
+            };
+
+            worker.on('message', initErrHandler);
+
             // Ensure the Service instance has initialized and the
             // __initializeService hook has completed before creating the
             // service and resolving with it.
             const handleInitialization = (body: WorkerBaseMessageBody) => {
                 if (body.type !== WorkerMessageType.Initialized) return;
+                // ! temp
+                worker.off('message', initErrHandler);
 
                 const service = Object.seal(new Service(worker));
+
                 // Register the listener for the exception handler
                 if (typeof exceptionHandler === 'function') {
                     worker.on('message', async (body: WorkerBaseMessageBody) => {

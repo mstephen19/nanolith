@@ -1,10 +1,20 @@
-import { pool } from 'nanolith';
+import { ServiceCluster } from '@service_cluster';
 import { worker } from './worker.js';
 
 // Spawn multiple concurrent threads
-const cluster = await worker.clusterize(pool.maxConcurrency, {
-    autoRenew: true,
+const cluster = new ServiceCluster(worker);
+const [x, y] = await cluster.launch(2, {
+    exceptionHandler() {
+        console.log('oops');
+    },
 });
 
-// Run your tasks on separate threads
-cluster.use().call({ name: 'yourTask' });
+x!.onMessage<string>((data) => {
+    console.log(data);
+});
+y!.onMessage<string>((data) => {
+    console.log(data);
+});
+
+x!.call({ name: 'task' });
+y!.call({ name: 'task' });

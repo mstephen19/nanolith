@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `SharedMap.entries()` not using mutex.
 - Improved performance for `build` script.
+- Uncaught exceptions in `__initializeService` not able to be handled by `exceptionHandler()` in `Service`s (temporary solution without proper `terminate()` functionality).
 
 ### Removed
 
